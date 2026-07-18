@@ -1,7 +1,11 @@
 import os
 import json
 from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, Depends
+
+# Load environment variables from .env file
+load_dotenv()
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
