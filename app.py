@@ -15,7 +15,17 @@ from agent import run_interview_generator_agent
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
     try:
-        firebase_admin.initialize_app()
+        service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+        if service_account_json:
+            import json
+            cred_dict = json.loads(service_account_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+            print("Firebase Admin SDK initialized with Service Account.")
+        else:
+            project_id = os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit")
+            firebase_admin.initialize_app(options={'projectId': project_id})
+            print(f"Firebase Admin SDK initialized with Project ID: {project_id}")
     except Exception as e:
         print(f"Firebase Admin SDK initialization warning: {e}")
 
