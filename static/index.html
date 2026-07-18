@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techno Recruit — AI Screening & Multi-Agent Interview Architect</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar for History -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <i data-lucide="brain-circuit" class="brand-icon"></i>
+                    <h2>Agent History</h2>
+                </div>
+                <p class="sidebar-subtitle">Previous Runs & Guides</p>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="history-empty">
+                    <i data-lucide="folder-open"></i>
+                    <p>No generated guides yet</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="header-container">
+                    <div class="header-title">
+                        <span class="badge-active"><span class="dot"></span> Autonomous Specialist Agent</span>
+                        <h1>Techno Recruit</h1>
+                        <p class="subtitle">Enter a Job Description to trigger an autonomous agent loop that analyzes requirements, drafts targeted questions, refines them with rubrics, and logs the finalized guide.</p>
+                    </div>
+                    <div class="header-auth" id="headerAuth">
+                        <button class="btn-primary" id="loginBtn">
+                            <i data-lucide="log-in"></i>
+                            <span>Sign In with Google</span>
+                        </button>
+                        <div class="user-profile" id="userProfile" style="display: none;">
+                            <img src="" id="userAvatar" class="avatar" alt="User Avatar">
+                            <span id="userName" class="user-name"></span>
+                            <button class="btn-icon" id="logoutBtn" title="Sign Out">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- Form Section -->
+                <section class="form-card card" style="position: relative;">
+                    <div class="auth-lock-overlay" id="authLockOverlay">
+                        <i data-lucide="lock" class="lock-icon"></i>
+                        <h3>Authentication Required</h3>
+                        <p>Sign in to configure job specifications and run the multi-agent screening loop.</p>
+                        <button class="btn-primary" id="overlayLoginBtn">
+                            <i data-lucide="log-in"></i>
+                            <span>Sign In with Google</span>
+                        </button>
+                    </div>
+                    <div class="card-header">
+                        <i data-lucide="file-text"></i>
+                        <h3>Job Specifications</h3>
+                    </div>
+                    <form id="generatorForm" class="grid-form">
+                        <div class="form-group col-full">
+                            <label for="jobTitle">Job Title</label>
+                            <input type="text" id="jobTitle" required placeholder="e.g., Senior Full-Stack Engineer, Lead Product Designer">
+                        </div>
+
+                        <div class="form-group col-half">
+                            <label for="experienceLevel">Experience Level</label>
+                            <select id="experienceLevel" required>
+                                <option value="Junior">Junior (0-2 years)</option>
+                                <option value="Mid">Mid-Level (3-5 years)</option>
+                                <option value="Senior" selected>Senior (5-8 years)</option>
+                                <option value="Lead">Lead / Staff (8+ years)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-half">
+                            <label for="questionCount">Number of Questions</label>
+                            <div class="range-container">
+                                <input type="range" id="questionCount" min="3" max="10" value="5">
+                                <span class="range-val" id="questionCountVal">5</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-full">
+                            <label>Question Categories</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Technical" checked>
+                                    <span class="custom-checkbox">Technical & Coding</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Behavioral" checked>
+                                    <span class="custom-checkbox">Behavioral (STAR)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="System Design">
+                                    <span class="custom-checkbox">System Design & Arch</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="categories" value="Problem Solving">
+                                    <span class="custom-checkbox">Problem Solving</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-full">
+                            <label for="jobDescription">Job Description / Requirements</label>
+                            <textarea id="jobDescription" required rows="6" placeholder="Paste the job description, core responsibilities, tech stack, and key qualifications here..."></textarea>
+                        </div>
+
+                        <div class="form-actions col-full">
+                            <button type="submit" class="btn-primary" id="submitBtn">
+                                <i data-lucide="play"></i>
+                                <span>Run Agent Loop</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Agent Status & Log Trace Section -->
+                <section class="agent-trace-card card" id="traceContainer" style="display: none;">
+                    <div class="card-header">
+                        <i data-lucide="activity"></i>
+                        <h3>Autonomous Loop Live Trace</h3>
+                        <div class="iteration-counter" id="iterationCounter">Iteration 1/8</div>
+                    </div>
+                    
+                    <!-- Multi-Agent Flowchart Nodes -->
+                    <div class="agent-flowchart" id="agentFlowchart" style="margin-bottom: 24px;">
+                        <div class="flow-node active" id="nodeInput">
+                            <i data-lucide="user"></i>
+                            <span>Input</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeJdParser">
+                            <i data-lucide="file-text"></i>
+                            <span>JD Parser</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeSyllabus">
+                            <i data-lucide="book-open"></i>
+                            <span>Syllabus</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeGenerator">
+                            <i data-lucide="pen-tool"></i>
+                            <span>Generator</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeCritic">
+                            <i data-lucide="shield-alert"></i>
+                            <span>Critic</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeScorecard">
+                            <i data-lucide="award"></i>
+                            <span>Scorecard</span>
+                        </div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-node" id="nodeLogger">
+                            <i data-lucide="database"></i>
+                            <span>DB Logger</span>
+                        </div>
+                    </div>
+
+                    <div class="trace-timeline" id="traceTimeline">
+                        <!-- Trace steps will be appended here dynamically -->
+                    </div>
+                </section>
+
+                <!-- Final Results Output Section -->
+                <section class="results-card card" id="resultsContainer" style="display: none;">
+                    <div class="card-header">
+                        <i data-lucide="award"></i>
+                        <h3 id="resultsTitle">Final Interview Guide</h3>
+                        <div class="card-actions" style="display: flex; gap: 8px;">
+                            <button class="btn-secondary" id="copyBtn">
+                                <i data-lucide="copy"></i> Copy JSON
+                            </button>
+                            <button class="btn-secondary" id="exportMdBtn">
+                                <i data-lucide="download"></i> Export Markdown
+                            </button>
+                            <button class="btn-secondary" id="printBtn">
+                                <i data-lucide="printer"></i> Print / PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-meta">
+                        <div class="meta-item"><span class="meta-label">Position:</span> <span id="metaPosition">N/A</span></div>
+                        <div class="meta-item"><span class="meta-label">Level:</span> <span id="metaLevel">N/A</span></div>
+                        <div class="meta-item"><span class="meta-label">Guide ID:</span> <span id="metaGuideId" class="code-font">N/A</span></div>
+                    </div>
+
+                    <!-- AI Parsing Dashboard & LLMOps Metrics -->
+                    <div class="results-dashboard grid-dashboard">
+                        <div class="dash-card">
+                            <div class="dash-icon"><i data-lucide="bar-chart-2"></i></div>
+                            <div class="dash-text">
+                                <span class="dash-val" id="dashTotalCount">0</span>
+                                <span class="dash-label">Total Questions</span>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon"><i data-lucide="target"></i></div>
+                            <div class="dash-text">
+                                <span class="dash-val" id="dashTechCoverage">0%</span>
+                                <span class="dash-label">Tech Coverage</span>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon"><i data-lucide="shield-alert"></i></div>
+                            <div class="dash-text">
+                                <div class="diff-distribution">
+                                    <span class="diff-bar easy" id="diffEasyBar" title="Easy"></span>
+                                    <span class="diff-bar medium" id="diffMediumBar" title="Medium"></span>
+                                    <span class="diff-bar hard" id="diffHardBar" title="Hard"></span>
+                                </div>
+                                <span class="dash-label">Difficulty Distribution</span>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon" style="background-color:rgba(6, 182, 212, 0.1); color:var(--color-info);"><i data-lucide="clock"></i></div>
+                            <div class="dash-text">
+                                <span class="dash-val" id="metricsLatency">0.0s</span>
+                                <span class="dash-label">Total Latency</span>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon" style="background-color:rgba(168, 85, 247, 0.1); color:var(--color-secondary);"><i data-lucide="cpu"></i></div>
+                            <div class="dash-text">
+                                <span class="dash-val" id="metricsTokens">0</span>
+                                <span class="dash-label">Total Tokens</span>
+                            </div>
+                        </div>
+                        <div class="dash-card">
+                            <div class="dash-icon" style="background-color:rgba(16, 185, 129, 0.1); color:var(--color-success);"><i data-lucide="dollar-sign"></i></div>
+                            <div class="dash-text">
+                                <span class="dash-val" id="metricsCost">$0.00</span>
+                                <span class="dash-label">Estimated Cost</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Parsed Candidate Fit Analysis -->
+                    <div class="job-profile-card" id="jobProfileBlock" style="display: none;">
+                        <div class="profile-header">
+                            <i data-lucide="fingerprint"></i>
+                            <h4>AI Parsed Requirements Fit</h4>
+                        </div>
+                        <div class="profile-body">
+                            <div class="profile-column">
+                                <span class="section-label">Candidate Persona Summary</span>
+                                <p class="profile-text" id="parsedCandidateProfile">...</p>
+                            </div>
+                            <div class="profile-grid-cols">
+                                <div class="profile-sub-col">
+                                    <span class="section-label">Extracted Tech Competencies</span>
+                                    <div class="profile-tags" id="parsedTechSkills"></div>
+                                </div>
+                                <div class="profile-sub-col">
+                                    <span class="section-label">Expected Soft Skills</span>
+                                    <ul class="profile-checklist" id="parsedSoftSkills"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="questions-accordion" id="questionsAccordion">
+                        <!-- Questions will be dynamically inserted here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/app.js"></script>
+</body>
+</html>
