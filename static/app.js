@@ -57,22 +57,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize Firebase
     async function initFirebase() {
-        // Fallback placeholder credentials for local dev
         let firebaseConfig = {
-            apiKey: "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
-            authDomain: "techno-recruit.firebaseapp.com",
-            projectId: "techno-recruit",
-            storageBucket: "techno-recruit.firebasestorage.app",
-            messagingSenderId: "235364274013",
-            appId: "1:235364274013:web:9db2497f8946987989e2b4",
-            measurementId: "G-LKVL7NWK5L"
+            apiKey: "MOCK_API_KEY",
+            authDomain: "mock-project.firebaseapp.com",
+            projectId: "mock-project",
+            storageBucket: "mock-project.appspot.com",
+            messagingSenderId: "12345",
+            appId: "1:12345:web:mock"
         };
 
         try {
-            const response = await fetch("/__/firebase/init.json");
+            // Try loading from our backend config endpoint first
+            const response = await fetch(`${API_BASE}/api/config`);
             if (response.ok) {
                 firebaseConfig = await response.json();
-                console.log("Firebase initialized dynamically via Hosting.");
+                console.log("Firebase config loaded from backend.");
+            } else {
+                // Fallback to Firebase Hosting local JSON configuration
+                const hostingResponse = await fetch("/__/firebase/init.json");
+                if (hostingResponse.ok) {
+                    firebaseConfig = await hostingResponse.json();
+                    console.log("Firebase initialized dynamically via Hosting.");
+                }
             }
         } catch (e) {
             console.warn("Using local configuration or fallback. Ensure correct settings.", e);

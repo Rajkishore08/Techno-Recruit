@@ -85,6 +85,20 @@ def index():
     return FileResponse(STATIC_DIR / "index.html")
 
 
+@app.get("/api/config")
+def get_firebase_config():
+    """Returns public Firebase configuration for client SDK initialization."""
+    return {
+        "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", ""),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "appId": os.environ.get("FIREBASE_APP_ID", ""),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "")
+    }
+
+
 @app.post("/api/generate")
 def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_user)):
     """
