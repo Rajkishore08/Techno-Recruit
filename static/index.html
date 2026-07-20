@@ -30,6 +30,17 @@
                     <p>No generated guides yet</p>
                 </div>
             </div>
+
+            <div class="sidebar-header" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <h3><i data-lucide="compass"></i> Resume Analyses</h3>
+                <p class="sidebar-subtitle">Career Score Progress</p>
+            </div>
+            <div class="history-list" id="careerHistoryList">
+                <div class="history-empty">
+                    <i data-lucide="file-text"></i>
+                    <p>No saved resume runs</p>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content Area -->
@@ -387,6 +398,11 @@
 
                 <!-- Career Navigator Results Area -->
                 <section id="navigatorResults" class="navigator-results-area" style="display: none;">
+                    <!-- Resume Version Score Delta Comparison Banner -->
+                    <div class="card comparison-banner" id="scoreComparisonBanner" style="display: none;">
+                        <!-- Injected dynamically -->
+                    </div>
+
                     <!-- Candidate Overview Card -->
                     <div class="card overview-card" id="candidateOverviewCard">
                         <!-- Injected dynamically -->

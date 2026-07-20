@@ -1887,4 +1887,107 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: var(--text-muted);
 }
 
+/* Career Score Comparison Banner & Delta Badges */
+.comparison-banner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.comparison-title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-success);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.comparison-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.delta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.delta-item {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+}
+
+.delta-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.delta-badge {
+    font-size: 14px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.delta-badge.positive {
+    color: var(--color-success);
+}
+
+.delta-badge.neutral {
+    color: var(--color-info);
+}
+
+.delta-badge.negative {
+    color: var(--color-danger);
+}
+
+.career-history-item {
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.career-history-item:hover {
+    border-color: var(--color-primary-light);
+    background: rgba(30, 41, 59, 0.7);
+}
+
+.career-history-item.active {
+    border-color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.career-history-filename {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.career-history-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
 

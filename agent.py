@@ -626,3 +626,42 @@ def run_interview_generator_agent(
         "data": final_payload,
         "iteration": 8
     }
+
+
+def save_career_analysis(user_uid: str, filename: str, resume_text: str, analysis_data: Dict[str, Any]) -> str:
+    """Saves a Career Navigator analysis session into Firestore or local memory."""
+    analysis_id = f"career_{uuid.uuid4().hex[:8]}"
+    record = {
+        "analysis_id": analysis_id,
+        "uid": user_uid or "anonymous",
+        "filename": filename or "resume.pdf",
+        "timestamp": int(time.time()),
+        "resume_snippet": resume_text[:300] if resume_text else "",
+        "data": analysis_data
+    }
+
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        db.collection("career_analyses").document(analysis_id).set(record)
+    except Exception as e:
+        print(f"Firestore career analysis save fallback/warning: {e}")
+
+    return analysis_id
+
+
+def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
+    """Retrieves all past career analysis sessions for a given user UID from Firestore."""
+    if not user_uid:
+        return []
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        docs = db.collection("career_analyses").where("uid", "==", user_uid).stream()
+        results = [doc.to_dict() for doc in docs]
+        results.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+        return results
+    except Exception as e:
+        print(f"Firestore career history read error: {e}")
+        return []
+

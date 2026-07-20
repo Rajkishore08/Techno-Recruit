@@ -60,7 +60,9 @@ from resume_parser import extract_resume_text
 from agent import (
     run_interview_generator_agent,
     run_resume_role_suggester_agent,
-    run_resume_jd_matcher_agent
+    run_resume_jd_matcher_agent,
+    save_career_analysis,
+    get_user_career_analyses
 )
 
 
@@ -159,15 +161,18 @@ async def suggest_roles_endpoint(
     """
     Career Navigator Agent Endpoint:
     Analyzes resume (file or text) and recommends matching career roles with Beginner/Intermediate/Experienced scores.
+    Saves session into user history and calculates score progress compared to previous versions.
     """
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="GROQ_API_KEY environment variable is not configured.")
 
     target_resume_text = ""
+    filename = "Uploaded Resume"
     if file:
         try:
             content = await file.read()
+            filename = file.filename
             target_resume_text = extract_resume_text(content, file.filename)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Resume file error: {str(e)}")
@@ -177,15 +182,57 @@ async def suggest_roles_endpoint(
         raise HTTPException(status_code=400, detail="Please upload a resume file or provide resume text.")
 
     try:
+        uid = user.get("uid", "anonymous")
+        existing_history = get_user_career_analyses(uid) if uid != "anonymous" else []
+        previous_analysis = existing_history[0] if existing_history else None
+
         result_json_str, usage = run_resume_role_suggester_agent(target_resume_text)
         result_data = json.loads(result_json_str)
+
+        analysis_id = save_career_analysis(uid, filename, target_resume_text, result_data)
+
         return {
             "status": "success",
+            "analysis_id": analysis_id,
+            "filename": filename,
             "data": result_data,
+            "previous_analysis": previous_analysis,
             "usage": usage
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Career Navigator Agent failed: {str(e)}")
+
+
+@app.get("/api/career-history")
+def get_career_history_endpoint(user: dict = Depends(get_current_user)):
+    """Retrieves all past career analysis sessions for the authenticated user."""
+    try:
+        uid = user["uid"]
+        history = get_user_career_analyses(uid)
+        return history
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch career history: {str(e)}")
+
+
+@app.get("/api/career-history/{analysis_id}")
+def get_career_analysis_by_id_endpoint(analysis_id: str, user: dict = Depends(get_current_user)):
+    """Retrieves a specific past career analysis session from Firestore."""
+    try:
+        uid = user["uid"]
+        if not db:
+            raise HTTPException(status_code=500, detail="Database connection not available.")
+        doc_ref = db.collection("career_analyses").document(analysis_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            raise HTTPException(status_code=404, detail=f"Career analysis session {analysis_id} not found.")
+        record = doc.to_dict()
+        if record.get("uid") != uid:
+            raise HTTPException(status_code=403, detail="Not authorized to view this analysis session.")
+        return record
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading career analysis record: {str(e)}")
 
 
 @app.post("/api/generate")

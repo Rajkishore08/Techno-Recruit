@@ -111,8 +111,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     userNameElement.textContent = user.displayName || user.email;
                     authLockOverlay.style.display = "none";
                     
-                    // Load user's history list
+                    // Load user's history list & career runs
                     loadHistoryList();
+                    loadCareerHistoryList();
                 } else {
                     currentUser = null;
                     currentIdToken = null;
@@ -129,6 +130,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p>Sign in to view history</p>
                         </div>
                     `;
+                    if (careerHistoryList) {
+                        careerHistoryList.innerHTML = `
+                            <div class="history-empty">
+                                <i data-lucide="lock"></i>
+                                <p>Sign in to view history</p>
+                            </div>
+                        `;
+                    }
                     lucide.createIcons();
                     resultsContainer.style.display = "none";
                     traceContainer.style.display = "none";
@@ -296,7 +305,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const navigatorLoading = document.getElementById("navigatorLoading");
     const navigatorResults = document.getElementById("navigatorResults");
     const candidateOverviewCard = document.getElementById("candidateOverviewCard");
+    const scoreComparisonBanner = document.getElementById("scoreComparisonBanner");
     const rolesGrid = document.getElementById("rolesGrid");
+    const careerHistoryList = document.getElementById("careerHistoryList");
 
     if (analyzeCareerBtn) {
         analyzeCareerBtn.addEventListener("click", async () => {
@@ -333,7 +344,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const resData = await response.json();
-                renderCareerNavigatorResults(resData.data);
+                renderCareerNavigatorResults(resData.data, resData.previous_analysis);
+                loadCareerHistoryList();
             } catch (e) {
                 alert(`Career Analysis Error: ${e.message}`);
             } finally {
@@ -343,7 +355,121 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function renderCareerNavigatorResults(data) {
+    async function loadCareerHistoryList() {
+        if (!careerHistoryList || !currentIdToken) return;
+        try {
+            const response = await fetch(`${API_BASE}/api/career-history`, {
+                headers: { "Authorization": `Bearer ${currentIdToken}` }
+            });
+            if (!response.ok) return;
+
+            const items = await response.json();
+            if (!items || items.length === 0) {
+                careerHistoryList.innerHTML = `
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>No saved resume runs</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            careerHistoryList.innerHTML = "";
+            items.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "career-history-item";
+                const dateStr = item.timestamp ? new Date(item.timestamp * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recent";
+                const rolesCount = item.data?.suggested_roles?.length || 0;
+
+                div.innerHTML = `
+                    <div class="career-history-filename">${item.filename || "Resume Analysis"}</div>
+                    <div class="career-history-meta">
+                        <span>${rolesCount} Roles Suggested</span>
+                        <span>${dateStr}</span>
+                    </div>
+                `;
+
+                div.addEventListener("click", () => {
+                    document.querySelectorAll(".career-history-item").forEach(el => el.classList.remove("active"));
+                    div.classList.add("active");
+                    switchTab("navigator");
+                    renderCareerNavigatorResults(item.data, null);
+                });
+
+                careerHistoryList.appendChild(div);
+            });
+            lucide.createIcons();
+        } catch (e) {
+            console.warn("Failed to load career history:", e);
+        }
+    }
+
+    function renderCareerNavigatorResults(data, previousAnalysis) {
+        if (!data) return;
+        navigatorResults.style.display = "block";
+        navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        // Render Delta Score Comparison if previous analysis is available
+        if (previousAnalysis && previousAnalysis.data && previousAnalysis.data.suggested_roles && scoreComparisonBanner) {
+            scoreComparisonBanner.style.display = "block";
+            const prevRoles = previousAnalysis.data.suggested_roles || [];
+            const currRoles = data.suggested_roles || [];
+
+            const calculateAvgScore = (roles, field) => {
+                if (!roles.length) return 0;
+                const sum = roles.reduce((acc, r) => acc + (r[field] || 0), 0);
+                return Math.round(sum / roles.length);
+            };
+
+            const prevBeg = calculateAvgScore(prevRoles, "beginner_score");
+            const currBeg = calculateAvgScore(currRoles, "beginner_score");
+            const diffBeg = currBeg - prevBeg;
+
+            const prevInt = calculateAvgScore(prevRoles, "intermediate_score");
+            const currInt = calculateAvgScore(currRoles, "intermediate_score");
+            const diffInt = currInt - prevInt;
+
+            const prevExp = calculateAvgScore(prevRoles, "experienced_score");
+            const currExp = calculateAvgScore(currRoles, "experienced_score");
+            const diffExp = currExp - prevExp;
+
+            const formatDelta = (val) => {
+                if (val > 0) return `<span class="delta-badge positive"><i data-lucide="trending-up"></i> +${val}%</span>`;
+                if (val < 0) return `<span class="delta-badge negative"><i data-lucide="trending-down"></i> ${val}%</span>`;
+                return `<span class="delta-badge neutral"><i data-lucide="minus"></i> 0%</span>`;
+            };
+
+            scoreComparisonBanner.innerHTML = `
+                <div class="comparison-title">
+                    <i data-lucide="sparkles"></i>
+                    Resume Score Improvement Analysis (Compared to Baseline: ${previousAnalysis.filename || 'Previous Run'})
+                </div>
+                <div class="comparison-subtitle">
+                    Tracking score progression across experience tiers for your updated candidate resume:
+                </div>
+                <div class="delta-grid">
+                    <div class="delta-item">
+                        <div class="delta-label">Junior / Beginner Match</div>
+                        ${formatDelta(diffBeg)}
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${prevBeg}% → ${currBeg}%</div>
+                    </div>
+                    <div class="delta-item">
+                        <div class="delta-label">Mid-Level Match</div>
+                        ${formatDelta(diffInt)}
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${prevInt}% → ${currInt}%</div>
+                    </div>
+                    <div class="delta-item">
+                        <div class="delta-label">Senior / Lead Match</div>
+                        ${formatDelta(diffExp)}
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${prevExp}% → ${currExp}%</div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        } else if (scoreComparisonBanner) {
+            scoreComparisonBanner.style.display = "none";
+        }
         if (!data) return;
         navigatorResults.style.display = "block";
         navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
