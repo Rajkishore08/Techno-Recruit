@@ -408,11 +408,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (candidateSelectorSelect) {
                 candidateSelectorSelect.innerHTML = `<option value="">-- Start New Candidate Profile --</option>`;
                 items.forEach(item => {
+                    let rawName = item.candidate_name || item.data?.candidate_name || "";
+                    if (!rawName || rawName === "Uploaded Resume" || rawName === "Candidate Profile") {
+                        rawName = (item.filename && item.filename !== "Uploaded Resume") ? item.filename.replace(/\.[^/.]+$/, "") : "Candidate Profile";
+                    }
                     const opt = document.createElement("option");
                     opt.value = item.analysis_id;
-                    opt.dataset.candidateName = item.candidate_name || item.data?.candidate_name || "Candidate Profile";
+                    opt.dataset.candidateName = rawName;
                     const verStr = item.version ? ` (V${item.version})` : "";
-                    opt.textContent = `${item.candidate_name || 'Candidate'} - ${item.filename || 'Resume'}${verStr}`;
+                    opt.textContent = `${rawName} - ${item.filename || 'Resume'}${verStr}`;
                     candidateSelectorSelect.appendChild(opt);
                 });
             }
@@ -422,15 +426,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 div.className = "career-history-item";
                 const dateStr = item.timestamp ? new Date(item.timestamp * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recent";
                 const rolesCount = item.data?.suggested_roles?.length || 0;
-                const cName = item.candidate_name || item.data?.candidate_name || "Candidate Profile";
-                const verTag = item.version ? ` <span class="profile-tag" style="font-size:10px; padding:2px 6px;">V${item.version}</span>` : "";
+                
+                let rawName = item.candidate_name || item.data?.candidate_name || "";
+                if (!rawName || rawName === "Uploaded Resume" || rawName === "Candidate Profile") {
+                    rawName = (item.filename && item.filename !== "Uploaded Resume") ? item.filename.replace(/\.[^/.]+$/, "") : "Candidate Profile";
+                }
+                const cName = rawName;
+                const verTag = item.version ? ` <span class="profile-tag" style="font-size:10px; padding:2px 6px; background:rgba(99,102,241,0.2); color:var(--color-primary-light);">V${item.version}</span>` : "";
 
                 div.innerHTML = `
-                    <div class="career-history-filename">${cName}${verTag}</div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">File: ${item.filename || 'resume.pdf'}</div>
+                    <div class="career-history-filename" style="font-weight:700; color:var(--text-primary);">👤 ${cName}${verTag}</div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">📄 ${item.filename || 'resume.pdf'}</div>
                     <div class="career-history-meta">
-                        <span>${rolesCount} Roles Evaluated</span>
-                        <span>${dateStr}</span>
+                        <span>🎯 ${rolesCount} Roles Evaluated</span>
+                        <span>📅 ${dateStr}</span>
                     </div>
                 `;
 
@@ -456,7 +465,11 @@ document.addEventListener("DOMContentLoaded", () => {
         navigatorResults.style.display = "block";
         navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
 
-        const cName = currentSessionRecord?.candidate_name || data.candidate_name || "Candidate Profile";
+        let rawName = currentSessionRecord?.candidate_name || data.candidate_name || "";
+        if (!rawName || rawName === "Uploaded Resume" || rawName === "Candidate Profile") {
+            rawName = (currentSessionRecord?.filename && currentSessionRecord.filename !== "Uploaded Resume") ? currentSessionRecord.filename.replace(/\.[^/.]+$/, "") : "Candidate Profile";
+        }
+        const cName = rawName;
         const cVer = currentSessionRecord?.version ? ` (Version ${currentSessionRecord.version})` : "";
 
         if (candidateNameInput && !candidateNameInput.value.trim()) {
@@ -596,20 +609,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const recommendationsList = document.getElementById("recommendationsList");
 
         if (leadershipList) {
-            const items = data.leadership_and_community || ["Led student developer initiatives and peer workshops."];
-            leadershipList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+            const raw = data.leadership_and_community;
+            const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Led student developer initiatives, club projects, and peer technical mentoring."];
+            leadershipList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
         }
         if (hackathonList) {
-            const items = data.achievements_and_competitions || ["Participated in tech hackathons and competitive coding."];
-            hackathonList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+            const raw = data.achievements_and_competitions;
+            const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Competed in technical hackathons, coding contests, and academic competitions."];
+            hackathonList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
         }
         if (internshipList) {
-            const items = data.work_and_internship_experience || ["Company internship experience and client project development."];
-            internshipList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+            const raw = data.work_and_internship_experience;
+            const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Software engineering internship experience, client development, and startup project work."];
+            internshipList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
         }
         if (recommendationsList) {
-            const items = data.dynamic_recommendations || ["Highlight metrics on leadership impact and key hackathon achievements."];
-            recommendationsList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+            const raw = data.dynamic_recommendations;
+            const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Highlight quantitative metrics for project impact, student community leadership, and hackathon wins."];
+            recommendationsList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
+        }
+
         rolesGrid.innerHTML = "";
         const roles = data.suggested_roles || [];
         roles.forEach(role => {

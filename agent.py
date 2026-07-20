@@ -203,20 +203,21 @@ Do not wrap in markdown code blocks.
 
 def run_resume_role_suggester_agent(resume_text: str) -> tuple:
     """Career Navigator Agent: analyzes candidate resume and recommends optimal career roles with tiered match scores and specialized experience highlights."""
-    prompt = f"""You are an expert Executive Career Navigator & Technical Resume Analyst Agent.
-Analyze the following candidate resume text:
+    prompt = f"""You are an expert Executive Career Navigator & Senior Talent Analytics Agent.
+Analyze the following candidate resume text in exhaustive detail:
 
 --- BEGIN RESUME ---
 {resume_text}
 --- END RESUME ---
 
-Perform a thorough, multi-dimensional analysis of candidate experience, technical skillset, leadership, and achievements.
-Identify and highlight:
-1. "candidate_name": The candidate's full name extracted from the resume header (or "Candidate Profile" if unspecified).
-2. "leadership_and_community": Highlights of leadership experience, student community lead roles, club management, tech event organization, or peer mentoring.
-3. "achievements_and_competitions": Highlights of hackathon wins, coding competition ranks, awards, honors, or research publications.
-4. "work_and_internship_experience": Highlights of company internships, full-time/part-time work history, startup projects, or industry client experience.
-5. "dynamic_recommendations": 3-5 highly actionable, dynamic recommendations to improve the candidate's profile and unlock higher seniority tiers.
+Perform a deep, multi-dimensional evaluation of candidate background, technical skills, leadership initiatives, competitive achievements, and work experience.
+
+You MUST extract and compile detailed bullet lists for the following mandatory fields:
+1. "candidate_name": Extract the candidate's full name from the top header of the resume (e.g. "Rajkishore S"). If unstated, generate a clean descriptive identifier like "Candidate Candidate Profile".
+2. "leadership_and_community": List 2-4 detailed bullet strings highlighting leadership roles, student community leadership (e.g. GDSC/IEEE lead, coding club officer, campus ambassador), organizing hackathons or workshops, project lead roles, and peer mentoring. If not explicitly detailed, summarize leadership potential and team collaboration signals from project work.
+3. "achievements_and_competitions": List 2-4 detailed bullet strings highlighting hackathon wins, competitive programming achievements, hackathon participations, academic honors, certifications, awards, or technical publications.
+4. "work_and_internship_experience": List 2-4 detailed bullet strings detailing company internships, SDE/Data Science internship roles, startup contributions, corporate work experience, or client project implementations.
+5. "dynamic_recommendations": List 3-5 specific, dynamic recommendations tailored to this candidate's trajectory to help them improve their resume, fill skill gaps, and unlock higher seniority match scores.
 
 Recommend 3 to 5 matching job roles for this candidate.
 For EACH suggested role, calculate match suitability scores (0 to 100%) for three seniority levels:
@@ -225,12 +226,12 @@ For EACH suggested role, calculate match suitability scores (0 to 100%) for thre
 - "experienced_score": How suitable the candidate is for a Senior/Lead position in this role (0-100).
 
 Format the output strictly as a JSON object with keys:
-- "candidate_name": String
+- "candidate_name": String (e.g. "Rajkishore S")
 - "candidate_summary": A 2-3 sentence overview of candidate profile and primary expertise.
-- "top_skills_identified": A list of 5-8 primary skills extracted from the resume.
-- "leadership_and_community": List of 2-4 bullet strings (student community leads, club leads, event organizing, mentoring).
-- "achievements_and_competitions": List of 2-4 bullet strings (hackathon wins, coding contest ranks, awards, honors).
-- "work_and_internship_experience": List of 2-4 bullet strings (company internships, corporate work history, client work).
+- "top_skills_identified": A list of 5-8 primary technical skills extracted from the resume.
+- "leadership_and_community": List of 2-4 detailed bullet strings (never empty).
+- "achievements_and_competitions": List of 2-4 detailed bullet strings (never empty).
+- "work_and_internship_experience": List of 2-4 detailed bullet strings (never empty).
 - "dynamic_recommendations": List of 3-5 actionable bullet strings for career advancement and resume enhancement.
 - "suggested_roles": A list of role objects, where each role object contains:
     - "role_title": String (e.g. "Senior Full Stack Engineer")
