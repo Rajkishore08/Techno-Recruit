@@ -156,12 +156,14 @@ async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depen
 async def suggest_roles_endpoint(
     file: Optional[UploadFile] = File(None),
     resume_text: Optional[str] = Form(None),
+    candidate_name: Optional[str] = Form(None),
+    parent_analysis_id: Optional[str] = Form(None),
     user: dict = Depends(get_optional_current_user)
 ):
     """
     Career Navigator Agent Endpoint:
-    Analyzes resume (file or text) and recommends matching career roles with Beginner/Intermediate/Experienced scores.
-    Saves session into user history and calculates score progress compared to previous versions.
+    Analyzes candidate resume (file or text) and extracts leadership, hackathons, internships, and tiered match scores.
+    Saves candidate session versioning and calculates side-by-side Before/After score comparisons against baseline.
     """
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
@@ -184,23 +186,64 @@ async def suggest_roles_endpoint(
     try:
         uid = user.get("uid", "anonymous")
         existing_history = get_user_career_analyses(uid) if uid != "anonymous" else []
-        previous_analysis = existing_history[0] if existing_history else None
+        
+        # Determine baseline comparison session
+        baseline_session = None
+        if parent_analysis_id:
+            baseline_match = [r for r in existing_history if r.get("analysis_id") == parent_analysis_id]
+            if baseline_match:
+                baseline_session = baseline_match[0]
+        elif candidate_name and candidate_name.strip():
+            c_matches = [r for r in existing_history if r.get("candidate_name", "").strip().lower() == candidate_name.strip().lower()]
+            if c_matches:
+                baseline_session = c_matches[0]
+        elif existing_history:
+            baseline_session = existing_history[0]
 
         result_json_str, usage = run_resume_role_suggester_agent(target_resume_text)
         result_data = json.loads(result_json_str)
 
-        analysis_id = save_career_analysis(uid, filename, target_resume_text, result_data)
+        c_name = candidate_name.strip() if candidate_name and candidate_name.strip() else result_data.get("candidate_name", "Candidate Profile")
+        result_data["candidate_name"] = c_name
+
+        saved_record = save_career_analysis(
+            user_uid=uid,
+            filename=filename,
+            resume_text=target_resume_text,
+            analysis_data=result_data,
+            candidate_name=c_name,
+            parent_analysis_id=parent_analysis_id
+        )
 
         return {
             "status": "success",
-            "analysis_id": analysis_id,
-            "filename": filename,
+            "session": saved_record,
             "data": result_data,
-            "previous_analysis": previous_analysis,
+            "baseline_session": baseline_session,
             "usage": usage
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Career Navigator Agent failed: {str(e)}")
+
+
+@app.get("/api/candidate-sessions")
+def get_candidate_sessions_endpoint(user: dict = Depends(get_current_user)):
+    """Retrieves all past career analysis sessions grouped by candidate profile."""
+    try:
+        uid = user["uid"]
+        history = get_user_career_analyses(uid)
+        
+        # Group by candidate_name
+        grouped = {}
+        for record in history:
+            c_name = record.get("candidate_name", "Candidate Profile")
+            if c_name not in grouped:
+                grouped[c_name] = []
+            grouped[c_name].append(record)
+            
+        return grouped
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch candidate sessions: {str(e)}")
 
 
 @app.get("/api/career-history")

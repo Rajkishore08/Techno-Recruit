@@ -357,6 +357,24 @@
                     </div>
 
                     <div class="navigator-upload-zone">
+                        <!-- Candidate Profile Controls -->
+                        <div class="candidate-profile-controls" style="margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="candidateSelectorSelect" style="font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                                    <i data-lucide="user-plus" style="width:14px; height:14px; color:var(--color-primary);"></i> Re-Screen Saved Candidate
+                                </label>
+                                <select id="candidateSelectorSelect" class="form-select" style="padding: 10px; font-size: 13px;">
+                                    <option value="">-- Start New Candidate Profile --</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="candidateNameInput" style="font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                                    <i data-lucide="user" style="width:14px; height:14px;"></i> Candidate Name
+                                </label>
+                                <input type="text" id="candidateNameInput" class="form-control" placeholder="e.g. Alex Johnson (Auto-parsed if left empty)" style="padding: 10px; font-size: 13px;">
+                            </div>
+                        </div>
+
                         <div class="resume-dropzone large-dropzone" id="navigatorResumeDropzone">
                             <input type="file" id="navigatorResumeInput" accept=".pdf,.docx,.doc,.txt,.md" style="display: none;">
                             <div class="dropzone-content" id="navigatorDropzoneContent">
@@ -381,7 +399,7 @@
                         <div class="navigator-actions">
                             <button type="button" class="btn-primary btn-large" id="analyzeCareerBtn">
                                 <i data-lucide="sparkles"></i>
-                                <span>Analyze Resume & Recommend Roles</span>
+                                <span>Analyze Resume & Calculate Match Scores</span>
                             </button>
                         </div>
                     </div>
@@ -393,7 +411,7 @@
                         <i data-lucide="loader-2" class="spin"></i>
                     </div>
                     <h3>Autonomous Career Navigator Agent at work...</h3>
-                    <p>Analyzing technical skills, domain achievements, leadership scope, and calculating level suitability scores.</p>
+                    <p>Extracting leadership achievements, student community lead roles, company internships, and calculating level suitability scores.</p>
                 </section>
 
                 <!-- Career Navigator Results Area -->
@@ -403,9 +421,36 @@
                         <!-- Injected dynamically -->
                     </div>
 
+                    <!-- Side-by-Side Before vs After Comparison Table -->
+                    <div class="card side-by-side-card" id="sideBySideTableCard" style="display: none;">
+                        <!-- Injected dynamically -->
+                    </div>
+
                     <!-- Candidate Overview Card -->
                     <div class="card overview-card" id="candidateOverviewCard">
                         <!-- Injected dynamically -->
+                    </div>
+
+                    <!-- Specialized Experience Highlights Grid (Leadership, Hackathons, Internships) -->
+                    <div class="highlights-grid" id="highlightsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                        <div class="card highlight-card leadership-card" id="leadershipCard">
+                            <h4 class="highlight-title"><i data-lucide="crown"></i> Leadership & Student Community</h4>
+                            <ul class="highlight-list" id="leadershipList"></ul>
+                        </div>
+                        <div class="card highlight-card hackathon-card" id="hackathonCard">
+                            <h4 class="highlight-title"><i data-lucide="trophy"></i> Hackathons & Key Achievements</h4>
+                            <ul class="highlight-list" id="hackathonList"></ul>
+                        </div>
+                        <div class="card highlight-card internship-card" id="internshipCard">
+                            <h4 class="highlight-title"><i data-lucide="building-2"></i> Company Internships & Work Experience</h4>
+                            <ul class="highlight-list" id="internshipList"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Actionable Dynamic AI Recommendations Card -->
+                    <div class="card recommendations-card" id="recommendationsCard" style="margin-bottom: 20px;">
+                        <h4 class="highlight-title" style="color: var(--color-info);"><i data-lucide="lightbulb"></i> Dynamic AI Recommendations for Career Advancement</h4>
+                        <ul class="highlight-list" id="recommendationsList"></ul>
                     </div>
 
                     <!-- Suggested Roles Section -->
@@ -413,6 +458,11 @@
                         <h3><i data-lucide="briefcase"></i> Recommended Job Roles & Level Match Scores</h3>
                         <p>Suitability scores for Beginner (0-2 yrs), Intermediate (3-5 yrs), and Experienced (5-8+ yrs) levels</p>
                     </div>
+
+                    <div class="roles-grid" id="rolesGrid">
+                        <!-- Role cards injected dynamically -->
+                    </div>
+                </section>
 
                     <div class="roles-grid" id="rolesGrid">
                         <!-- Role cards injected dynamically -->

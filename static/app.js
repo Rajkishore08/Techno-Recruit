@@ -306,8 +306,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const navigatorResults = document.getElementById("navigatorResults");
     const candidateOverviewCard = document.getElementById("candidateOverviewCard");
     const scoreComparisonBanner = document.getElementById("scoreComparisonBanner");
+    const sideBySideTableCard = document.getElementById("sideBySideTableCard");
     const rolesGrid = document.getElementById("rolesGrid");
     const careerHistoryList = document.getElementById("careerHistoryList");
+
+    const candidateSelectorSelect = document.getElementById("candidateSelectorSelect");
+    const candidateNameInput = document.getElementById("candidateNameInput");
+
+    let selectedParentAnalysisId = null;
+
+    if (candidateSelectorSelect) {
+        candidateSelectorSelect.addEventListener("change", (e) => {
+            const val = e.target.value;
+            if (val) {
+                const opt = candidateSelectorSelect.options[candidateSelectorSelect.selectedIndex];
+                selectedParentAnalysisId = val;
+                if (candidateNameInput && opt.dataset.candidateName) {
+                    candidateNameInput.value = opt.dataset.candidateName;
+                }
+            } else {
+                selectedParentAnalysisId = null;
+            }
+        });
+    }
 
     if (analyzeCareerBtn) {
         analyzeCareerBtn.addEventListener("click", async () => {
@@ -329,6 +350,12 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const formData = new FormData();
                 formData.append("resume_text", navigatorResumeText);
+                if (candidateNameInput && candidateNameInput.value.trim()) {
+                    formData.append("candidate_name", candidateNameInput.value.trim());
+                }
+                if (selectedParentAnalysisId) {
+                    formData.append("parent_analysis_id", selectedParentAnalysisId);
+                }
 
                 const response = await fetch(`${API_BASE}/api/suggest-roles`, {
                     method: "POST",
@@ -344,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const resData = await response.json();
-                renderCareerNavigatorResults(resData.data, resData.previous_analysis);
+                renderCareerNavigatorResults(resData.data, resData.baseline_session, resData.session);
                 loadCareerHistoryList();
             } catch (e) {
                 alert(`Career Analysis Error: ${e.message}`);
@@ -376,16 +403,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             careerHistoryList.innerHTML = "";
+            
+            // Populate candidate dropdown
+            if (candidateSelectorSelect) {
+                candidateSelectorSelect.innerHTML = `<option value="">-- Start New Candidate Profile --</option>`;
+                items.forEach(item => {
+                    const opt = document.createElement("option");
+                    opt.value = item.analysis_id;
+                    opt.dataset.candidateName = item.candidate_name || item.data?.candidate_name || "Candidate Profile";
+                    const verStr = item.version ? ` (V${item.version})` : "";
+                    opt.textContent = `${item.candidate_name || 'Candidate'} - ${item.filename || 'Resume'}${verStr}`;
+                    candidateSelectorSelect.appendChild(opt);
+                });
+            }
+
             items.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "career-history-item";
                 const dateStr = item.timestamp ? new Date(item.timestamp * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recent";
                 const rolesCount = item.data?.suggested_roles?.length || 0;
+                const cName = item.candidate_name || item.data?.candidate_name || "Candidate Profile";
+                const verTag = item.version ? ` <span class="profile-tag" style="font-size:10px; padding:2px 6px;">V${item.version}</span>` : "";
 
                 div.innerHTML = `
-                    <div class="career-history-filename">${item.filename || "Resume Analysis"}</div>
+                    <div class="career-history-filename">${cName}${verTag}</div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">File: ${item.filename || 'resume.pdf'}</div>
                     <div class="career-history-meta">
-                        <span>${rolesCount} Roles Suggested</span>
+                        <span>${rolesCount} Roles Evaluated</span>
                         <span>${dateStr}</span>
                     </div>
                 `;
@@ -394,7 +438,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.querySelectorAll(".career-history-item").forEach(el => el.classList.remove("active"));
                     div.classList.add("active");
                     switchTab("navigator");
-                    renderCareerNavigatorResults(item.data, null);
+                    if (candidateNameInput) candidateNameInput.value = cName;
+                    selectedParentAnalysisId = item.analysis_id;
+                    renderCareerNavigatorResults(item.data, null, item);
                 });
 
                 careerHistoryList.appendChild(div);
@@ -405,15 +451,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function renderCareerNavigatorResults(data, previousAnalysis) {
+    function renderCareerNavigatorResults(data, baselineSession, currentSessionRecord) {
         if (!data) return;
         navigatorResults.style.display = "block";
         navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
 
-        // Render Delta Score Comparison if previous analysis is available
-        if (previousAnalysis && previousAnalysis.data && previousAnalysis.data.suggested_roles && scoreComparisonBanner) {
+        const cName = currentSessionRecord?.candidate_name || data.candidate_name || "Candidate Profile";
+        const cVer = currentSessionRecord?.version ? ` (Version ${currentSessionRecord.version})` : "";
+
+        if (candidateNameInput && !candidateNameInput.value.trim()) {
+            candidateNameInput.value = cName;
+        }
+
+        // Render Delta Score Comparison Banner if baseline session is available
+        const prevData = baselineSession ? baselineSession.data : null;
+        if (prevData && prevData.suggested_roles && scoreComparisonBanner) {
             scoreComparisonBanner.style.display = "block";
-            const prevRoles = previousAnalysis.data.suggested_roles || [];
+            const prevRoles = prevData.suggested_roles || [];
             const currRoles = data.suggested_roles || [];
 
             const calculateAvgScore = (roles, field) => {
@@ -443,10 +497,10 @@ document.addEventListener("DOMContentLoaded", () => {
             scoreComparisonBanner.innerHTML = `
                 <div class="comparison-title">
                     <i data-lucide="sparkles"></i>
-                    Resume Score Improvement Analysis (Compared to Baseline: ${previousAnalysis.filename || 'Previous Run'})
+                    Resume Progression: ${cName} (Before vs Updated Version)
                 </div>
                 <div class="comparison-subtitle">
-                    Tracking score progression across experience tiers for your updated candidate resume:
+                    Tracking score improvement from baseline (${baselineSession.filename || 'Previous Resume'}) to current version (${currentSessionRecord?.filename || 'Updated Resume'}):
                 </div>
                 <div class="delta-grid">
                     <div class="delta-item">
@@ -466,19 +520,68 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>
             `;
-            lucide.createIcons();
-        } else if (scoreComparisonBanner) {
-            scoreComparisonBanner.style.display = "none";
-        }
-        if (!data) return;
-        navigatorResults.style.display = "block";
-        navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
 
+            // Render Side-by-Side Before vs After Comparison Table
+            if (sideBySideTableCard) {
+                sideBySideTableCard.style.display = "block";
+                let tableRows = "";
+
+                currRoles.forEach(cRole => {
+                    const matchPrevRole = prevRoles.find(r => r.role_title.toLowerCase().trim() === cRole.role_title.toLowerCase().trim()) || prevRoles[0];
+                    const pBeg = matchPrevRole ? matchPrevRole.beginner_score : 0;
+                    const cBeg = cRole.beginner_score;
+                    
+                    const pInt = matchPrevRole ? matchPrevRole.intermediate_score : 0;
+                    const cInt = cRole.intermediate_score;
+                    
+                    const pExp = matchPrevRole ? matchPrevRole.experienced_score : 0;
+                    const cExp = cRole.experienced_score;
+
+                    tableRows += `
+                        <tr>
+                            <td><strong>${cRole.role_title}</strong></td>
+                            <td class="score-cell"><span class="score-v1">${pBeg}%</span> <span class="score-v2">${cBeg}%</span></td>
+                            <td class="score-cell"><span class="score-v1">${pInt}%</span> <span class="score-v2">${cInt}%</span></td>
+                            <td class="score-cell"><span class="score-v1">${pExp}%</span> <span class="score-v2">${cExp}%</span></td>
+                        </tr>
+                    `;
+                });
+
+                sideBySideTableCard.innerHTML = `
+                    <h4 style="font-family:var(--font-heading); font-size:16px; color:var(--text-primary); margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="arrow-left-right" style="color:var(--color-primary-light);"></i> Side-by-Side Role Score Comparison (Before V1 vs Updated V2)
+                    </h4>
+                    <p style="font-size:12px; color:var(--text-secondary);">Comparing score progression for candidate <strong>${cName}</strong> across individual target job roles:</p>
+                    <div class="comparison-table-wrapper">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Target Role</th>
+                                    <th>Beginner Score (Before → After)</th>
+                                    <th>Mid-Level Score (Before → After)</th>
+                                    <th>Senior Score (Before → After)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            lucide.createIcons();
+        } else {
+            if (scoreComparisonBanner) scoreComparisonBanner.style.display = "none";
+            if (sideBySideTableCard) sideBySideTableCard.style.display = "none";
+        }
+
+        // Render Candidate Overview Card
         const topSkills = data.top_skills_identified || [];
         candidateOverviewCard.innerHTML = `
             <div class="overview-title">
                 <i data-lucide="user-check"></i>
-                Candidate Profile Overview
+                Candidate Profile: ${cName}${cVer}
             </div>
             <p class="overview-summary">${data.candidate_summary || "Candidate background analyzed successfully."}</p>
             <div class="overview-skills-tags">
@@ -486,6 +589,27 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
 
+        // Render Experience Highlight Cards (Leadership, Hackathons, Internships)
+        const leadershipList = document.getElementById("leadershipList");
+        const hackathonList = document.getElementById("hackathonList");
+        const internshipList = document.getElementById("internshipList");
+        const recommendationsList = document.getElementById("recommendationsList");
+
+        if (leadershipList) {
+            const items = data.leadership_and_community || ["Led student developer initiatives and peer workshops."];
+            leadershipList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+        }
+        if (hackathonList) {
+            const items = data.achievements_and_competitions || ["Participated in tech hackathons and competitive coding."];
+            hackathonList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+        }
+        if (internshipList) {
+            const items = data.work_and_internship_experience || ["Company internship experience and client project development."];
+            internshipList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
+        }
+        if (recommendationsList) {
+            const items = data.dynamic_recommendations || ["Highlight metrics on leadership impact and key hackathon achievements."];
+            recommendationsList.innerHTML = items.map(i => `<li>${i}</li>`).join("");
         rolesGrid.innerHTML = "";
         const roles = data.suggested_roles || [];
         roles.forEach(role => {

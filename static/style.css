@@ -1990,4 +1990,106 @@ input[type="range"]::-webkit-slider-thumb:hover {
     justify-content: space-between;
 }
 
+/* Specialized Experience Highlight Cards */
+.highlight-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+}
+
+.highlight-title {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.leadership-card .highlight-title { color: #f59e0b; }
+.hackathon-card .highlight-title { color: #ec4899; }
+.internship-card .highlight-title { color: #3b82f6; }
+
+.highlight-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.highlight-list li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.4;
+}
+
+.highlight-list li:last-child {
+    margin-bottom: 0;
+}
+
+.highlight-list li::before {
+    content: "•";
+    position: absolute;
+    left: 4px;
+    top: 0;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.leadership-card .highlight-list li::before { color: #f59e0b; }
+.hackathon-card .highlight-list li::before { color: #ec4899; }
+.internship-card .highlight-list li::before { color: #3b82f6; }
+
+/* Side-by-Side Comparison Table */
+.side-by-side-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--color-primary-light);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+
+.comparison-table-wrapper {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.comparison-table th, .comparison-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+    font-family: var(--font-heading);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.comparison-table td.score-cell {
+    font-weight: 700;
+}
+
+.score-v1 {
+    color: var(--text-muted);
+    text-decoration: line-through;
+    margin-right: 6px;
+}
+
+.score-v2 {
+    color: var(--color-success);
+}
+
 

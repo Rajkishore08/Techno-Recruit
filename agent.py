@@ -202,7 +202,7 @@ Do not wrap in markdown code blocks.
 
 
 def run_resume_role_suggester_agent(resume_text: str) -> tuple:
-    """Career Navigator Agent: analyzes candidate resume and recommends optimal career roles with tiered match scores."""
+    """Career Navigator Agent: analyzes candidate resume and recommends optimal career roles with tiered match scores and specialized experience highlights."""
     prompt = f"""You are an expert Executive Career Navigator & Technical Resume Analyst Agent.
 Analyze the following candidate resume text:
 
@@ -210,18 +210,28 @@ Analyze the following candidate resume text:
 {resume_text}
 --- END RESUME ---
 
-Perform a thorough analysis of candidate experience, technical skillset, leadership, and achievements.
+Perform a thorough, multi-dimensional analysis of candidate experience, technical skillset, leadership, and achievements.
+Identify and highlight:
+1. "candidate_name": The candidate's full name extracted from the resume header (or "Candidate Profile" if unspecified).
+2. "leadership_and_community": Highlights of leadership experience, student community lead roles, club management, tech event organization, or peer mentoring.
+3. "achievements_and_competitions": Highlights of hackathon wins, coding competition ranks, awards, honors, or research publications.
+4. "work_and_internship_experience": Highlights of company internships, full-time/part-time work history, startup projects, or industry client experience.
+5. "dynamic_recommendations": 3-5 highly actionable, dynamic recommendations to improve the candidate's profile and unlock higher seniority tiers.
+
 Recommend 3 to 5 matching job roles for this candidate.
 For EACH suggested role, calculate match suitability scores (0 to 100%) for three seniority levels:
-1. "beginner_score": How suitable the candidate is for a Junior/Entry-level position in this role (0-100).
-2. "intermediate_score": How suitable the candidate is for a Mid-level position in this role (0-100).
-3. "experienced_score": How suitable the candidate is for a Senior/Lead position in this role (0-100).
-
-Also extract candidate strengths and key skill gaps for each role.
+- "beginner_score": How suitable the candidate is for a Junior/Entry-level position in this role (0-100).
+- "intermediate_score": How suitable the candidate is for a Mid-level position in this role (0-100).
+- "experienced_score": How suitable the candidate is for a Senior/Lead position in this role (0-100).
 
 Format the output strictly as a JSON object with keys:
+- "candidate_name": String
 - "candidate_summary": A 2-3 sentence overview of candidate profile and primary expertise.
 - "top_skills_identified": A list of 5-8 primary skills extracted from the resume.
+- "leadership_and_community": List of 2-4 bullet strings (student community leads, club leads, event organizing, mentoring).
+- "achievements_and_competitions": List of 2-4 bullet strings (hackathon wins, coding contest ranks, awards, honors).
+- "work_and_internship_experience": List of 2-4 bullet strings (company internships, corporate work history, client work).
+- "dynamic_recommendations": List of 3-5 actionable bullet strings for career advancement and resume enhancement.
 - "suggested_roles": A list of role objects, where each role object contains:
     - "role_title": String (e.g. "Senior Full Stack Engineer")
     - "domain": String (e.g. "Software Engineering", "Data Science", "DevOps")
@@ -628,12 +638,37 @@ def run_interview_generator_agent(
     }
 
 
-def save_career_analysis(user_uid: str, filename: str, resume_text: str, analysis_data: Dict[str, Any]) -> str:
-    """Saves a Career Navigator analysis session into Firestore or local memory."""
+def save_career_analysis(
+    user_uid: str, 
+    filename: str, 
+    resume_text: str, 
+    analysis_data: Dict[str, Any],
+    candidate_name: str = None,
+    parent_analysis_id: str = None
+) -> Dict[str, Any]:
+    """Saves a Career Navigator analysis session into Firestore with version tracking per candidate profile."""
     analysis_id = f"career_{uuid.uuid4().hex[:8]}"
+    
+    # Extract candidate name from parsed data if not explicitly provided
+    c_name = candidate_name or analysis_data.get("candidate_name") or "Candidate Profile"
+    
+    version = 1
+    if parent_analysis_id or user_uid:
+        try:
+            existing = get_user_career_analyses(user_uid)
+            # Find matching candidate sessions to determine version number
+            candidate_records = [r for r in existing if r.get("candidate_name", "").strip().lower() == c_name.strip().lower() or r.get("analysis_id") == parent_analysis_id]
+            if candidate_records:
+                version = len(candidate_records) + 1
+        except Exception:
+            version = 1
+
     record = {
         "analysis_id": analysis_id,
+        "parent_analysis_id": parent_analysis_id,
         "uid": user_uid or "anonymous",
+        "candidate_name": c_name,
+        "version": version,
         "filename": filename or "resume.pdf",
         "timestamp": int(time.time()),
         "resume_snippet": resume_text[:300] if resume_text else "",
@@ -647,7 +682,7 @@ def save_career_analysis(user_uid: str, filename: str, resume_text: str, analysi
     except Exception as e:
         print(f"Firestore career analysis save fallback/warning: {e}")
 
-    return analysis_id
+    return record
 
 
 def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
