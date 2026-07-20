@@ -129,35 +129,49 @@ function initApp() {
             onAuthStateChanged(authInstance, async (user) => {
                 if (user) {
                     const token = await user.getIdToken();
+                    localStorage.setItem("techno_recruit_local_auth", "true");
                     setAuthenticatedUser(user, token);
-                } else if (!currentUser) {
-                    currentIdToken = null;
+                } else {
+                    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "0.0.0.0";
+                    const isLocalAuthStored = localStorage.getItem("techno_recruit_local_auth") === "true";
                     
-                    // Reset UI state
-                    if (loginBtn) loginBtn.style.display = "flex";
-                    if (userProfile) userProfile.style.display = "none";
-                    if (authLockOverlay) authLockOverlay.style.display = "flex";
-                    
-                    // Clear history list display
-                    if (historyList) {
-                        historyList.innerHTML = `
-                            <div class="history-empty">
-                                <i data-lucide="lock"></i>
-                                <p>Sign in to view history</p>
-                            </div>
-                        `;
+                    if (isLocalhost && isLocalAuthStored) {
+                        const localUser = {
+                            uid: "local_dev_admin",
+                            displayName: "Local Developer Admin",
+                            email: "dev@techno-recruit.local",
+                            photoURL: "https://api.dicebear.com/7.x/bottts/svg?seed=techno"
+                        };
+                        setAuthenticatedUser(localUser, "local_dev_token");
+                    } else if (!currentUser) {
+                        currentIdToken = null;
+                        
+                        // Reset UI state
+                        if (loginBtn) loginBtn.style.display = "flex";
+                        if (userProfile) userProfile.style.display = "none";
+                        if (authLockOverlay) authLockOverlay.style.display = "flex";
+                        
+                        // Clear history list display
+                        if (historyList) {
+                            historyList.innerHTML = `
+                                <div class="history-empty">
+                                    <i data-lucide="lock"></i>
+                                    <p>Sign in to view history</p>
+                                </div>
+                            `;
+                        }
+                        if (careerHistoryList) {
+                            careerHistoryList.innerHTML = `
+                                <div class="history-empty">
+                                    <i data-lucide="lock"></i>
+                                    <p>Sign in to view history</p>
+                                </div>
+                            `;
+                        }
+                        lucide.createIcons();
+                        if (resultsContainer) resultsContainer.style.display = "none";
+                        if (traceContainer) traceContainer.style.display = "none";
                     }
-                    if (careerHistoryList) {
-                        careerHistoryList.innerHTML = `
-                            <div class="history-empty">
-                                <i data-lucide="lock"></i>
-                                <p>Sign in to view history</p>
-                            </div>
-                        `;
-                    }
-                    lucide.createIcons();
-                    if (resultsContainer) resultsContainer.style.display = "none";
-                    if (traceContainer) traceContainer.style.display = "none";
                 }
             });
 
@@ -177,6 +191,7 @@ function initApp() {
     function setAuthenticatedUser(user, token) {
         currentUser = user;
         currentIdToken = token || "local_dev_token";
+        localStorage.setItem("techno_recruit_local_auth", "true");
 
         if (loginBtn) loginBtn.style.display = "none";
         if (userProfile) userProfile.style.display = "flex";
@@ -275,9 +290,13 @@ function initApp() {
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
             try {
+                localStorage.removeItem("techno_recruit_local_auth");
+                currentUser = null;
+                currentIdToken = null;
                 if (authInstance) {
                     await signOut(authInstance);
                 }
+                window.location.reload();
             } catch (err) {
                 console.error("Sign out failed:", err);
             }
