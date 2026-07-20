@@ -48,19 +48,23 @@ body {
 /* =====================================================================
    Layout Grid Structure
    ===================================================================== */
-.app-container {
+.app-layout, .app-container {
     display: flex;
     min-height: 100vh;
+    width: 100%;
+    background: radial-gradient(circle at 50% 0%, #111827 0%, #070b12 100%);
+    overflow-x: hidden;
 }
 
 /* Sidebar History Panel */
 .sidebar {
-    width: 320px;
-    background-color: #0b0f19;
+    width: 290px;
+    background-color: #060911;
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    min-height: 100vh;
 }
 
 .sidebar-header {
@@ -169,13 +173,92 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 40px;
-    max-height: 100vh;
+    padding: 32px 40px;
+    min-height: 100vh;
     overflow-y: auto;
 }
 
-.top-bar {
-    margin-bottom: 32px;
+/* Top Header Bar */
+.top-header {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.header-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+}
+
+.header-title h1 {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
+
+.header-title .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-width: 680px;
+}
+
+.header-auth {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Navigation Tabs Header */
+.app-tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.7);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: #ffffff;
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--color-primary-light);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
 }
 
 .badge-active {
