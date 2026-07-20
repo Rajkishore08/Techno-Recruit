@@ -48,20 +48,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://techno-recruit.web.app",
-        "https://techno-recruit.firebaseapp.com",
-        "http://localhost:8001",
-        "http://127.0.0.1:8001",
-        "http://localhost:5000",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-from fastapi import FastAPI, HTTPException, Header, Depends, UploadFile, File, Form
+from fastapi import HTTPException, Header, Depends, UploadFile, File, Form
 from resume_parser import extract_resume_text
 from agent import (
     run_interview_generator_agent,
@@ -107,6 +101,17 @@ def get_current_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail=f"Unauthorized: {str(e)}")
 
 
+def get_optional_current_user(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        return {"uid": "anonymous"}
+    token = authorization.split("Bearer ")[1]
+    try:
+        decoded_token = firebase_auth.verify_id_token(token)
+        return decoded_token
+    except Exception:
+        return {"uid": "anonymous"}
+
+
 @app.get("/")
 def index():
     """Serves the front end page."""
@@ -117,18 +122,19 @@ def index():
 def get_firebase_config():
     """Returns public Firebase configuration for client SDK initialization."""
     return {
-        "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
-        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
-        "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
-        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", ""),
-        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
-        "appId": os.environ.get("FIREBASE_APP_ID", ""),
-        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "")
+        "apiKey": os.environ.get("FIREBASE_API_KEY", "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8"),
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", "techno-recruit.firebaseapp.com"),
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit"),
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "techno-recruit.firebasestorage.app"),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", "235364274013"),
+        "appId": os.environ.get("FIREBASE_APP_ID", "1:235364274013:web:9db2497f8946987989e2b4"),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "G-LKVL7NWK5L")
     }
 
 
-@app.post("/api/parse-resume")
-async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+@app.api_route("/api/parse-resume", methods=["POST", "OPTIONS"])
+@app.api_route("/api/parse-resume/", methods=["POST", "OPTIONS"])
+async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(get_optional_current_user)):
     """Extracts text content from uploaded resume file (PDF, DOCX, TXT)."""
     try:
         content = await file.read()
@@ -143,11 +149,12 @@ async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depen
         raise HTTPException(status_code=400, detail=f"Failed to process resume file: {str(e)}")
 
 
-@app.post("/api/suggest-roles")
+@app.api_route("/api/suggest-roles", methods=["POST", "OPTIONS"])
+@app.api_route("/api/suggest-roles/", methods=["POST", "OPTIONS"])
 async def suggest_roles_endpoint(
     file: Optional[UploadFile] = File(None),
     resume_text: Optional[str] = Form(None),
-    user: dict = Depends(get_current_user)
+    user: dict = Depends(get_optional_current_user)
 ):
     """
     Career Navigator Agent Endpoint:
