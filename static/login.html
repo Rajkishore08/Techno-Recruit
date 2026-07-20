@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techno Recruit — Sign In to Command Center</title>
+    <meta name="description" content="Sign in to Techno Recruit Multi-Agent Candidate Screening & Career Intelligence Platform.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body data-page="login" style="background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15), rgba(15, 23, 42, 0.95)); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    
+    <div class="card login-card" style="max-width: 480px; width: 100%; padding: 36px 32px; text-align: center; border: 1px solid var(--color-primary-light); box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(12px);">
+        <!-- Logo -->
+        <div style="width: 64px; height: 64px; border-radius: 18px; background: rgba(99, 102, 241, 0.2); color: var(--color-primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+            <i data-lucide="brain-circuit" style="width: 34px; height: 34px;"></i>
+        </div>
+        
+        <span class="badge-active" style="margin: 0 auto 12px auto; display: inline-flex;"><span class="dot"></span> Autonomous Specialist Agent System</span>
+        
+        <h1 style="font-family: var(--font-heading); font-size: 26px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Techno Recruit</h1>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 28px;">
+            Multi-Agent Candidate Screening & Career Intelligence Command Center. Sign in with Google to evaluate candidate resumes and generate rubric interview guides.
+        </p>
+
+        <!-- Login Button -->
+        <button class="btn-primary btn-large" id="loginBtn" style="width: 100%; justify-content: center; padding: 14px 24px; font-size: 15px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);">
+            <i data-lucide="log-in" style="width: 20px; height: 20px;"></i>
+            <span>Sign In with Google</span>
+        </button>
+
+        <!-- Feature Highlights List -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 20px; text-align: left;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 12px;">Platform Capabilities</span>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);">
+                    <i data-lucide="compass" style="width: 16px; height: 16px; color: var(--color-primary-light); flex-shrink: 0;"></i>
+                    <span>AI Career Role Matcher (Junior / Mid / Senior scores)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);">
+                    <i data-lucide="crown" style="width: 16px; height: 16px; color: #f59e0b; flex-shrink: 0;"></i>
+                    <span>Extract Leadership, Hackathons, & Internships</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);">
+                    <i data-lucide="arrow-left-right" style="width: 16px; height: 16px; color: var(--color-success); flex-shrink: 0;"></i>
+                    <span>Side-by-Side Score Improvement Tracker (V1 vs V2)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);">
+                    <i data-lucide="file-text" style="width: 16px; height: 16px; color: #ec4899; flex-shrink: 0;"></i>
+                    <span>6-Question Rubric-Graded Interview Guides</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 24px; font-size: 12px; color: var(--text-muted);">
+            <a href="/index.html" style="color: var(--color-primary-light); text-decoration: none;">← Back to Command Center</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="/app.js"></script>
+</body>
+</html>

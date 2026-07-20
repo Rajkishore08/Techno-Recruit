@@ -105,31 +105,38 @@ document.addEventListener("DOMContentLoaded", () => {
                     currentIdToken = await user.getIdToken();
                     
                     // Update UI state
-                    loginBtn.style.display = "none";
-                    userProfile.style.display = "flex";
-                    userAvatar.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
-                    userNameElement.textContent = user.displayName || user.email;
-                    authLockOverlay.style.display = "none";
+                    if (loginBtn) loginBtn.style.display = "none";
+                    if (userProfile) userProfile.style.display = "flex";
+                    if (userAvatar) userAvatar.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
+                    if (userNameElement) userNameElement.textContent = user.displayName || user.email;
+                    if (authLockOverlay) authLockOverlay.style.display = "none";
                     
                     // Load user's history list & career runs
                     loadHistoryList();
                     loadCareerHistoryList();
+
+                    // If on login page, redirect to dashboard
+                    if (document.body.dataset.page === "login") {
+                        window.location.href = "/index.html";
+                    }
                 } else {
                     currentUser = null;
                     currentIdToken = null;
                     
                     // Reset UI state
-                    loginBtn.style.display = "flex";
-                    userProfile.style.display = "none";
-                    authLockOverlay.style.display = "flex";
+                    if (loginBtn) loginBtn.style.display = "flex";
+                    if (userProfile) userProfile.style.display = "none";
+                    if (authLockOverlay) authLockOverlay.style.display = "flex";
                     
-                    // Clear history list display and active guides
-                    historyList.innerHTML = `
-                        <div class="history-empty">
-                            <i data-lucide="lock"></i>
-                            <p>Sign in to view history</p>
-                        </div>
-                    `;
+                    // Clear history list display
+                    if (historyList) {
+                        historyList.innerHTML = `
+                            <div class="history-empty">
+                                <i data-lucide="lock"></i>
+                                <p>Sign in to view history</p>
+                            </div>
+                        `;
+                    }
                     if (careerHistoryList) {
                         careerHistoryList.innerHTML = `
                             <div class="history-empty">
@@ -139,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         `;
                     }
                     lucide.createIcons();
-                    resultsContainer.style.display = "none";
-                    traceContainer.style.display = "none";
+                    if (resultsContainer) resultsContainer.style.display = "none";
+                    if (traceContainer) traceContainer.style.display = "none";
                 }
             });
         } catch (err) {
@@ -166,93 +173,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    loginBtn.addEventListener("click", handleLogin);
-    overlayLoginBtn.addEventListener("click", handleLogin);
+    if (loginBtn) loginBtn.addEventListener("click", handleLogin);
+    if (overlayLoginBtn) overlayLoginBtn.addEventListener("click", handleLogin);
 
-    logoutBtn.addEventListener("click", async () => {
-        try {
-            if (authInstance) {
-                await signOut(authInstance);
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+            try {
+                if (authInstance) {
+                    await signOut(authInstance);
+                }
+            } catch (err) {
+                console.error("Sign out failed:", err);
             }
-        } catch (err) {
-            console.error("Sign out failed:", err);
-        }
-    });
+        });
+    }
+
     // Trigger Firebase init
     initFirebase();
-
-    // Tab Switcher Logic
-    const tabDashboardBtn = document.getElementById("tabDashboardBtn");
-    const tabArchitectBtn = document.getElementById("tabArchitectBtn");
-    const tabNavigatorBtn = document.getElementById("tabNavigatorBtn");
-    const tabDashboardContent = document.getElementById("tabDashboardContent");
-    const tabArchitectContent = document.getElementById("tabArchitectContent");
-    const tabNavigatorContent = document.getElementById("tabNavigatorContent");
-    const tourBtn = document.getElementById("tourBtn");
-    const dashboardStartTourBtn = document.getElementById("dashboardStartTourBtn");
-
-    if (tabDashboardBtn && tabArchitectBtn && tabNavigatorBtn) {
-        tabDashboardBtn.addEventListener("click", () => switchTab("dashboard"));
-        tabArchitectBtn.addEventListener("click", () => switchTab("architect"));
-        tabNavigatorBtn.addEventListener("click", () => switchTab("navigator"));
-    }
 
     if (tourBtn) tourBtn.addEventListener("click", () => showOnboardingModal(0));
     if (dashboardStartTourBtn) dashboardStartTourBtn.addEventListener("click", () => showOnboardingModal(0));
 
-    // Dashboard Launchpad Action Cards
-    const launchNavigatorCard = document.getElementById("launchNavigatorCard");
-    const launchArchitectCard = document.getElementById("launchArchitectCard");
-    const launchRescreenCard = document.getElementById("launchRescreenCard");
-
-    if (launchNavigatorCard) launchNavigatorCard.addEventListener("click", () => switchTab("navigator"));
-    if (launchArchitectCard) launchArchitectCard.addEventListener("click", () => switchTab("architect"));
-    if (launchRescreenCard) {
-        launchRescreenCard.addEventListener("click", () => {
-            switchTab("navigator");
-            const selectEl = document.getElementById("candidateSelectorSelect");
-            if (selectEl) selectEl.focus();
-        });
-    }
-
-    function switchTab(tabName) {
-        if (tabName === "dashboard") {
-            if (tabDashboardBtn) tabDashboardBtn.classList.add("active");
-            if (tabNavigatorBtn) tabNavigatorBtn.classList.remove("active");
-            if (tabArchitectBtn) tabArchitectBtn.classList.remove("active");
-
-            if (tabDashboardContent) tabDashboardContent.style.display = "block";
-            if (tabNavigatorContent) tabNavigatorContent.style.display = "none";
-            if (tabArchitectContent) tabArchitectContent.style.display = "none";
-            renderDashboardMetrics();
-        } else if (tabName === "architect") {
-            if (tabArchitectBtn) tabArchitectBtn.classList.add("active");
-            if (tabDashboardBtn) tabDashboardBtn.classList.remove("active");
-            if (tabNavigatorBtn) tabNavigatorBtn.classList.remove("active");
-
-            if (tabArchitectContent) tabArchitectContent.style.display = "block";
-            if (tabDashboardContent) tabDashboardContent.style.display = "none";
-            if (tabNavigatorContent) tabNavigatorContent.style.display = "none";
-        } else {
-            if (tabNavigatorBtn) tabNavigatorBtn.classList.add("active");
-            if (tabDashboardBtn) tabDashboardBtn.classList.remove("active");
-            if (tabArchitectBtn) tabArchitectBtn.classList.remove("active");
-
-            if (tabNavigatorContent) tabNavigatorContent.style.display = "block";
-            if (tabDashboardContent) tabDashboardContent.style.display = "none";
-            if (tabArchitectContent) tabArchitectContent.style.display = "none";
-        }
-        lucide.createIcons();
-    }
-
-    // Auto-detect active page from body data-page attribute
+    // Page Route Initialization
     const currentPage = document.body.dataset.page || "dashboard";
-    if (currentPage === "navigator" && tabNavigatorContent) {
-        switchTab("navigator");
-    } else if (currentPage === "architect" && tabArchitectContent) {
-        switchTab("architect");
-    } else if (tabDashboardContent) {
-        switchTab("dashboard");
+    if (currentPage === "dashboard") {
+        renderDashboardMetrics();
+    } else if (currentPage === "navigator") {
+        // Ready for navigator page
+    } else if (currentPage === "architect") {
+        // Ready for architect page
     }
 
     // Dashboard Metrics & Activity Feed Renderer
