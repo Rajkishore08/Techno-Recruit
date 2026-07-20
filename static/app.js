@@ -1,12 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 // Global variables for auth state
 let authInstance = null;
 let currentIdToken = null;
 let currentUser = null;
 
-const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "0.0.0.0" || window.location.port === "8001")
     ? "" 
     : "https://techno-recruit.onrender.com";
 
@@ -150,6 +150,15 @@ function initApp() {
                     if (traceContainer) traceContainer.style.display = "none";
                 }
             });
+
+            // Check for redirect result if popup was previously blocked
+            getRedirectResult(authInstance).then((res) => {
+                if (res && res.user) {
+                    console.log("Redirect login successful:", res.user);
+                }
+            }).catch((err) => {
+                console.warn("Redirect result check notice:", err);
+            });
         } catch (err) {
             console.error("Firebase App initialization failed:", err);
         }
@@ -180,9 +189,8 @@ function initApp() {
             try {
                 await signInWithPopup(authInstance, provider);
             } catch (popupErr) {
-                if (popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/cancelled-popup-request") {
-                    console.warn("Popup blocked or closed. Retrying with redirect...", popupErr);
-                    const { signInWithRedirect } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                console.warn("Popup error occurred, retrying with redirect...", popupErr);
+                if (popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/cancelled-popup-request" || popupErr.code === "auth/popup-closed-by-user") {
                     await signInWithRedirect(authInstance, provider);
                 } else {
                     throw popupErr;
