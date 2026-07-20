@@ -155,26 +155,54 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Attach Auth Event Handlers immediately so buttons are always responsive
-    const handleLogin = async () => {
+    // Attach Auth Event Handlers immediately to all login buttons
+    const handleLogin = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const targetBtn = e ? e.currentTarget : null;
+        let origHtml = "";
+        if (targetBtn) {
+            origHtml = targetBtn.innerHTML;
+            targetBtn.innerHTML = `<i data-lucide="loader-2" class="spin" style="width:18px; height:18px;"></i> <span>Connecting to Google...</span>`;
+            if (window.lucide) lucide.createIcons();
+            targetBtn.disabled = true;
+        }
+
         try {
             if (!authInstance) {
                 await initFirebase();
             }
             if (!authInstance) {
-                alert("Firebase configuration is missing. Ensure your environment variables are set in your .env or backend config.");
+                alert("Firebase configuration is missing. Ensure environment variables or Firebase Hosting config are available.");
                 return;
             }
             const provider = new GoogleAuthProvider();
-            await signInWithPopup(authInstance, provider);
+            provider.setCustomParameters({ prompt: 'select_account' });
+            try {
+                await signInWithPopup(authInstance, provider);
+            } catch (popupErr) {
+                if (popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/cancelled-popup-request") {
+                    console.warn("Popup blocked or closed. Retrying with redirect...", popupErr);
+                    const { signInWithRedirect } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                    await signInWithRedirect(authInstance, provider);
+                } else {
+                    throw popupErr;
+                }
+            }
         } catch (err) {
             console.error("Sign in failed:", err);
             alert(`Authentication error: ${err.message}`);
+        } finally {
+            if (targetBtn) {
+                targetBtn.innerHTML = origHtml;
+                targetBtn.disabled = false;
+                if (window.lucide) lucide.createIcons();
+            }
         }
     };
 
-    if (loginBtn) loginBtn.addEventListener("click", handleLogin);
-    if (overlayLoginBtn) overlayLoginBtn.addEventListener("click", handleLogin);
+    document.querySelectorAll("#loginBtn, #overlayLoginBtn, .btn-login").forEach(btn => {
+        btn.addEventListener("click", handleLogin);
+    });
 
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
