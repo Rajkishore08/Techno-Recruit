@@ -1,5 +1,41 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Global Toast Notifications Utility
+function showToast(message, type = "info") {
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    
+    let icon = "info";
+    if (type === "success") icon = "check-circle";
+    if (type === "error") icon = "alert-circle";
+    
+    toast.innerHTML = `
+        <i data-lucide="${icon}"></i>
+        <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+    
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px) scale(0.95)";
+        toast.style.transition = "all 0.3s ease";
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 4000);
+}
+window.showToast = showToast;
 
 // Global variables for auth state
 let authInstance = null;
@@ -55,6 +91,7 @@ function initApp() {
     
     const copyBtn = document.getElementById("copyBtn");
     const exportMdBtn = document.getElementById("exportMdBtn");
+    const printBtn = document.getElementById("printBtn");
     const historyList = document.getElementById("historyList");
     const careerHistoryList = document.getElementById("careerHistoryList");
     const tourBtn = document.getElementById("tourBtn");
@@ -85,19 +122,22 @@ function initApp() {
     // Initialize Firebase dynamically from Firebase Hosting init.json or backend environment
     async function initFirebase() {
         let firebaseConfig = null;
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "0.0.0.0";
 
-        try {
-            // Priority 1: Check Firebase Hosting auto-init configuration
-            const hostingResponse = await fetch("/__/firebase/init.json");
-            if (hostingResponse.ok) {
-                const hConfig = await hostingResponse.json();
-                if (hConfig && hConfig.apiKey) {
-                    firebaseConfig = hConfig;
-                    console.log("Firebase initialized dynamically via Hosting.");
+        if (!isLocal) {
+            try {
+                // Priority 1: Check Firebase Hosting auto-init configuration
+                const hostingResponse = await fetch("/__/firebase/init.json");
+                if (hostingResponse.ok) {
+                    const hConfig = await hostingResponse.json();
+                    if (hConfig && hConfig.apiKey) {
+                        firebaseConfig = hConfig;
+                        console.log("Firebase initialized dynamically via Hosting.");
+                    }
                 }
+            } catch (e) {
+                console.warn("Hosting init.json not available.", e);
             }
-        } catch (e) {
-            console.warn("Hosting init.json not available.", e);
         }
 
         if (!firebaseConfig || !firebaseConfig.apiKey) {
@@ -122,6 +162,12 @@ function initApp() {
         }
 
         try {
+            const existingApps = getApps();
+            if (existingApps.length > 0) {
+                for (const existingApp of existingApps) {
+                    await deleteApp(existingApp);
+                }
+            }
             const app = initializeApp(firebaseConfig);
             authInstance = getAuth(app);
 
@@ -272,7 +318,7 @@ function initApp() {
                 };
                 setAuthenticatedUser(localUser, "local_dev_token");
             } else {
-                alert(`Authentication error: ${err.message}`);
+                showToast(`Authentication error: ${err.message}`, "error");
             }
         } finally {
             if (targetBtn) {
@@ -303,30 +349,51 @@ function initApp() {
         });
     }
 
-    // Collapsible Sidebar Toggle Setup
-    const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+    // Page Routing and Redirection tab switcher
+    function switchTab(pageId, pendingId = null) {
+        if (pageId === "navigator") {
+            if (pendingId) {
+                localStorage.setItem("pending_analysis_id", pendingId);
+            }
+            if (document.body.dataset.page !== "navigator") {
+                window.location.href = "/navigator.html";
+            }
+        } else if (pageId === "architect") {
+            if (pendingId) {
+                localStorage.setItem("pending_guide_id", pendingId);
+            }
+            if (document.body.dataset.page !== "architect") {
+                window.location.href = "/architect.html";
+            }
+        }
+    }
+
+    // Overlay Sidebar Drawer Toggle Setup
+    const floatingHistoryBtn = document.getElementById("floatingHistoryBtn");
+    const closeSidebarBtn = document.getElementById("closeSidebarBtn");
     const sidebar = document.querySelector(".sidebar");
     
-    if (sidebarToggleBtn && sidebar) {
-        const isCollapsed = localStorage.getItem("sidebar_collapsed") === "true";
-        if (isCollapsed) {
-            sidebar.classList.add("collapsed");
-            const toggleIcon = sidebarToggleBtn.querySelector("i");
-            if (toggleIcon) toggleIcon.setAttribute("data-lucide", "menu-square");
-        }
-
-        sidebarToggleBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("collapsed");
-            const currentlyCollapsed = sidebar.classList.contains("collapsed");
-            localStorage.setItem("sidebar_collapsed", currentlyCollapsed);
-            
-            const toggleIcon = sidebarToggleBtn.querySelector("i");
-            if (toggleIcon) {
-                toggleIcon.setAttribute("data-lucide", currentlyCollapsed ? "menu-square" : "menu");
-            }
-            if (window.lucide) lucide.createIcons();
+    if (floatingHistoryBtn && sidebar) {
+        floatingHistoryBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            sidebar.classList.add("active");
         });
     }
+
+    if (closeSidebarBtn && sidebar) {
+        closeSidebarBtn.addEventListener("click", () => {
+            sidebar.classList.remove("active");
+        });
+    }
+
+    // Close sidebar on click outside
+    document.addEventListener("click", (e) => {
+        if (sidebar && sidebar.classList.contains("active")) {
+            if (!sidebar.contains(e.target) && (!floatingHistoryBtn || !floatingHistoryBtn.contains(e.target))) {
+                sidebar.classList.remove("active");
+            }
+        }
+    });
 
     // Custom Role Analysis Event Handler
     const analyzeCustomRoleBtn = document.getElementById("analyzeCustomRoleBtn");
@@ -337,12 +404,12 @@ function initApp() {
         analyzeCustomRoleBtn.addEventListener("click", async () => {
             const roleTitle = customRoleInput.value.trim();
             if (!roleTitle) {
-                alert("Please enter a target job title.");
+                showToast("Please enter a target job title.", "warning");
                 return;
             }
 
             if (!navigatorResumeText || !navigatorResumeText.trim()) {
-                alert("Please upload or parse a resume first to evaluate suitability against.");
+                showToast("Please upload or parse a resume first to evaluate suitability against.", "warning");
                 return;
             }
 
@@ -440,7 +507,7 @@ function initApp() {
                     if (window.lucide) lucide.createIcons();
                 }
             } catch (err) {
-                alert(`Custom Role Analysis Error: ${err.message}`);
+                showToast(`Custom Role Analysis Error: ${err.message}`, "error");
             } finally {
                 analyzeCustomRoleBtn.disabled = false;
                 customRoleLoading.style.display = "none";
@@ -702,7 +769,7 @@ function initApp() {
             fileWordsEl.textContent = `${data.word_count || 0} words extracted`;
             fileWordsEl.style.color = "var(--color-success)";
         } catch (err) {
-            alert(`Resume Upload Error: ${err.message}`);
+            showToast(`Resume Upload Error: ${err.message}`, "error");
             badgeEl.style.display = "none";
             textAssignCallback("");
         }
@@ -760,9 +827,6 @@ function initApp() {
         }
     }
 
-    setupDropzone("architectResumeDropzone", "architectResumeInput", "architectResumeBadge", "architectFileName", "architectFileWords", "removeArchitectResumeBtn", (txt) => { architectResumeText = txt; });
-    setupDropzone("navigatorResumeDropzone", "navigatorResumeInput", "navigatorResumeBadge", "navigatorFileName", "navigatorFileWords", "removeNavigatorResumeBtn", (txt) => { navigatorResumeText = txt; });
-
     // Career Navigator Agent Execution
     const analyzeCareerBtn = document.getElementById("analyzeCareerBtn");
     const navigatorLoading = document.getElementById("navigatorLoading");
@@ -776,6 +840,15 @@ function initApp() {
     const candidateNameInput = document.getElementById("candidateNameInput");
 
     let selectedParentAnalysisId = null;
+
+    setupDropzone("architectResumeDropzone", "architectResumeInput", "architectResumeBadge", "architectFileName", "architectFileWords", "removeArchitectResumeBtn", (txt) => { architectResumeText = txt; });
+    setupDropzone("navigatorResumeDropzone", "navigatorResumeInput", "navigatorResumeBadge", "navigatorFileName", "navigatorFileWords", "removeNavigatorResumeBtn", (txt) => { 
+        navigatorResumeText = txt; 
+        // Reset previously selected candidate dropdown and inputs on fresh resume upload/removal
+        if (candidateSelectorSelect) candidateSelectorSelect.value = "";
+        selectedParentAnalysisId = null;
+        if (candidateNameInput) candidateNameInput.value = "";
+    });
 
     if (candidateSelectorSelect) {
         candidateSelectorSelect.addEventListener("change", (e) => {
@@ -795,12 +868,12 @@ function initApp() {
     if (analyzeCareerBtn) {
         analyzeCareerBtn.addEventListener("click", async () => {
             if (!currentUser) {
-                alert("Please sign in with Google first.");
+                showToast("Please sign in with Google first.", "warning");
                 return;
             }
 
             if (!navigatorResumeText || !navigatorResumeText.trim()) {
-                alert("Please upload a candidate resume file (PDF, DOCX, or TXT) first.");
+                showToast("Please upload a candidate resume file (PDF, DOCX, or TXT) first.", "warning");
                 return;
             }
 
@@ -836,7 +909,7 @@ function initApp() {
                 renderCareerNavigatorResults(resData.data, resData.baseline_session, resData.session);
                 loadCareerHistoryList();
             } catch (e) {
-                alert(`Career Analysis Error: ${e.message}`);
+                showToast(`Career Analysis Error: ${e.message}`, "error");
             } finally {
                 analyzeCareerBtn.disabled = false;
                 navigatorLoading.style.display = "none";
@@ -883,6 +956,8 @@ function initApp() {
                 });
             }
 
+            const pendingAnalysisId = localStorage.getItem("pending_analysis_id");
+
             items.forEach(item => {
                 const div = document.createElement("div");
                 div.className = "career-history-item";
@@ -908,13 +983,18 @@ function initApp() {
                 div.addEventListener("click", () => {
                     document.querySelectorAll(".career-history-item").forEach(el => el.classList.remove("active"));
                     div.classList.add("active");
-                    switchTab("navigator");
+                    switchTab("navigator", item.analysis_id);
                     if (candidateNameInput) candidateNameInput.value = cName;
                     selectedParentAnalysisId = item.analysis_id;
                     renderCareerNavigatorResults(item.data, null, item);
                 });
 
                 careerHistoryList.appendChild(div);
+
+                if (pendingAnalysisId && item.analysis_id === pendingAnalysisId) {
+                    localStorage.removeItem("pending_analysis_id");
+                    setTimeout(() => div.click(), 100);
+                }
             });
             lucide.createIcons();
         } catch (e) {
@@ -1209,7 +1289,7 @@ function initApp() {
             });
 
         if (checkedCategories.length === 0) {
-            alert("Please select at least one question category.");
+            showToast("Please select at least one question category.", "warning");
             return;
         }
 
@@ -1682,7 +1762,7 @@ function initApp() {
             evaluateAnswerBtn.addEventListener("click", async () => {
                 const answerText = candidateAnswerInput.value.trim();
                 if (!answerText) {
-                    alert("Please input a candidate response to evaluate.");
+                    showToast("Please input a candidate response to evaluate.", "warning");
                     return;
                 }
                 
@@ -1710,7 +1790,7 @@ function initApp() {
                     const evalResult = await res.json();
                     renderEvaluationResult(qItem, evalResult);
                 } catch(err) {
-                    alert(`Evaluation failed: ${err.message}`);
+                    showToast(`Evaluation failed: ${err.message}`, "error");
                 } finally {
                     evaluateAnswerBtn.disabled = false;
                     evaluateAnswerBtn.innerHTML = origHTML;
@@ -1722,7 +1802,7 @@ function initApp() {
             voiceInputBtn.addEventListener("click", () => {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) {
-                    alert("Web Speech API is not supported in this browser. Please try Google Chrome.");
+                    showToast("Web Speech API is not supported in this browser. Please try Google Chrome.", "warning");
                     return;
                 }
                 
@@ -1797,7 +1877,7 @@ function initApp() {
             currentGuideData = updatedGuide;
             renderFinalGuide(currentGuideData);
         } catch(err) {
-            alert(`Tweak failed: ${err.message}`);
+            showToast(`Tweak failed: ${err.message}`, "error");
             if (headerText) headerText.textContent = originalText;
         }
     }
@@ -1922,6 +2002,8 @@ function initApp() {
                 return;
             }
 
+            const pendingGuideId = localStorage.getItem("pending_guide_id");
+
             history.forEach(item => {
                 const card = document.createElement("div");
                 card.className = "history-item";
@@ -1944,13 +2026,23 @@ function initApp() {
                     document.querySelectorAll(".history-item").forEach(el => el.classList.remove("active"));
                     card.classList.add("active");
 
+                    if (document.body.dataset.page !== "architect") {
+                        switchTab("architect", item.guide_id);
+                        return;
+                    }
+
                     // Hide trace container since we are viewing history
-                    traceContainer.style.display = "none";
+                    if (traceContainer) traceContainer.style.display = "none";
                     
                     loadHistoryItem(item.guide_id);
                 });
 
                 historyList.appendChild(card);
+
+                if (pendingGuideId && item.guide_id === pendingGuideId) {
+                    localStorage.removeItem("pending_guide_id");
+                    setTimeout(() => card.click(), 100);
+                }
             });
             lucide.createIcons();
 
@@ -1973,7 +2065,7 @@ function initApp() {
             currentGuideData = data;
             renderFinalGuide(currentGuideData);
         } catch (error) {
-            alert(`Error loading history item: ${error.message}`);
+            showToast(`Error loading history item: ${error.message}`, "error");
         }
     }
 
@@ -1983,6 +2075,7 @@ function initApp() {
             if (!currentGuideData) return;
             
             navigator.clipboard.writeText(JSON.stringify(currentGuideData, null, 2)).then(() => {
+                showToast("Interview guide JSON copied to clipboard!", "success");
                 const originalHTML = copyBtn.innerHTML;
                 copyBtn.innerHTML = `<i data-lucide="check" style="color:var(--color-success)"></i> Copied!`;
                 lucide.createIcons();
@@ -1992,6 +2085,7 @@ function initApp() {
                 }, 2000);
             }).catch(err => {
                 console.error("Could not copy text: ", err);
+                showToast("Failed to copy to clipboard", "error");
             });
         });
     }
@@ -2011,6 +2105,7 @@ function initApp() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast("Interview guide exported as Markdown!", "success");
         });
     }
 

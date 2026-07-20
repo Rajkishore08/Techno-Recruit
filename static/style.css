@@ -2,17 +2,19 @@
    Global Variables & Reset
    ===================================================================== */
 :root {
-    --bg-base: #080c14;
-    --bg-surface: #0f172a;
-    --bg-surface-elevated: #1e293b;
-    --border-color: #334155;
-    --border-hover: #475569;
+    --bg-base: #060814;
+    --bg-surface: rgba(13, 18, 36, 0.7);
+    --bg-surface-elevated: rgba(30, 41, 59, 0.75);
+    --border-color: rgba(99, 102, 241, 0.16);
+    --border-hover: rgba(99, 102, 241, 0.35);
     
     --color-primary: #6366f1;
-    --color-primary-glow: rgba(99, 102, 241, 0.15);
+    --color-primary-light: #818cf8;
+    --color-primary-glow: rgba(99, 102, 241, 0.18);
     --color-secondary: #a855f7;
-    --color-secondary-glow: rgba(168, 85, 247, 0.15);
-    --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    --color-secondary-glow: rgba(168, 85, 247, 0.18);
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --gradient-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
     
     --color-success: #10b981;
     --color-warning: #f59e0b;
@@ -20,15 +22,16 @@
     --color-info: #06b6d4;
     
     --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
+    --text-secondary: #cbd5e1;
     --text-muted: #64748b;
     
-    --font-heading: 'Outfit', 'Inter', sans-serif;
+    --font-heading: 'Plus Jakarta Sans', 'Outfit', 'Inter', sans-serif;
     --font-body: 'Inter', sans-serif;
     --radius-sm: 8px;
     --radius-md: 12px;
-    --radius-lg: 16px;
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-lg: 20px;
+    --transition-smooth: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 * {
@@ -37,12 +40,32 @@
     box-sizing: border-box;
 }
 
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #060814;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.4);
+}
+
 body {
     background-color: var(--bg-base);
     color: var(--text-primary);
     font-family: var(--font-body);
     line-height: 1.6;
     overflow-x: hidden;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(168, 85, 247, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
 }
 
 /* =====================================================================
@@ -58,45 +81,62 @@ body {
 
 /* Sidebar History Panel */
 .sidebar {
-    width: 290px;
-    background-color: #060911;
-    border-right: 1px solid var(--border-color);
+    position: fixed;
+    left: -320px;
+    top: 0;
+    bottom: 0;
+    width: 310px;
+    background-color: rgba(9, 11, 24, 0.96);
+    border-right: 1px solid var(--border-hover);
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
-    min-height: 100vh;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    z-index: 10000;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    opacity: 0;
+    box-shadow: 25px 0 60px rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+}
+
+.sidebar.active {
+    transform: translateX(320px);
     opacity: 1;
 }
 
-.sidebar.collapsed {
-    width: 0px;
-    min-width: 0px;
-    transform: translateX(-100%);
-    opacity: 0;
-    pointer-events: none;
-    border-right: none;
+#closeSidebarBtn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary) !important;
 }
 
-.sidebar-toggle-btn {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    border-radius: var(--radius-sm);
-    width: 38px;
-    height: 38px;
+/* Floating History Button */
+.floating-history-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 9999;
+    background: var(--gradient-primary);
+    border: 1px solid var(--border-hover);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
     transition: var(--transition-smooth);
-    backdrop-filter: blur(8px);
 }
 
-.sidebar-toggle-btn:hover {
-    background: rgba(99, 102, 241, 0.15);
-    border-color: var(--color-primary-light);
-    color: #fff;
+.floating-history-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.65);
+}
+
+.floating-history-btn i {
+    width: 16px;
+    height: 16px;
 }
 
 .sidebar-header {
@@ -2316,6 +2356,53 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-size: 14px;
     color: var(--text-secondary);
     line-height: 1.5;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 10000;
+}
+
+.toast {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(16px);
+    color: var(--text-primary);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    min-width: 280px;
+    max-width: 400px;
+}
+
+.toast.success {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.95));
+}
+
+.toast.error {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(15, 23, 42, 0.95));
+}
+
+.toast.info {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(15, 23, 42, 0.95));
+}
+
+@keyframes toastIn {
+    from { transform: translateY(20px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 
