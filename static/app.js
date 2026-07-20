@@ -480,7 +480,7 @@ function initApp() {
             } else {
                 if (onboardingModal) onboardingModal.style.display = "none";
                 localStorage.setItem("techno_recruit_onboarded", "true");
-                switchTab("navigator");
+                window.location.href = "/navigator.html";
             }
         });
     }
@@ -495,7 +495,8 @@ function initApp() {
     }
 
     // Show onboarding tour automatically for new visitors
-    if (!localStorage.getItem("techno_recruit_onboarded")) {
+    const onboarded = localStorage.getItem("techno_recruit_onboarded");
+    if (!onboarded && document.body.dataset.page === "dashboard") {
         setTimeout(() => showOnboardingModal(0), 1000);
     }
 
@@ -551,8 +552,12 @@ function initApp() {
 
         if (!dropzone || !input) return;
 
+        input.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
         dropzone.addEventListener("click", (e) => {
-            if (e.target.closest(`#${removeBtnId}`)) return;
+            if (removeBtnId && e.target.closest(`#${removeBtnId}`)) return;
             input.click();
         });
 

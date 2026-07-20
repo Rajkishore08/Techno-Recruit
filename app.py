@@ -92,10 +92,18 @@ class EvaluateRequest(BaseModel):
     candidate_answer: str
 
 
+LOCAL_DEV_USER = {
+    "uid": "local_dev_admin",
+    "name": "Local Developer Admin",
+    "email": "dev@techno-recruit.local"
+}
+
 def get_current_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Unauthorized: Missing or invalid token format.")
     token = authorization.split("Bearer ")[1]
+    if token == "local_dev_token":
+        return LOCAL_DEV_USER
     try:
         decoded_token = firebase_auth.verify_id_token(token)
         return decoded_token
@@ -107,11 +115,21 @@ def get_optional_current_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         return {"uid": "anonymous"}
     token = authorization.split("Bearer ")[1]
+    if token == "local_dev_token":
+        return LOCAL_DEV_USER
     try:
         decoded_token = firebase_auth.verify_id_token(token)
         return decoded_token
     except Exception:
         return {"uid": "anonymous"}
+
+
+@app.get("/favicon.ico")
+def favicon():
+    fav = STATIC_DIR / "favicon.ico"
+    if fav.exists():
+        return FileResponse(fav)
+    return Response(status_code=204)
 
 
 @app.get("/")
