@@ -10,9 +10,9 @@ const API_BASE = window.location.hostname === "localhost" || window.location.hos
     ? "" 
     : "https://techno-recruit.onrender.com";
 
-document.addEventListener("DOMContentLoaded", () => {
+function initApp() {
     // Initialize Lucide Icons
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
     // DOM Elements
     const generatorForm = document.getElementById("generatorForm");
@@ -1831,7 +1831,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Trigger Print Screen
-    printBtn.addEventListener("click", () => {
-        window.print();
-    });
-});
+    if (printBtn) {
+        printBtn.addEventListener("click", () => {
+            window.print();
+        });
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+} else {
+    initApp();
+}
