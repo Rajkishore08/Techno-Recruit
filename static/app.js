@@ -182,29 +182,282 @@ document.addEventListener("DOMContentLoaded", () => {
     initFirebase();
 
     // Tab Switcher Logic
+    const tabDashboardBtn = document.getElementById("tabDashboardBtn");
     const tabArchitectBtn = document.getElementById("tabArchitectBtn");
     const tabNavigatorBtn = document.getElementById("tabNavigatorBtn");
+    const tabDashboardContent = document.getElementById("tabDashboardContent");
     const tabArchitectContent = document.getElementById("tabArchitectContent");
     const tabNavigatorContent = document.getElementById("tabNavigatorContent");
+    const tourBtn = document.getElementById("tourBtn");
+    const dashboardStartTourBtn = document.getElementById("dashboardStartTourBtn");
 
-    if (tabArchitectBtn && tabNavigatorBtn) {
+    if (tabDashboardBtn && tabArchitectBtn && tabNavigatorBtn) {
+        tabDashboardBtn.addEventListener("click", () => switchTab("dashboard"));
         tabArchitectBtn.addEventListener("click", () => switchTab("architect"));
         tabNavigatorBtn.addEventListener("click", () => switchTab("navigator"));
     }
 
+    if (tourBtn) tourBtn.addEventListener("click", () => showOnboardingModal(0));
+    if (dashboardStartTourBtn) dashboardStartTourBtn.addEventListener("click", () => showOnboardingModal(0));
+
+    // Dashboard Launchpad Action Cards
+    const launchNavigatorCard = document.getElementById("launchNavigatorCard");
+    const launchArchitectCard = document.getElementById("launchArchitectCard");
+    const launchRescreenCard = document.getElementById("launchRescreenCard");
+
+    if (launchNavigatorCard) launchNavigatorCard.addEventListener("click", () => switchTab("navigator"));
+    if (launchArchitectCard) launchArchitectCard.addEventListener("click", () => switchTab("architect"));
+    if (launchRescreenCard) {
+        launchRescreenCard.addEventListener("click", () => {
+            switchTab("navigator");
+            const selectEl = document.getElementById("candidateSelectorSelect");
+            if (selectEl) selectEl.focus();
+        });
+    }
+
     function switchTab(tabName) {
-        if (tabName === "architect") {
-            tabArchitectBtn.classList.add("active");
-            tabNavigatorBtn.classList.remove("active");
-            tabArchitectContent.style.display = "block";
-            tabNavigatorContent.style.display = "none";
+        if (tabName === "dashboard") {
+            if (tabDashboardBtn) tabDashboardBtn.classList.add("active");
+            if (tabNavigatorBtn) tabNavigatorBtn.classList.remove("active");
+            if (tabArchitectBtn) tabArchitectBtn.classList.remove("active");
+
+            if (tabDashboardContent) tabDashboardContent.style.display = "block";
+            if (tabNavigatorContent) tabNavigatorContent.style.display = "none";
+            if (tabArchitectContent) tabArchitectContent.style.display = "none";
+            renderDashboardMetrics();
+        } else if (tabName === "architect") {
+            if (tabArchitectBtn) tabArchitectBtn.classList.add("active");
+            if (tabDashboardBtn) tabDashboardBtn.classList.remove("active");
+            if (tabNavigatorBtn) tabNavigatorBtn.classList.remove("active");
+
+            if (tabArchitectContent) tabArchitectContent.style.display = "block";
+            if (tabDashboardContent) tabDashboardContent.style.display = "none";
+            if (tabNavigatorContent) tabNavigatorContent.style.display = "none";
         } else {
-            tabNavigatorBtn.classList.add("active");
-            tabArchitectBtn.classList.remove("active");
-            tabNavigatorContent.style.display = "block";
-            tabArchitectContent.style.display = "none";
+            if (tabNavigatorBtn) tabNavigatorBtn.classList.add("active");
+            if (tabDashboardBtn) tabDashboardBtn.classList.remove("active");
+            if (tabArchitectBtn) tabArchitectBtn.classList.remove("active");
+
+            if (tabNavigatorContent) tabNavigatorContent.style.display = "block";
+            if (tabDashboardContent) tabDashboardContent.style.display = "none";
+            if (tabArchitectContent) tabArchitectContent.style.display = "none";
         }
         lucide.createIcons();
+    }
+
+    // Auto-detect active page from body data-page attribute
+    const currentPage = document.body.dataset.page || "dashboard";
+    if (currentPage === "navigator" && tabNavigatorContent) {
+        switchTab("navigator");
+    } else if (currentPage === "architect" && tabArchitectContent) {
+        switchTab("architect");
+    } else if (tabDashboardContent) {
+        switchTab("dashboard");
+    }
+
+    // Dashboard Metrics & Activity Feed Renderer
+    async function renderDashboardMetrics() {
+        const dashMetricCandidates = document.getElementById("dashMetricCandidates");
+        const dashMetricGuides = document.getElementById("dashMetricGuides");
+        const dashMetricAvgFit = document.getElementById("dashMetricAvgFit");
+        const dashMetricTopDomain = document.getElementById("dashMetricTopDomain");
+        const dashRecentActivityFeed = document.getElementById("dashRecentActivityFeed");
+
+        if (!currentIdToken) return;
+
+        try {
+            const historyResp = await fetch(`${API_BASE}/api/career-history`, {
+                headers: { "Authorization": `Bearer ${currentIdToken}` }
+            });
+            if (!historyResp.ok) return;
+
+            const items = await historyResp.json();
+            if (dashMetricCandidates) dashMetricCandidates.textContent = items.length;
+
+            if (items && items.length > 0) {
+                // Compute average score & top domain
+                let totalScoreSum = 0;
+                let totalScoreCount = 0;
+                const domainCounts = {};
+
+                items.forEach(item => {
+                    const roles = item.data?.suggested_roles || [];
+                    roles.forEach(r => {
+                        totalScoreSum += (r.beginner_score || 0) + (r.intermediate_score || 0) + (r.experienced_score || 0);
+                        totalScoreCount += 3;
+                        const d = r.domain || "Software Engineering";
+                        domainCounts[d] = (domainCounts[d] || 0) + 1;
+                    });
+                });
+
+                if (totalScoreCount > 0 && dashMetricAvgFit) {
+                    dashMetricAvgFit.textContent = `${Math.round(totalScoreSum / totalScoreCount)}%`;
+                }
+
+                const topDomain = Object.keys(domainCounts).reduce((a, b) => domainCounts[a] > domainCounts[b] ? a : b, "Software Engineering");
+                if (dashMetricTopDomain) dashMetricTopDomain.textContent = topDomain;
+
+                // Render recent activity feed
+                if (dashRecentActivityFeed) {
+                    let feedHtml = "";
+                    items.slice(0, 4).forEach(item => {
+                        let rawName = item.candidate_name || item.data?.candidate_name || "";
+                        if (!rawName || rawName === "Uploaded Resume" || rawName === "Candidate Profile") {
+                            rawName = (item.filename && item.filename !== "Uploaded Resume") ? item.filename.replace(/\.[^/.]+$/, "") : "Candidate Profile";
+                        }
+                        const cName = rawName;
+                        const dateStr = item.timestamp ? new Date(item.timestamp * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Recent";
+                        const rolesCount = item.data?.suggested_roles?.length || 0;
+                        const verTag = item.version ? ` (V${item.version})` : "";
+
+                        feedHtml += `
+                            <div class="activity-feed-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:var(--radius-sm); margin-bottom:10px;">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div style="width:36px; height:36px; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; align-items:center; justify-content:center; color:var(--color-primary-light);">
+                                        <i data-lucide="user-check" style="width:18px; height:18px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:700; font-size:14px; color:var(--text-primary);">${cName}${verTag}</div>
+                                        <div style="font-size:12px; color:var(--text-secondary);">Evaluated ${rolesCount} career paths • ${item.filename || 'resume.pdf'}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <span style="font-size:11px; color:var(--text-muted);">${dateStr}</span>
+                                    <button type="button" class="btn-secondary inspect-activity-btn" data-analysis-id="${item.analysis_id}" style="padding:6px 12px; font-size:12px;">
+                                        <span>Inspect</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    dashRecentActivityFeed.innerHTML = feedHtml;
+
+                    // Attach click event to inspect buttons
+                    document.querySelectorAll(".inspect-activity-btn").forEach(btn => {
+                        btn.addEventListener("click", (e) => {
+                            const targetId = e.currentTarget.dataset.analysisId;
+                            const matchItem = items.find(i => i.analysis_id === targetId);
+                            if (matchItem) {
+                                switchTab("navigator");
+                                const selectEl = document.getElementById("candidateSelectorSelect");
+                                const nameInputEl = document.getElementById("candidateNameInput");
+                                if (selectEl) selectEl.value = targetId;
+                                if (nameInputEl) nameInputEl.value = matchItem.candidate_name || matchItem.data?.candidate_name || "";
+                                renderCareerNavigatorResults(matchItem.data, null, matchItem);
+                            }
+                        });
+                    });
+                    lucide.createIcons();
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to render dashboard metrics:", e);
+        }
+    }
+
+    // INTERACTIVE ONBOARDING TOUR MODAL LOGIC
+    const onboardingModal = document.getElementById("onboardingModal");
+    const onboardingStepContent = document.getElementById("onboardingStepContent");
+    const onboardingStepIndicators = document.getElementById("onboardingStepIndicators");
+    const closeOnboardingBtn = document.getElementById("closeOnboardingBtn");
+    const onboardingNextBtn = document.getElementById("onboardingNextBtn");
+    const onboardingPrevBtn = document.getElementById("onboardingPrevBtn");
+
+    let currentOnboardingStep = 0;
+
+    const onboardingSteps = [
+        {
+            icon: "compass",
+            title: "1. AI Career Navigator & Role Recommender",
+            desc: "Upload candidate resumes in PDF, DOCX, or TXT format to immediately calculate match suitability scores (0-100%) across Junior (0-2 yrs), Mid-Level (3-5 yrs), and Senior (5-8+ yrs) positions across 3 to 5 recommended tech roles."
+        },
+        {
+            icon: "crown",
+            title: "2. Experience Highlights & Score Versioning",
+            desc: "Techno Recruit automatically extracts key candidate achievements into specialized highlight cards: Leadership & Student Community, Hackathons & Awards, and Company Internships. Re-screen candidate profiles to compare Version 1 vs Version 2 score improvements side-by-side!"
+        },
+        {
+            icon: "brain-circuit",
+            title: "3. Interview Architect & Rubric Grading",
+            desc: "Input job specifications to launch an autonomous 4-agent orchestration loop (JD Analyzer, Question Architect, Critic Refiner, and Scorecard Architect). Generates 6 STAR behavioral & technical questions complete with model evaluation rubrics."
+        }
+    ];
+
+    function showOnboardingModal(stepIndex = 0) {
+        currentOnboardingStep = stepIndex;
+        renderOnboardingStep();
+        if (onboardingModal) onboardingModal.style.display = "flex";
+    }
+
+    function renderOnboardingStep() {
+        if (!onboardingStepContent) return;
+        const step = onboardingSteps[currentOnboardingStep];
+
+        onboardingStepContent.innerHTML = `
+            <div class="onboarding-step-hero">
+                <div class="onboarding-step-icon">
+                    <i data-lucide="${step.icon}" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h3 class="onboarding-step-title">${step.title}</h3>
+                <p class="onboarding-step-desc">${step.desc}</p>
+            </div>
+        `;
+
+        if (onboardingNextBtn) {
+            onboardingNextBtn.textContent = currentOnboardingStep === onboardingSteps.length - 1 ? "Get Started" : "Next Step";
+        }
+        if (onboardingPrevBtn) {
+            onboardingPrevBtn.style.display = currentOnboardingStep > 0 ? "inline-block" : "none";
+        }
+
+        if (onboardingStepIndicators) {
+            const dots = onboardingStepIndicators.querySelectorAll(".step-dot");
+            dots.forEach((dot, idx) => {
+                if (idx === currentOnboardingStep) {
+                    dot.style.background = "var(--color-primary-light)";
+                    dot.style.width = "16px";
+                } else {
+                    dot.style.background = "var(--border-color)";
+                    dot.style.width = "10px";
+                }
+            });
+        }
+
+        lucide.createIcons();
+    }
+
+    if (closeOnboardingBtn) {
+        closeOnboardingBtn.addEventListener("click", () => {
+            if (onboardingModal) onboardingModal.style.display = "none";
+            localStorage.setItem("techno_recruit_onboarded", "true");
+        });
+    }
+
+    if (onboardingNextBtn) {
+        onboardingNextBtn.addEventListener("click", () => {
+            if (currentOnboardingStep < onboardingSteps.length - 1) {
+                currentOnboardingStep++;
+                renderOnboardingStep();
+            } else {
+                if (onboardingModal) onboardingModal.style.display = "none";
+                localStorage.setItem("techno_recruit_onboarded", "true");
+                switchTab("navigator");
+            }
+        });
+    }
+
+    if (onboardingPrevBtn) {
+        onboardingPrevBtn.addEventListener("click", () => {
+            if (currentOnboardingStep > 0) {
+                currentOnboardingStep--;
+                renderOnboardingStep();
+            }
+        });
+    }
+
+    // Show onboarding tour automatically for new visitors
+    if (!localStorage.getItem("techno_recruit_onboarded")) {
+        setTimeout(() => showOnboardingModal(0), 1000);
     }
 
     // Resume State & Drag-and-Drop Parsing Logic

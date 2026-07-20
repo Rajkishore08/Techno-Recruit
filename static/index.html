@@ -3,54 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Techno Recruit — AI Screening & Multi-Agent Interview Architect</title>
+    <title>Techno Recruit — Talent Acquisition & Career Intelligence Command Center</title>
+    <meta name="description" content="Multi-Agent Candidate Screening & Career Intelligence Platform. Screen candidate resumes, extract leadership/hackathons/internships, and build interview guides.">
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar for History -->
+<body data-page="dashboard">
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="brand">
-                    <i data-lucide="brain-circuit" class="brand-icon"></i>
-                    <h2>Agent History</h2>
+                <div class="logo">
+                    <i data-lucide="brain-circuit" class="logo-icon"></i>
+                    <h2>Techno Recruit</h2>
                 </div>
-                <p class="sidebar-subtitle">Previous Runs & Guides</p>
             </div>
-            <div class="history-list" id="historyList">
-                <div class="history-empty">
-                    <i data-lucide="folder-open"></i>
-                    <p>No generated guides yet</p>
+            
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <i data-lucide="compass"></i>
+                    <span>Resume Analyses</span>
+                </div>
+                <p class="section-subtitle">Career Score Progress</p>
+                <div class="history-list" id="careerHistoryList">
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>Sign in to view saved candidate runs</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="sidebar-header" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <h3><i data-lucide="compass"></i> Resume Analyses</h3>
-                <p class="sidebar-subtitle">Career Score Progress</p>
-            </div>
-            <div class="history-list" id="careerHistoryList">
-                <div class="history-empty">
-                    <i data-lucide="file-text"></i>
-                    <p>No saved resume runs</p>
+            <div class="sidebar-section" style="margin-top: 24px;">
+                <div class="section-title">
+                    <i data-lucide="history"></i>
+                    <span>Interview Guides</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>No past guides saved</p>
+                    </div>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <header class="top-bar">
-                <div class="header-container">
+            <header class="top-header">
+                <div class="header-banner">
                     <div class="header-title">
                         <span class="badge-active"><span class="dot"></span> Autonomous Specialist Agent System</span>
-                        <h1>Techno Recruit</h1>
-                        <p class="subtitle">Multi-Agent Candidate Screening & Career Intelligence Platform. Generate role-specific interview guides or analyze candidate resumes for career suitability.</p>
+                        <h1>Techno Recruit Dashboard</h1>
+                        <p class="subtitle">Multi-Agent Candidate Screening & Career Intelligence Command Center.</p>
                     </div>
                     <div class="header-auth" id="headerAuth">
                         <button class="btn-primary" id="loginBtn">
@@ -67,411 +80,180 @@
                     </div>
                 </div>
 
-                <!-- Navigation Tabs -->
+                <!-- Main Navigation Header -->
                 <nav class="app-tabs">
-                    <button type="button" class="tab-btn active" id="tabArchitectBtn" data-tab="tabArchitect">
-                        <i data-lucide="brain-circuit"></i>
-                        <span>Interview Architect</span>
-                    </button>
-                    <button type="button" class="tab-btn" id="tabNavigatorBtn" data-tab="tabNavigator">
+                    <a href="/index.html" class="tab-btn active">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/navigator.html" class="tab-btn">
                         <i data-lucide="compass"></i>
                         <span>Career Navigator</span>
-                        <span class="tab-badge">AI Role Matcher</span>
+                        <span class="tab-badge">AI ROLE MATCHER</span>
+                    </a>
+                    <a href="/architect.html" class="tab-btn">
+                        <i data-lucide="brain-circuit"></i>
+                        <span>Interview Architect</span>
+                    </a>
+                    <button type="button" class="tab-btn btn-tour-trigger" id="tourBtn" style="margin-left:auto; background:rgba(99,102,241,0.15); color:var(--color-primary-light);">
+                        <i data-lucide="help-circle"></i>
+                        <span>Platform Guide</span>
                     </button>
                 </nav>
             </header>
 
             <div class="content-body">
-                <!-- INTERVIEW ARCHITECT TAB CONTENT -->
-                <div id="tabArchitectContent" class="tab-pane active">
-                    <!-- Form Section -->
-                    <section class="form-card card" style="position: relative;">
-                        <div class="auth-lock-overlay" id="authLockOverlay">
-                            <i data-lucide="lock" class="lock-icon"></i>
-                            <h3>Authentication Required</h3>
-                            <p>Sign in to configure job specifications and run the multi-agent screening loop.</p>
-                            <button class="btn-primary" id="overlayLoginBtn">
-                                <i data-lucide="log-in"></i>
-                                <span>Sign In with Google</span>
+                <!-- DASHBOARD PAGE CONTENT -->
+                <div id="tabDashboardContent" class="tab-pane active">
+                    <!-- Dashboard Welcome Banner -->
+                    <section class="card dashboard-hero-card" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid var(--color-primary-light); margin-bottom: 20px; padding: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <span class="badge-active" style="margin-bottom: 8px; inline-size: fit-content;"><span class="dot"></span> Talent Acquisition Command Center</span>
+                                <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">Welcome to Techno Recruit</h2>
+                                <p style="color: var(--text-secondary); font-size: 14px; max-width: 680px; line-height: 1.5;">
+                                    Screen candidates with autonomous multi-agent intelligence, extract leadership and competitive highlights, track score improvements across resume revisions, and architect rubric-graded interview guides.
+                                </p>
+                            </div>
+                            <button type="button" class="btn-primary" id="dashboardStartTourBtn" style="padding: 12px 20px; font-size: 14px;">
+                                <i data-lucide="sparkles"></i>
+                                <span>Interactive Product Tour</span>
                             </button>
                         </div>
-                        <div class="card-header">
-                            <i data-lucide="file-text"></i>
-                            <h3>Job Specifications</h3>
-                        </div>
-                        <form id="generatorForm" class="grid-form">
-                            <div class="form-group col-full">
-                                <label for="jobTitle">Job Title</label>
-                                <input type="text" id="jobTitle" required placeholder="e.g., Senior Full-Stack Engineer, Lead Product Designer">
-                            </div>
-
-                            <div class="form-group col-half">
-                                <label for="experienceLevel">Experience Level</label>
-                                <select id="experienceLevel" required>
-                                    <option value="Junior">Junior (0-2 years)</option>
-                                    <option value="Mid">Mid-Level (3-5 years)</option>
-                                    <option value="Senior" selected>Senior (5-8 years)</option>
-                                    <option value="Lead">Lead / Staff (8+ years)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-half">
-                                <label for="questionCount">Number of Questions</label>
-                                <div class="range-container">
-                                    <input type="range" id="questionCount" min="3" max="10" value="5">
-                                    <span class="range-val" id="questionCountVal">5</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group col-full">
-                                <label>Question Categories</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="categories" value="Technical" checked>
-                                        <span class="custom-checkbox">Technical & Coding</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="categories" value="Behavioral" checked>
-                                        <span class="custom-checkbox">Behavioral (STAR)</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="categories" value="System Design">
-                                        <span class="custom-checkbox">System Design & Arch</span>
-                                    </label>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" name="categories" value="Problem Solving">
-                                        <span class="custom-checkbox">Problem Solving</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group col-full">
-                                <label for="jobDescription">Job Description / Requirements</label>
-                                <textarea id="jobDescription" required rows="5" placeholder="Paste the job description, core responsibilities, tech stack, and key qualifications here..."></textarea>
-                            </div>
-
-                            <!-- Optional Resume Upload dropzone for JD Match & 3 Custom Questions -->
-                            <div class="form-group col-full">
-                                <label>Candidate Resume <span class="label-optional">(Optional — For Resume vs. JD Match & 3 Custom Questions)</span></label>
-                                <div class="resume-dropzone" id="architectResumeDropzone">
-                                    <input type="file" id="architectResumeInput" accept=".pdf,.docx,.doc,.txt,.md" style="display: none;">
-                                    <div class="dropzone-content" id="architectDropzoneContent">
-                                        <i data-lucide="upload-cloud" class="dropzone-icon"></i>
-                                        <div class="dropzone-text">
-                                            <strong>Click or drag & drop candidate resume</strong>
-                                            <span>Supports PDF, DOCX, TXT (PDF/DOCX recommended)</span>
-                                        </div>
-                                    </div>
-                                    <div class="resume-file-badge" id="architectResumeBadge" style="display: none;">
-                                        <i data-lucide="file-check-2"></i>
-                                        <div class="file-info">
-                                            <span class="file-name" id="architectFileName">resume.pdf</span>
-                                            <span class="file-size" id="architectFileWords">Parsing resume...</span>
-                                        </div>
-                                        <button type="button" class="btn-remove-file" id="removeArchitectResumeBtn" title="Remove Resume">
-                                            <i data-lucide="x"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-actions col-full">
-                                <button type="submit" class="btn-primary" id="submitBtn">
-                                    <i data-lucide="play"></i>
-                                    <span>Run Agent Loop</span>
-                                </button>
-                            </div>
-                        </form>
                     </section>
 
-                <!-- Agent Status & Log Trace Section -->
-                <section class="agent-trace-card card" id="traceContainer" style="display: none;">
-                    <div class="card-header">
-                        <i data-lucide="activity"></i>
-                        <h3>Autonomous Loop Live Trace</h3>
-                        <div class="iteration-counter" id="iterationCounter">Iteration 1/8</div>
-                    </div>
-                    
-                    <!-- Multi-Agent Flowchart Nodes -->
-                    <div class="agent-flowchart" id="agentFlowchart" style="margin-bottom: 24px;">
-                        <div class="flow-node active" id="nodeInput">
-                            <i data-lucide="user"></i>
-                            <span>Input</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeJdParser">
-                            <i data-lucide="file-text"></i>
-                            <span>JD Parser</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeSyllabus">
-                            <i data-lucide="book-open"></i>
-                            <span>Syllabus</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeGenerator">
-                            <i data-lucide="pen-tool"></i>
-                            <span>Generator</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeCritic">
-                            <i data-lucide="shield-alert"></i>
-                            <span>Critic</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeScorecard">
-                            <i data-lucide="award"></i>
-                            <span>Scorecard</span>
-                        </div>
-                        <div class="flow-arrow">➔</div>
-                        <div class="flow-node" id="nodeLogger">
-                            <i data-lucide="database"></i>
-                            <span>DB Logger</span>
-                        </div>
-                    </div>
-
-                    <div class="trace-timeline" id="traceTimeline">
-                        <!-- Trace steps will be appended here dynamically -->
-                    </div>
-                </section>
-
-                <!-- Final Results Output Section -->
-                <section class="results-card card" id="resultsContainer" style="display: none;">
-                    <div class="card-header">
-                        <i data-lucide="award"></i>
-                        <h3 id="resultsTitle">Final Interview Guide</h3>
-                        <div class="card-actions" style="display: flex; gap: 8px;">
-                            <button class="btn-secondary" id="copyBtn">
-                                <i data-lucide="copy"></i> Copy JSON
-                            </button>
-                            <button class="btn-secondary" id="exportMdBtn">
-                                <i data-lucide="download"></i> Export Markdown
-                            </button>
-                            <button class="btn-secondary" id="printBtn">
-                                <i data-lucide="printer"></i> Print / PDF
-                            </button>
-                        </div>
-                    </div>
-                    <div class="results-meta">
-                        <div class="meta-item"><span class="meta-label">Position:</span> <span id="metaPosition">N/A</span></div>
-                        <div class="meta-item"><span class="meta-label">Level:</span> <span id="metaLevel">N/A</span></div>
-                        <div class="meta-item"><span class="meta-label">Guide ID:</span> <span id="metaGuideId" class="code-font">N/A</span></div>
-                    </div>
-
-                    <!-- AI Parsing Dashboard & LLMOps Metrics -->
-                    <div class="results-dashboard grid-dashboard">
-                        <div class="dash-card">
-                            <div class="dash-icon"><i data-lucide="bar-chart-2"></i></div>
-                            <div class="dash-text">
-                                <span class="dash-val" id="dashTotalCount">0</span>
-                                <span class="dash-label">Total Questions</span>
+                    <!-- Key Performance Metrics Row -->
+                    <div class="dashboard-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <div class="card metric-tile">
+                            <div class="metric-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--color-primary-light);"><i data-lucide="users"></i></div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="dashMetricCandidates">0</span>
+                                <span class="metric-lbl">Candidates Screened</span>
                             </div>
                         </div>
-                        <div class="dash-card">
-                            <div class="dash-icon"><i data-lucide="target"></i></div>
-                            <div class="dash-text">
-                                <span class="dash-val" id="dashTechCoverage">0%</span>
-                                <span class="dash-label">Tech Coverage</span>
+                        <div class="card metric-tile">
+                            <div class="metric-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--color-success);"><i data-lucide="file-text"></i></div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="dashMetricGuides">0</span>
+                                <span class="metric-lbl">Interview Guides Built</span>
                             </div>
                         </div>
-                        <div class="dash-card">
-                            <div class="dash-icon"><i data-lucide="shield-alert"></i></div>
-                            <div class="dash-text">
-                                <div class="diff-distribution">
-                                    <span class="diff-bar easy" id="diffEasyBar" title="Easy"></span>
-                                    <span class="diff-bar medium" id="diffMediumBar" title="Medium"></span>
-                                    <span class="diff-bar hard" id="diffHardBar" title="Hard"></span>
+                        <div class="card metric-tile">
+                            <div class="metric-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i data-lucide="trending-up"></i></div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="dashMetricAvgFit">85%</span>
+                                <span class="metric-lbl">Average Candidate Fit</span>
+                            </div>
+                        </div>
+                        <div class="card metric-tile">
+                            <div class="metric-icon" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;"><i data-lucide="award"></i></div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="dashMetricTopDomain" style="font-size:15px; font-weight:700;">Full Stack</span>
+                                <span class="metric-lbl">Top Evaluated Domain</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action Launchpads -->
+                    <h3 style="font-family: var(--font-heading); font-size: 18px; color: var(--text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="zap" style="color: var(--color-primary-light);"></i> Quick Actions & Workflow Launchpad
+                    </h3>
+
+                    <div class="launchpad-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
+                        <a href="/navigator.html" class="card launchpad-card" style="text-decoration:none; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+                            <div class="launchpad-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; color: var(--color-primary-light);">
+                                    <i data-lucide="compass" style="width: 22px; height: 22px;"></i>
                                 </div>
-                                <span class="dash-label">Difficulty Distribution</span>
-                            </div>
-                        </div>
-                        <div class="dash-card">
-                            <div class="dash-icon" style="background-color:rgba(6, 182, 212, 0.1); color:var(--color-info);"><i data-lucide="clock"></i></div>
-                            <div class="dash-text">
-                                <span class="dash-val" id="metricsLatency">0.0s</span>
-                                <span class="dash-label">Total Latency</span>
-                            </div>
-                        </div>
-                        <div class="dash-card">
-                            <div class="dash-icon" style="background-color:rgba(168, 85, 247, 0.1); color:var(--color-secondary);"><i data-lucide="cpu"></i></div>
-                            <div class="dash-text">
-                                <span class="dash-val" id="metricsTokens">0</span>
-                                <span class="dash-label">Total Tokens</span>
-                            </div>
-                        </div>
-                        <div class="dash-card">
-                            <div class="dash-icon" style="background-color:rgba(16, 185, 129, 0.1); color:var(--color-success);"><i data-lucide="dollar-sign"></i></div>
-                            <div class="dash-text">
-                                <span class="dash-val" id="metricsCost">$0.00</span>
-                                <span class="dash-label">Estimated Cost</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Parsed Candidate Fit Analysis -->
-                    <div class="job-profile-card" id="jobProfileBlock" style="display: none;">
-                        <div class="profile-header">
-                            <i data-lucide="fingerprint"></i>
-                            <h4>AI Parsed Requirements Fit</h4>
-                        </div>
-                        <div class="profile-body">
-                            <div class="profile-column">
-                                <span class="section-label">Candidate Persona Summary</span>
-                                <p class="profile-text" id="parsedCandidateProfile">...</p>
-                            </div>
-                            <div class="profile-grid-cols">
-                                <div class="profile-sub-col">
-                                    <span class="section-label">Extracted Tech Competencies</span>
-                                    <div class="profile-tags" id="parsedTechSkills"></div>
-                                </div>
-                                <div class="profile-sub-col">
-                                    <span class="section-label">Expected Soft Skills</span>
-                                    <ul class="profile-checklist" id="parsedSoftSkills"></ul>
+                                <div>
+                                    <h4 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary);">Career Navigator</h4>
+                                    <span style="font-size: 11px; color: var(--color-primary-light); font-weight: 600;">AI ROLE MATCHER</span>
                                 </div>
                             </div>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 14px;">
+                                Upload candidate resumes (PDF/DOCX) to get tiered role suitability scores (Junior/Mid/Senior) and extract Leadership, Hackathons, & Internships.
+                            </p>
+                            <div class="btn-secondary" style="width: 100%; justify-content: center;">
+                                <span>Screen Resume Now</span>
+                                <i data-lucide="arrow-right"></i>
+                            </div>
+                        </a>
+
+                        <a href="/architect.html" class="card launchpad-card" style="text-decoration:none; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+                            <div class="launchpad-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: var(--color-success);">
+                                    <i data-lucide="brain-circuit" style="width: 22px; height: 22px;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary);">Interview Architect</h4>
+                                    <span style="font-size: 11px; color: var(--color-success); font-weight: 600;">GUIDE GENERATOR</span>
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 14px;">
+                                Input job specifications & optional candidate resume to generate 6-question structured interview guides with model scorecards.
+                            </p>
+                            <div class="btn-secondary" style="width: 100%; justify-content: center;">
+                                <span>Build Interview Guide</span>
+                                <i data-lucide="arrow-right"></i>
+                            </div>
+                        </a>
+
+                        <a href="/navigator.html" class="card launchpad-card" style="text-decoration:none; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+                            <div class="launchpad-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+                                    <i data-lucide="arrow-left-right" style="width: 22px; height: 22px;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary);">Candidate Version Tracker</h4>
+                                    <span style="font-size: 11px; color: #f59e0b; font-weight: 600;">BEFORE VS AFTER COMPARISON</span>
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 14px;">
+                                Select an existing candidate profile, upload an updated resume version, and view a side-by-side score delta progression table.
+                            </p>
+                            <div class="btn-secondary" style="width: 100%; justify-content: center;">
+                                <span>Re-Screen Saved Candidate</span>
+                                <i data-lucide="arrow-right"></i>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Recent Screening Activity Timeline -->
+                    <div class="card" style="padding: 20px;">
+                        <h3 style="font-family: var(--font-heading); font-size: 16px; color: var(--text-primary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="history" style="color: var(--color-primary-light);"></i> Recent Candidate Screening Activity
+                        </h3>
+                        <div id="dashRecentActivityFeed">
+                            <p style="font-size: 13px; color: var(--text-muted);">No recent candidate screenings. Click <strong>Screen Resume Now</strong> to begin!</p>
                         </div>
                     </div>
-
-                    <!-- Candidate Resume Match & Personalized Custom Questions Section -->
-                    <div class="resume-fit-banner card-sub" id="resumeFitBanner" style="display: none;">
-                        <!-- Dynamically populated when a resume is provided -->
-                    </div>
-
-                    <div class="questions-accordion" id="questionsAccordion">
-                        <!-- Questions will be dynamically inserted here -->
-                    </div>
-                </section>
+                </div>
             </div>
+        </main>
+    </div>
 
-            <!-- CAREER NAVIGATOR TAB CONTENT -->
-            <div id="tabNavigatorContent" class="tab-pane" style="display: none;">
-                <section class="navigator-hero-card card">
-                    <div class="hero-header">
-                        <div class="hero-icon-container">
-                            <i data-lucide="compass" class="hero-icon"></i>
-                        </div>
-                        <div>
-                            <h2>AI Career Navigator & Role Recommender</h2>
-                            <p>Upload your resume in any format (PDF, DOCX, TXT) to get AI-recommended career paths with fit score breakdowns across <strong>Beginner</strong>, <strong>Intermediate</strong>, and <strong>Experienced</strong> levels.</p>
-                        </div>
-                    </div>
-
-                    <div class="navigator-upload-zone">
-                        <!-- Candidate Profile Controls -->
-                        <div class="candidate-profile-controls" style="margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="candidateSelectorSelect" style="font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                                    <i data-lucide="user-plus" style="width:14px; height:14px; color:var(--color-primary);"></i> Re-Screen Saved Candidate
-                                </label>
-                                <select id="candidateSelectorSelect" class="form-select" style="padding: 10px; font-size: 13px;">
-                                    <option value="">-- Start New Candidate Profile --</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label for="candidateNameInput" style="font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                                    <i data-lucide="user" style="width:14px; height:14px;"></i> Candidate Name
-                                </label>
-                                <input type="text" id="candidateNameInput" class="form-control" placeholder="e.g. Alex Johnson (Auto-parsed if left empty)" style="padding: 10px; font-size: 13px;">
-                            </div>
-                        </div>
-
-                        <div class="resume-dropzone large-dropzone" id="navigatorResumeDropzone">
-                            <input type="file" id="navigatorResumeInput" accept=".pdf,.docx,.doc,.txt,.md" style="display: none;">
-                            <div class="dropzone-content" id="navigatorDropzoneContent">
-                                <i data-lucide="file-up" class="dropzone-icon"></i>
-                                <div class="dropzone-text">
-                                    <strong>Drop candidate resume here or click to browse</strong>
-                                    <span>Supports PDF, DOCX, TXT files (Max 5MB)</span>
-                                </div>
-                            </div>
-                            <div class="resume-file-badge large-badge" id="navigatorResumeBadge" style="display: none;">
-                                <i data-lucide="file-check-2"></i>
-                                <div class="file-info">
-                                    <span class="file-name" id="navigatorFileName">my_resume.pdf</span>
-                                    <span class="file-size" id="navigatorFileWords">Ready for Career Analysis</span>
-                                </div>
-                                <button type="button" class="btn-remove-file" id="removeNavigatorResumeBtn" title="Remove Resume">
-                                    <i data-lucide="x"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="navigator-actions">
-                            <button type="button" class="btn-primary btn-large" id="analyzeCareerBtn">
-                                <i data-lucide="sparkles"></i>
-                                <span>Analyze Resume & Calculate Match Scores</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Career Navigator Loading State -->
-                <section id="navigatorLoading" class="card loading-card" style="display: none;">
-                    <div class="loading-spinner">
-                        <i data-lucide="loader-2" class="spin"></i>
-                    </div>
-                    <h3>Autonomous Career Navigator Agent at work...</h3>
-                    <p>Extracting leadership achievements, student community lead roles, company internships, and calculating level suitability scores.</p>
-                </section>
-
-                <!-- Career Navigator Results Area -->
-                <section id="navigatorResults" class="navigator-results-area" style="display: none;">
-                    <!-- Resume Version Score Delta Comparison Banner -->
-                    <div class="card comparison-banner" id="scoreComparisonBanner" style="display: none;">
-                        <!-- Injected dynamically -->
-                    </div>
-
-                    <!-- Side-by-Side Before vs After Comparison Table -->
-                    <div class="card side-by-side-card" id="sideBySideTableCard" style="display: none;">
-                        <!-- Injected dynamically -->
-                    </div>
-
-                    <!-- Candidate Overview Card -->
-                    <div class="card overview-card" id="candidateOverviewCard">
-                        <!-- Injected dynamically -->
-                    </div>
-
-                    <!-- Specialized Experience Highlights Grid (Leadership, Hackathons, Internships) -->
-                    <div class="highlights-grid" id="highlightsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                        <div class="card highlight-card leadership-card" id="leadershipCard">
-                            <h4 class="highlight-title"><i data-lucide="crown"></i> Leadership & Student Community</h4>
-                            <ul class="highlight-list" id="leadershipList"></ul>
-                        </div>
-                        <div class="card highlight-card hackathon-card" id="hackathonCard">
-                            <h4 class="highlight-title"><i data-lucide="trophy"></i> Hackathons & Key Achievements</h4>
-                            <ul class="highlight-list" id="hackathonList"></ul>
-                        </div>
-                        <div class="card highlight-card internship-card" id="internshipCard">
-                            <h4 class="highlight-title"><i data-lucide="building-2"></i> Company Internships & Work Experience</h4>
-                            <ul class="highlight-list" id="internshipList"></ul>
-                        </div>
-                    </div>
-
-                    <!-- Actionable Dynamic AI Recommendations Card -->
-                    <div class="card recommendations-card" id="recommendationsCard" style="margin-bottom: 20px;">
-                        <h4 class="highlight-title" style="color: var(--color-info);"><i data-lucide="lightbulb"></i> Dynamic AI Recommendations for Career Advancement</h4>
-                        <ul class="highlight-list" id="recommendationsList"></ul>
-                    </div>
-
-                    <!-- Suggested Roles Section -->
-                    <div class="roles-section-header">
-                        <h3><i data-lucide="briefcase"></i> Recommended Job Roles & Level Match Scores</h3>
-                        <p>Suitability scores for Beginner (0-2 yrs), Intermediate (3-5 yrs), and Experienced (5-8+ yrs) levels</p>
-                    </div>
-
-                    <div class="roles-grid" id="rolesGrid">
-                        <!-- Role cards injected dynamically -->
-                    </div>
-                </section>
-
-                    <div class="roles-grid" id="rolesGrid">
-                        <!-- Role cards injected dynamically -->
-                    </div>
-                </section>
+    <!-- INTERACTIVE ONBOARDING TOUR MODAL -->
+    <div class="modal-backdrop" id="onboardingModal" style="display: none;">
+        <div class="modal-card card" style="max-width: 580px; width: 90%; padding: 28px; position: relative;">
+            <button type="button" class="btn-close-modal" id="closeOnboardingBtn" style="position: absolute; right: 16px; top: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+            <div class="onboarding-step-content" id="onboardingStepContent">
+                <!-- Injected dynamically via JavaScript -->
+            </div>
+            <div class="onboarding-modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                <div class="step-indicators" id="onboardingStepIndicators" style="display: flex; gap: 6px;">
+                    <span class="step-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary-light);"></span>
+                    <span class="step-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></span>
+                    <span class="step-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" id="onboardingPrevBtn" style="display: none;">Previous</button>
+                    <button type="button" class="btn-primary" id="onboardingNextBtn">Next Step</button>
+                </div>
             </div>
         </div>
-    </main>
-</div>
+    </div>
 
     <!-- Scripts -->
     <script type="module" src="/app.js"></script>
