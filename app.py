@@ -92,6 +92,11 @@ class EvaluateRequest(BaseModel):
     candidate_answer: str
 
 
+class CustomRoleRequest(BaseModel):
+    resume_text: str
+    role_title: str
+
+
 LOCAL_DEV_USER = {
     "uid": "local_dev_admin",
     "name": "Local Developer Admin",
@@ -253,6 +258,47 @@ async def suggest_roles_endpoint(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Career Navigator Agent failed: {str(e)}")
+
+
+@app.post("/api/analyze-custom-role")
+async def analyze_custom_role_endpoint(req: CustomRoleRequest):
+    """Analyzes candidate resume suitability for a specific custom role."""
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY is not configured.")
+    
+    prompt = f"""You are an expert Executive Career Navigator & Senior Talent Analytics Agent.
+Analyze the following candidate resume text:
+--- BEGIN RESUME ---
+{req.resume_text}
+--- END RESUME ---
+
+Evaluate the candidate's suitability for this specific job role: "{req.role_title}".
+
+Calculate match suitability scores (0 to 100%) for three seniority levels:
+- "beginner_score": How suitable for a Junior/Entry-level position (0-100).
+- "intermediate_score": How suitable for a Mid-level position (0-100).
+- "experienced_score": How suitable for a Senior/Lead position (0-100).
+
+Format the output strictly as a JSON object with keys:
+- "role_title": "{req.role_title}"
+- "domain": Recommend domain name (e.g. "Software Engineering", "Data Science", "DevOps")
+- "match_summary": 1-2 sentence explanation of why candidate fits this role
+- "beginner_score": Integer (0-100)
+- "intermediate_score": Integer (0-100)
+- "experienced_score": Integer (0-100)
+- "key_strengths": List of 3-4 bullet strings (candidate's key selling points for this role)
+- "skill_gaps": List of 2-3 bullet strings (recommended learning/improvement areas for this role)
+- "recommended_next_steps": String with 1 actionable career advice sentence.
+
+Return ONLY valid JSON.
+"""
+    try:
+        from agent import query_groq_helper
+        res_str, usage = query_groq_helper(prompt, json_mode=True)
+        return json.loads(res_str)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to analyze custom role: {str(e)}")
 
 
 @app.get("/api/candidate-sessions")

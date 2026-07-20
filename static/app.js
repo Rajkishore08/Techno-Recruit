@@ -284,6 +284,151 @@ function initApp() {
         });
     }
 
+    // Collapsible Sidebar Toggle Setup
+    const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+    const sidebar = document.querySelector(".sidebar");
+    
+    if (sidebarToggleBtn && sidebar) {
+        const isCollapsed = localStorage.getItem("sidebar_collapsed") === "true";
+        if (isCollapsed) {
+            sidebar.classList.add("collapsed");
+            const toggleIcon = sidebarToggleBtn.querySelector("i");
+            if (toggleIcon) toggleIcon.setAttribute("data-lucide", "menu-square");
+        }
+
+        sidebarToggleBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+            const currentlyCollapsed = sidebar.classList.contains("collapsed");
+            localStorage.setItem("sidebar_collapsed", currentlyCollapsed);
+            
+            const toggleIcon = sidebarToggleBtn.querySelector("i");
+            if (toggleIcon) {
+                toggleIcon.setAttribute("data-lucide", currentlyCollapsed ? "menu-square" : "menu");
+            }
+            if (window.lucide) lucide.createIcons();
+        });
+    }
+
+    // Custom Role Analysis Event Handler
+    const analyzeCustomRoleBtn = document.getElementById("analyzeCustomRoleBtn");
+    const customRoleInput = document.getElementById("customRoleInput");
+    const customRoleLoading = document.getElementById("customRoleLoading");
+
+    if (analyzeCustomRoleBtn && customRoleInput && customRoleLoading) {
+        analyzeCustomRoleBtn.addEventListener("click", async () => {
+            const roleTitle = customRoleInput.value.trim();
+            if (!roleTitle) {
+                alert("Please enter a target job title.");
+                return;
+            }
+
+            if (!navigatorResumeText || !navigatorResumeText.trim()) {
+                alert("Please upload or parse a resume first to evaluate suitability against.");
+                return;
+            }
+
+            analyzeCustomRoleBtn.disabled = true;
+            customRoleLoading.style.display = "block";
+
+            try {
+                const response = await fetch(`${API_BASE}/api/analyze-custom-role`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${currentIdToken}`
+                    },
+                    body: JSON.stringify({
+                        resume_text: navigatorResumeText,
+                        role_title: roleTitle
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    throw new Error(err || "Failed to analyze custom role suitability.");
+                }
+
+                const role = await response.json();
+                
+                if (rolesGrid) {
+                    const roleCard = document.createElement("div");
+                    roleCard.className = "role-card custom-analyzed-role";
+                    roleCard.style.border = "1px solid var(--color-primary-light)";
+                    roleCard.style.boxShadow = "0 8px 24px rgba(99, 102, 241, 0.2)";
+
+                    const strengths = (role.key_strengths || []).map(s => `<li>${s}</li>`).join("");
+                    const gaps = (role.skill_gaps || []).map(g => `<li>${g}</li>`).join("");
+
+                    roleCard.innerHTML = `
+                        <div class="role-card-header">
+                            <h4 style="color:var(--color-primary-light);"><i data-lucide="plus-circle" style="width:18px; height:18px; vertical-align:middle; margin-right:4px;"></i> ${role.role_title}</h4>
+                            <span class="domain-pill" style="background:rgba(99,102,241,0.2); color:var(--color-primary-light); border:1px solid var(--color-primary-light);">${role.domain || "Technology"}</span>
+                        </div>
+                        <p class="role-match-summary">${role.match_summary}</p>
+                        
+                        <div class="level-scores-box">
+                            <div class="level-score-row">
+                                <div class="level-score-label">
+                                    <span>Junior / Beginner Match</span>
+                                    <span class="score-val beginner">${role.beginner_score || 0}%</span>
+                                </div>
+                                <div class="level-meter-bg">
+                                    <div class="level-meter-fill beginner" style="width: ${role.beginner_score || 0}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="level-score-row">
+                                <div class="level-score-label">
+                                    <span>Mid-Level Match</span>
+                                    <span class="score-val intermediate">${role.intermediate_score || 0}%</span>
+                                </div>
+                                <div class="level-meter-bg">
+                                    <div class="level-meter-fill intermediate" style="width: ${role.intermediate_score || 0}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="level-score-row">
+                                <div class="level-score-label">
+                                    <span>Senior / Lead Match</span>
+                                    <span class="score-val experienced">${role.experienced_score || 0}%</span>
+                                </div>
+                                <div class="level-meter-bg">
+                                    <div class="level-meter-fill experienced" style="width: ${role.experienced_score || 0}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="role-details-section">
+                            <div class="detail-block">
+                                <h5 class="strengths-title"><i data-lucide="check-circle-2"></i> Key Candidate Strengths</h5>
+                                <ul class="details-list">${strengths}</ul>
+                            </div>
+                            <div class="detail-block">
+                                <h5 class="gaps-title"><i data-lucide="x-circle"></i> Identified Skill Gaps</h5>
+                                <ul class="details-list">${gaps}</ul>
+                            </div>
+                        </div>
+
+                        <div class="role-next-steps">
+                            <h5><i data-lucide="arrow-right-circle"></i> Recommended Next Steps</h5>
+                            <p>${role.recommended_next_steps}</p>
+                        </div>
+                    `;
+
+                    rolesGrid.insertBefore(roleCard, rolesGrid.firstChild);
+                    customRoleInput.value = "";
+                    roleCard.scrollIntoView({ behavior: "smooth", block: "center" });
+                    if (window.lucide) lucide.createIcons();
+                }
+            } catch (err) {
+                alert(`Custom Role Analysis Error: ${err.message}`);
+            } finally {
+                analyzeCustomRoleBtn.disabled = false;
+                customRoleLoading.style.display = "none";
+            }
+        });
+    }
+
     // Trigger Firebase init
     initFirebase();
 
