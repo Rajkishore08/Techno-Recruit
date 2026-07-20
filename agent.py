@@ -194,6 +194,81 @@ Do not wrap in markdown code blocks.
     return query_groq_helper(prompt, json_mode=True)
 
 
+def run_resume_role_suggester_agent(resume_text: str) -> tuple:
+    """Career Navigator Agent: analyzes candidate resume and recommends optimal career roles with tiered match scores."""
+    prompt = f"""You are an expert Executive Career Navigator & Technical Resume Analyst Agent.
+Analyze the following candidate resume text:
+
+--- BEGIN RESUME ---
+{resume_text}
+--- END RESUME ---
+
+Perform a thorough analysis of candidate experience, technical skillset, leadership, and achievements.
+Recommend 3 to 5 matching job roles for this candidate.
+For EACH suggested role, calculate match suitability scores (0 to 100%) for three seniority levels:
+1. "beginner_score": How suitable the candidate is for a Junior/Entry-level position in this role (0-100).
+2. "intermediate_score": How suitable the candidate is for a Mid-level position in this role (0-100).
+3. "experienced_score": How suitable the candidate is for a Senior/Lead position in this role (0-100).
+
+Also extract candidate strengths and key skill gaps for each role.
+
+Format the output strictly as a JSON object with keys:
+- "candidate_summary": A 2-3 sentence overview of candidate profile and primary expertise.
+- "top_skills_identified": A list of 5-8 primary skills extracted from the resume.
+- "suggested_roles": A list of role objects, where each role object contains:
+    - "role_title": String (e.g. "Senior Full Stack Engineer")
+    - "domain": String (e.g. "Software Engineering", "Data Science", "DevOps")
+    - "match_summary": 1-2 sentence explanation of why candidate fits this role
+    - "beginner_score": Integer (0-100)
+    - "intermediate_score": Integer (0-100)
+    - "experienced_score": Integer (0-100)
+    - "key_strengths": List of 3-4 bullet strings (candidate's key selling points for this role)
+    - "skill_gaps": List of 2-3 bullet strings (recommended learning/improvement areas for this role)
+    - "recommended_next_steps": String with 1 actionable career advice sentence.
+
+Return ONLY valid JSON. Do not wrap in markdown code blocks.
+"""
+    return query_groq_helper(prompt, json_mode=True)
+
+
+def run_resume_jd_matcher_agent(resume_text: str, job_title: str, job_description: str, experience_level: str) -> tuple:
+    """Resume vs JD Matcher Agent: evaluates candidate fit for specific job description and generates 3 custom resume questions."""
+    prompt = f"""You are a Senior Talent Acquisition & Technical Screener Agent.
+Compare the following Candidate Resume against the Target Job Opening:
+
+Job Title: {job_title}
+Seniority Level: {experience_level}
+Job Description:
+{job_description}
+
+--- CANDIDATE RESUME ---
+{resume_text}
+--- END CANDIDATE RESUME ---
+
+Perform a deep match analysis:
+1. Overall Match Fit Percentage (0 to 100).
+2. Fit Category (e.g. "Exceptional Match", "Strong Match", "Moderate Fit", "Requires Upskilling").
+3. List of Matched Skills & Qualifications.
+4. List of Missing Requirements or Potential Gaps.
+5. Generate exactly THREE (3) highly personalized, custom interview questions tailored specifically to the candidate's actual projects, achievements, or employment history mentioned in their resume relative to this job opening.
+
+Format the output strictly as a JSON object with keys:
+- "overall_fit_score": Integer (0-100)
+- "fit_level": String
+- "summary_reasoning": 2-3 sentence overview of fit
+- "matched_skills": List of strings
+- "missing_requirements": List of strings
+- "personalized_questions": A list of 3 objects, each containing:
+    - "id": Integer (1, 2, 3)
+    - "question": Question text referencing candidate's specific background or project
+    - "focus_area": Target skill or experience being probed
+    - "sample_ideal_answer": Sample ideal candidate response grounded in their resume context
+
+Return ONLY valid JSON. Do not wrap in markdown code blocks.
+"""
+    return query_groq_helper(prompt, json_mode=True)
+
+
 # =====================================================================
 # Database Operations
 # =====================================================================
@@ -273,6 +348,32 @@ def run_interview_generator_agent(
     categories = details.get("categories", ["Technical", "Behavioral"])
     count = details.get("count", 5)
     uid = details.get("uid", "")
+    resume_text = details.get("resume_text", "")
+
+    resume_match_obj = None
+
+    # ------------------------------------------------------------
+    # 0. RESUME MATCHER AGENT (OPTIONAL)
+    # ------------------------------------------------------------
+    if resume_text and resume_text.strip():
+        yield {
+            "phase": "RESUME_MATCHER",
+            "message": f"🤖 [Resume Screener Agent] Cross-referencing candidate resume against '{job_title}' requirements...",
+            "iteration": 0
+        }
+        try:
+            match_json_str, usage = run_resume_jd_matcher_agent(resume_text, job_title, job_description, experience_level)
+            accumulate_tokens(usage)
+            resume_match_obj = json.loads(match_json_str)
+            yield {
+                "phase": "OBSERVE",
+                "message": f"[Resume Screener Agent] Calculated {resume_match_obj.get('overall_fit_score', 0)}% JD fit match.",
+                "tool": "resume_matcher",
+                "result": match_json_str,
+                "iteration": 0
+            }
+        except Exception as e:
+            yield {"phase": "OBSERVE", "message": f"[Resume Screener Agent] Resume parse note: {str(e)}", "tool": "resume_matcher", "result": "{}", "iteration": 0}
 
     # ------------------------------------------------------------
     # 1. JD PARSER AGENT
@@ -508,7 +609,8 @@ def run_interview_generator_agent(
         "experience_level": experience_level,
         "job_analysis": analysis_obj,
         "questions": questions_list,
-        "metrics": metrics_obj
+        "metrics": metrics_obj,
+        "resume_match": resume_match_obj
     }
     
     yield {

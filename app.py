@@ -61,12 +61,26 @@ app.add_middleware(
 )
 
 
+from fastapi import FastAPI, HTTPException, Header, Depends, UploadFile, File, Form
+from resume_parser import extract_resume_text
+from agent import (
+    run_interview_generator_agent,
+    run_resume_role_suggester_agent,
+    run_resume_jd_matcher_agent
+)
+
+
 class InterviewRequest(BaseModel):
     job_title: str
     job_description: str
     experience_level: str
     categories: List[str]
     count: int = 5
+    resume_text: Optional[str] = None
+
+
+class SuggestRolesRequest(BaseModel):
+    resume_text: str
 
 
 class TweakRequest(BaseModel):
@@ -113,6 +127,60 @@ def get_firebase_config():
     }
 
 
+@app.post("/api/parse-resume")
+async def parse_resume_endpoint(file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    """Extracts text content from uploaded resume file (PDF, DOCX, TXT)."""
+    try:
+        content = await file.read()
+        extracted_text = extract_resume_text(content, file.filename)
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "resume_text": extracted_text,
+            "word_count": len(extracted_text.split())
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to process resume file: {str(e)}")
+
+
+@app.post("/api/suggest-roles")
+async def suggest_roles_endpoint(
+    file: Optional[UploadFile] = File(None),
+    resume_text: Optional[str] = Form(None),
+    user: dict = Depends(get_current_user)
+):
+    """
+    Career Navigator Agent Endpoint:
+    Analyzes resume (file or text) and recommends matching career roles with Beginner/Intermediate/Experienced scores.
+    """
+    api_key = os.environ.get("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY environment variable is not configured.")
+
+    target_resume_text = ""
+    if file:
+        try:
+            content = await file.read()
+            target_resume_text = extract_resume_text(content, file.filename)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Resume file error: {str(e)}")
+    elif resume_text and resume_text.strip():
+        target_resume_text = resume_text.strip()
+    else:
+        raise HTTPException(status_code=400, detail="Please upload a resume file or provide resume text.")
+
+    try:
+        result_json_str, usage = run_resume_role_suggester_agent(target_resume_text)
+        result_data = json.loads(result_json_str)
+        return {
+            "status": "success",
+            "data": result_data,
+            "usage": usage
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Career Navigator Agent failed: {str(e)}")
+
+
 @app.post("/api/generate")
 def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_user)):
     """
@@ -132,6 +200,7 @@ def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_u
         "experience_level": req.experience_level,
         "categories": req.categories,
         "count": req.count,
+        "resume_text": req.resume_text or "",
         "uid": user["uid"]
     }
 

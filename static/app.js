@@ -148,8 +148,264 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Trigger Firebase init
-    initFirebase();
+    // Tab Switcher Logic
+    const tabArchitectBtn = document.getElementById("tabArchitectBtn");
+    const tabNavigatorBtn = document.getElementById("tabNavigatorBtn");
+    const tabArchitectContent = document.getElementById("tabArchitectContent");
+    const tabNavigatorContent = document.getElementById("tabNavigatorContent");
+
+    if (tabArchitectBtn && tabNavigatorBtn) {
+        tabArchitectBtn.addEventListener("click", () => switchTab("architect"));
+        tabNavigatorBtn.addEventListener("click", () => switchTab("navigator"));
+    }
+
+    function switchTab(tabName) {
+        if (tabName === "architect") {
+            tabArchitectBtn.classList.add("active");
+            tabNavigatorBtn.classList.remove("active");
+            tabArchitectContent.style.display = "block";
+            tabNavigatorContent.style.display = "none";
+        } else {
+            tabNavigatorBtn.classList.add("active");
+            tabArchitectBtn.classList.remove("active");
+            tabNavigatorContent.style.display = "block";
+            tabArchitectContent.style.display = "none";
+        }
+        lucide.createIcons();
+    }
+
+    // Resume State & Drag-and-Drop Parsing Logic
+    let architectResumeText = "";
+    let navigatorResumeText = "";
+
+    async function handleResumeUpload(file, badgeEl, fileNameEl, fileWordsEl, textAssignCallback) {
+        if (!file) return;
+        badgeEl.style.display = "flex";
+        fileNameEl.textContent = file.name;
+        fileWordsEl.textContent = "Parsing text...";
+        fileWordsEl.style.color = "var(--color-info)";
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const headers = {};
+            if (currentIdToken) {
+                headers["Authorization"] = `Bearer ${currentIdToken}`;
+            }
+
+            const response = await fetch(`${API_BASE}/api/parse-resume`, {
+                method: "POST",
+                headers: headers,
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.text();
+                throw new Error(err || "Resume parsing failed.");
+            }
+
+            const data = await response.json();
+            textAssignCallback(data.resume_text);
+            fileWordsEl.textContent = `${data.word_count || 0} words extracted`;
+            fileWordsEl.style.color = "var(--color-success)";
+        } catch (err) {
+            alert(`Resume Upload Error: ${err.message}`);
+            badgeEl.style.display = "none";
+            textAssignCallback("");
+        }
+    }
+
+    function setupDropzone(dropzoneId, inputId, badgeId, fileNameId, wordsId, removeBtnId, textAssignCallback) {
+        const dropzone = document.getElementById(dropzoneId);
+        const input = document.getElementById(inputId);
+        const badge = document.getElementById(badgeId);
+        const fileName = document.getElementById(fileNameId);
+        const words = document.getElementById(wordsId);
+        const removeBtn = document.getElementById(removeBtnId);
+
+        if (!dropzone || !input) return;
+
+        dropzone.addEventListener("click", (e) => {
+            if (e.target.closest(`#${removeBtnId}`)) return;
+            input.click();
+        });
+
+        dropzone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropzone.classList.add("dragover");
+        });
+
+        dropzone.addEventListener("dragleave", () => {
+            dropzone.classList.remove("dragover");
+        });
+
+        dropzone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropzone.classList.remove("dragover");
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleResumeUpload(e.dataTransfer.files[0], badge, fileName, words, textAssignCallback);
+            }
+        });
+
+        input.addEventListener("change", (e) => {
+            if (e.target.files.length > 0) {
+                handleResumeUpload(e.target.files[0], badge, fileName, words, textAssignCallback);
+            }
+        });
+
+        if (removeBtn) {
+            removeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                input.value = "";
+                badge.style.display = "none";
+                textAssignCallback("");
+            });
+        }
+    }
+
+    setupDropzone("architectResumeDropzone", "architectResumeInput", "architectResumeBadge", "architectFileName", "architectFileWords", "removeArchitectResumeBtn", (txt) => { architectResumeText = txt; });
+    setupDropzone("navigatorResumeDropzone", "navigatorResumeInput", "navigatorResumeBadge", "navigatorFileName", "navigatorFileWords", "removeNavigatorResumeBtn", (txt) => { navigatorResumeText = txt; });
+
+    // Career Navigator Agent Execution
+    const analyzeCareerBtn = document.getElementById("analyzeCareerBtn");
+    const navigatorLoading = document.getElementById("navigatorLoading");
+    const navigatorResults = document.getElementById("navigatorResults");
+    const candidateOverviewCard = document.getElementById("candidateOverviewCard");
+    const rolesGrid = document.getElementById("rolesGrid");
+
+    if (analyzeCareerBtn) {
+        analyzeCareerBtn.addEventListener("click", async () => {
+            if (!currentUser) {
+                alert("Please sign in with Google first.");
+                return;
+            }
+
+            if (!navigatorResumeText || !navigatorResumeText.trim()) {
+                alert("Please upload a candidate resume file (PDF, DOCX, or TXT) first.");
+                return;
+            }
+
+            analyzeCareerBtn.disabled = true;
+            navigatorLoading.style.display = "block";
+            navigatorResults.style.display = "none";
+            navigatorLoading.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            try {
+                const formData = new FormData();
+                formData.append("resume_text", navigatorResumeText);
+
+                const response = await fetch(`${API_BASE}/api/suggest-roles`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${currentIdToken}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    throw new Error(err || "Career Navigator Agent failed.");
+                }
+
+                const resData = await response.json();
+                renderCareerNavigatorResults(resData.data);
+            } catch (e) {
+                alert(`Career Analysis Error: ${e.message}`);
+            } finally {
+                analyzeCareerBtn.disabled = false;
+                navigatorLoading.style.display = "none";
+            }
+        });
+    }
+
+    function renderCareerNavigatorResults(data) {
+        if (!data) return;
+        navigatorResults.style.display = "block";
+        navigatorResults.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        const topSkills = data.top_skills_identified || [];
+        candidateOverviewCard.innerHTML = `
+            <div class="overview-title">
+                <i data-lucide="user-check"></i>
+                Candidate Profile Overview
+            </div>
+            <p class="overview-summary">${data.candidate_summary || "Candidate background analyzed successfully."}</p>
+            <div class="overview-skills-tags">
+                ${topSkills.map(s => `<span class="overview-skill-tag">${s}</span>`).join("")}
+            </div>
+        `;
+
+        rolesGrid.innerHTML = "";
+        const roles = data.suggested_roles || [];
+        roles.forEach(role => {
+            const roleCard = document.createElement("div");
+            roleCard.className = "role-card";
+
+            const strengths = (role.key_strengths || []).map(s => `<li>${s}</li>`).join("");
+            const gaps = (role.skill_gaps || []).map(g => `<li>${g}</li>`).join("");
+
+            roleCard.innerHTML = `
+                <div class="role-card-header">
+                    <h4>${role.role_title}</h4>
+                    <span class="domain-pill">${role.domain || "Technology"}</span>
+                </div>
+                <p class="role-match-summary">${role.match_summary}</p>
+                
+                <div class="level-scores-box">
+                    <div class="level-score-row">
+                        <div class="level-score-label">
+                            <span>Junior / Beginner Match</span>
+                            <span class="score-val beginner">${role.beginner_score || 0}%</span>
+                        </div>
+                        <div class="level-meter-bg">
+                            <div class="level-meter-fill beginner" style="width: ${role.beginner_score || 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="level-score-row">
+                        <div class="level-score-label">
+                            <span>Mid-Level Match</span>
+                            <span class="score-val intermediate">${role.intermediate_score || 0}%</span>
+                        </div>
+                        <div class="level-meter-bg">
+                            <div class="level-meter-fill intermediate" style="width: ${role.intermediate_score || 0}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="level-score-row">
+                        <div class="level-score-label">
+                            <span>Senior / Lead Match</span>
+                            <span class="score-val experienced">${role.experienced_score || 0}%</span>
+                        </div>
+                        <div class="level-meter-bg">
+                            <div class="level-meter-fill experienced" style="width: ${role.experienced_score || 0}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-details-section">
+                    <div class="detail-block">
+                        <h5 class="strengths-title"><i data-lucide="check-circle-2"></i> Key Candidate Strengths</h5>
+                        <ul class="detail-list">${strengths || "<li>Solid baseline qualification</li>"}</ul>
+                    </div>
+
+                    <div class="detail-block">
+                        <h5 class="gaps-title"><i data-lucide="trending-up"></i> Skill Gaps & Focus Areas</h5>
+                        <ul class="detail-list">${gaps || "<li>Deepen domain specialization</li>"}</ul>
+                    </div>
+
+                    ${role.recommended_next_steps ? `
+                    <div class="advice-tip">
+                        <strong>Career Tip:</strong> ${role.recommended_next_steps}
+                    </div>` : ''}
+                </div>
+            `;
+            rolesGrid.appendChild(roleCard);
+        });
+
+        lucide.createIcons();
+    }
 
     // Multi-Agent Flowchart States
     function updateFlowchartState(phase) {
@@ -165,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const nodeScorecard = document.getElementById("nodeScorecard");
         const nodeLogger = document.getElementById("nodeLogger");
 
-        if (phase === "INPUT") {
+        if (phase === "INPUT" || phase === "RESUME_MATCHER") {
             nodeInput.classList.add("active");
         } else if (phase === "JD_PARSER") {
             nodeJd.classList.add("active");
@@ -206,7 +462,8 @@ document.addEventListener("DOMContentLoaded", () => {
             experience_level: experienceLevelSelect.value,
             count: parseInt(questionCountInput.value),
             categories: checkedCategories,
-            job_description: jobDescriptionInput.value.trim()
+            job_description: jobDescriptionInput.value.trim(),
+            resume_text: architectResumeText
         };
 
         // UI States (disable form, clear previous outputs)
@@ -443,6 +700,59 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
             jobProfileBlock.style.display = "none";
+        }
+
+        // Render Resume Match & 3 Custom Personalized Questions
+        const resumeFitBanner = document.getElementById("resumeFitBanner");
+        if (guide.resume_match && resumeFitBanner) {
+            const match = guide.resume_match;
+            resumeFitBanner.style.display = "block";
+
+            const matchedPills = (match.matched_skills || []).map(s => `<span class="profile-tag" style="background:rgba(16,185,129,0.15); color:var(--color-success); border-color:rgba(16,185,129,0.3);">${s}</span>`).join("");
+            const missingPills = (match.missing_requirements || []).map(s => `<span class="profile-tag" style="background:rgba(245,158,11,0.15); color:var(--color-warning); border-color:rgba(245,158,11,0.3);">${s}</span>`).join("");
+
+            const customQs = (match.personalized_questions || []).map(q => `
+                <div class="custom-q-item">
+                    <div class="custom-q-text">Q: ${q.question}</div>
+                    <div class="custom-q-focus">🎯 Focus Area: ${q.focus_area}</div>
+                    ${q.sample_ideal_answer ? `<div style="font-size:12px; color:var(--text-secondary); margin-top:6px;"><strong>Ideal Response (Resume Context):</strong> ${q.sample_ideal_answer}</div>` : ''}
+                </div>
+            `).join("");
+
+            resumeFitBanner.innerHTML = `
+                <div class="resume-fit-header">
+                    <div>
+                        <h4 style="font-family:var(--font-heading); font-size:18px; color:var(--text-primary); margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="user-check" style="width:20px; height:20px; color:var(--color-success);"></i>
+                            Candidate Resume Fit Analysis
+                        </h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">${match.summary_reasoning || ''}</p>
+                    </div>
+                    <div class="fit-score-badge">
+                        ${match.overall_fit_score || 0}% Fit
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:14px;">
+                    <div>
+                        <span class="section-label" style="color:var(--color-success);">Matched Qualifications</span>
+                        <div class="profile-tags">${matchedPills || '<span>General background alignment</span>'}</div>
+                    </div>
+                    <div>
+                        <span class="section-label" style="color:var(--color-warning);">Gaps / Areas to Probe</span>
+                        <div class="profile-tags">${missingPills || '<span>No major gaps identified</span>'}</div>
+                    </div>
+                </div>
+
+                ${customQs ? `
+                <div class="custom-resume-questions-card">
+                    <h5><i data-lucide="sparkles"></i> 3 Personalized Custom Questions (Based on Candidate Resume)</h5>
+                    ${customQs}
+                </div>` : ''}
+            `;
+            lucide.createIcons();
+        } else if (resumeFitBanner) {
+            resumeFitBanner.style.display = "none";
         }
 
         questionsAccordion.innerHTML = "";

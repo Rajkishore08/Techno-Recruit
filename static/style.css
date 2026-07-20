@@ -1328,3 +1328,560 @@ input[type="range"]::-webkit-slider-thumb:hover {
     }
 }
 
+/* =====================================================================
+   App Navigation Tabs & Dropzones
+   ===================================================================== */
+
+.app-tabs {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 2px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-smooth);
+    position: relative;
+}
+
+.tab-btn i {
+    width: 18px;
+    height: 18px;
+    transition: var(--transition-smooth);
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tab-btn.active {
+    color: var(--color-primary-light);
+    background-color: rgba(99, 102, 241, 0.08);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -2px 8px rgba(99, 102, 241, 0.6);
+}
+
+.tab-badge {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.label-optional {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: normal;
+    margin-left: 4px;
+}
+
+/* Resume Dropzone */
+.resume-dropzone {
+    border: 2px dashed rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius-md);
+    background-color: rgba(15, 23, 42, 0.4);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.resume-dropzone:hover, .resume-dropzone.dragover {
+    border-color: var(--color-primary);
+    background-color: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+}
+
+.dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropzone-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--color-primary-light);
+}
+
+.dropzone-text strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.dropzone-text span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.resume-file-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    text-align: left;
+}
+
+.resume-file-badge i {
+    width: 24px;
+    height: 24px;
+    color: var(--color-primary-light);
+}
+
+.resume-file-badge .file-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.resume-file-badge .file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.resume-file-badge .file-size {
+    font-size: 12px;
+    color: var(--color-success);
+}
+
+.btn-remove-file {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: var(--transition-smooth);
+}
+
+.btn-remove-file:hover {
+    color: var(--color-error);
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* =====================================================================
+   Career Navigator Tab Styles
+   ===================================================================== */
+
+.navigator-hero-card {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.hero-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.hero-icon-container {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hero-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--color-primary-light);
+}
+
+.hero-header h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.hero-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.large-dropzone {
+    padding: 36px 20px;
+    border-width: 2px;
+}
+
+.large-dropzone .dropzone-icon {
+    width: 44px;
+    height: 44px;
+}
+
+.navigator-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-large {
+    padding: 12px 28px;
+    font-size: 15px;
+}
+
+/* Loading Card */
+.loading-card {
+    text-align: center;
+    padding: 48px 24px;
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.loading-spinner i {
+    width: 40px;
+    height: 40px;
+    color: var(--color-primary-light);
+    margin-bottom: 16px;
+}
+
+.spin {
+    animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* Overview Card */
+.overview-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.overview-title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.overview-summary {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.overview-skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.overview-skill-tag {
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--color-primary-light);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* Roles Section */
+.roles-section-header {
+    margin-bottom: 20px;
+}
+
+.roles-section-header h3 {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.roles-section-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+.role-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: var(--transition-smooth);
+}
+
+.role-card:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.role-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.role-card-header h4 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.domain-pill {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--color-info);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.role-match-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Tiered Level Match Gauges */
+.level-scores-box {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.level-score-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.level-score-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.level-score-label span:first-child {
+    color: var(--text-secondary);
+}
+
+.level-score-label .score-val {
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.level-score-label .score-val.beginner { color: var(--color-success); }
+.level-score-label .score-val.intermediate { color: var(--color-info); }
+.level-score-label .score-val.experienced { color: var(--color-secondary); }
+
+.level-meter-bg {
+    height: 8px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.level-meter-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+
+.level-meter-fill.beginner { background: linear-gradient(90deg, #10b981, #34d399); }
+.level-meter-fill.intermediate { background: linear-gradient(90deg, #06b6d4, #38bdf8); }
+.level-meter-fill.experienced { background: linear-gradient(90deg, #8b5cf6, #c084fc); }
+
+.role-details-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+}
+
+.detail-block h5 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-block h5.strengths-title { color: var(--color-success); }
+.detail-block h5.gaps-title { color: var(--color-warning); }
+
+.detail-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-list li {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+.detail-list li::before {
+    content: "•";
+    color: var(--text-muted);
+}
+
+.advice-tip {
+    background: rgba(99, 102, 241, 0.08);
+    border-left: 3px solid var(--color-primary-light);
+    padding: 10px 12px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.advice-tip strong {
+    color: var(--color-primary-light);
+}
+
+/* Resume Match Banner inside Interview Architect Output */
+.resume-fit-banner {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.resume-fit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.fit-score-badge {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 800;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+
+.custom-resume-questions-card {
+    margin-top: 16px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.custom-resume-questions-card h5 {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.custom-q-item {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.custom-q-item:last-child {
+    margin-bottom: 0;
+}
+
+.custom-q-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.custom-q-focus {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+
