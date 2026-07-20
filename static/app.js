@@ -58,13 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Firebase
     async function initFirebase() {
         let firebaseConfig = {
-            apiKey: "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
-            authDomain: "techno-recruit.firebaseapp.com",
-            projectId: "techno-recruit",
-            storageBucket: "techno-recruit.firebasestorage.app",
-            messagingSenderId: "235364274013",
-            appId: "1:235364274013:web:9db2497f8946987989e2b4",
-            measurementId: "G-LKVL7NWK5L"
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: "",
+            measurementId: ""
         };
 
         try {
@@ -72,23 +72,28 @@ document.addEventListener("DOMContentLoaded", () => {
             const hostingResponse = await fetch("/__/firebase/init.json");
             if (hostingResponse.ok) {
                 const hConfig = await hostingResponse.json();
-                if (hConfig && hConfig.apiKey && hConfig.apiKey !== "MOCK_API_KEY") {
+                if (hConfig && hConfig.apiKey) {
                     firebaseConfig = hConfig;
                     console.log("Firebase initialized dynamically via Hosting.");
                 }
             } else {
-                // Priority 2: Backend config endpoint
+                // Priority 2: Backend config endpoint (reads from .env)
                 const response = await fetch(`${API_BASE}/api/config`);
                 if (response.ok) {
                     const bConfig = await response.json();
                     if (bConfig && bConfig.apiKey) {
                         firebaseConfig = bConfig;
-                        console.log("Firebase config loaded from backend.");
+                        console.log("Firebase config loaded from environment.");
                     }
                 }
             }
         } catch (e) {
-            console.warn("Using default production config fallback.", e);
+            console.warn("Could not load dynamic Firebase configuration.", e);
+        }
+
+        if (!firebaseConfig.apiKey) {
+            console.warn("Firebase configuration is missing. Ensure environment variables or Firebase Hosting config are set.");
+            return;
         }
 
         const app = initializeApp(firebaseConfig);

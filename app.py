@@ -120,15 +120,15 @@ def index():
 
 @app.get("/api/config")
 def get_firebase_config():
-    """Returns public Firebase configuration for client SDK initialization."""
+    """Returns public Firebase configuration for client SDK initialization from environment variables."""
     return {
-        "apiKey": os.environ.get("FIREBASE_API_KEY", "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8"),
-        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", "techno-recruit.firebaseapp.com"),
-        "projectId": os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit"),
-        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", "techno-recruit.firebasestorage.app"),
-        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", "235364274013"),
-        "appId": os.environ.get("FIREBASE_APP_ID", "1:235364274013:web:9db2497f8946987989e2b4"),
-        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "G-LKVL7NWK5L")
+        "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", ""),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "appId": os.environ.get("FIREBASE_APP_ID", ""),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "")
     }
 
 
