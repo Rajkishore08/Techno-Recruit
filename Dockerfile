@@ -10,8 +10,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files (app.py, agent.py)
-COPY app.py agent.py ./
+# Copy application files (app.py, agent.py, resume_parser.py)
+COPY app.py agent.py resume_parser.py ./
 
 # Copy static directory for standalone container serving/fallback
 COPY static ./static
