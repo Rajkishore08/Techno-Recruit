@@ -55,8 +55,14 @@ function initApp() {
     
     const copyBtn = document.getElementById("copyBtn");
     const exportMdBtn = document.getElementById("exportMdBtn");
-    const printBtn = document.getElementById("printBtn");
     const historyList = document.getElementById("historyList");
+    const careerHistoryList = document.getElementById("careerHistoryList");
+    const tourBtn = document.getElementById("tourBtn");
+    const dashboardStartTourBtn = document.getElementById("dashboardStartTourBtn");
+    const onboardingModal = document.getElementById("onboardingModal");
+    const closeOnboardingBtn = document.getElementById("closeOnboardingBtn");
+    const onboardingNextBtn = document.getElementById("onboardingNextBtn");
+    const onboardingPrevBtn = document.getElementById("onboardingPrevBtn");
 
     let currentGuideData = null;
 

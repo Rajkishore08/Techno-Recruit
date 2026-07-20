@@ -55,7 +55,7 @@ app.add_middleware(
 )
 
 
-from fastapi import HTTPException, Header, Depends, UploadFile, File, Form
+from fastapi import HTTPException, Header, Depends, UploadFile, File, Form, Response
 from resume_parser import extract_resume_text
 from agent import (
     run_interview_generator_agent,
@@ -497,18 +497,19 @@ Format the output strictly as a JSON object with no markdown wrappers or text ou
 
 
 @app.get("/api/history")
-def get_history(user: dict = Depends(get_current_user)):
+def get_history(user: dict = Depends(get_optional_current_user)):
     """Returns list of all saved generated interview guides."""
     if not db:
         return []
     try:
-        uid = user["uid"]
+        uid = user.get("uid", "anonymous")
         docs = db.collection("guides").where("uid", "==", uid).stream()
         history = [doc.to_dict() for doc in docs]
         history.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
         return history
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read database: {str(e)}")
+        print(f"Firestore query notice: {e}")
+        return []
 
 
 @app.get("/api/history/{guide_id}")
