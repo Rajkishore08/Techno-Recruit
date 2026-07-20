@@ -10,6 +10,25 @@ const API_BASE = (window.location.hostname === "localhost" || window.location.ho
     ? "" 
     : "https://techno-recruit.onrender.com";
 
+// Default public Firebase config for immediate synchronous initialization
+const DEFAULT_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
+    authDomain: "techno-recruit.firebaseapp.com",
+    projectId: "techno-recruit",
+    storageBucket: "techno-recruit.firebasestorage.app",
+    messagingSenderId: "235364274013",
+    appId: "1:235364274013:web:9db2497f8946987989e2b4",
+    measurementId: "G-LKVL7NWK5L"
+};
+
+let defaultApp = null;
+try {
+    defaultApp = initializeApp(DEFAULT_FIREBASE_CONFIG);
+    authInstance = getAuth(defaultApp);
+} catch (e) {
+    console.warn("Synchronous default Firebase init warning:", e);
+}
+
 function initApp() {
     // Initialize Lucide Icons
     if (window.lucide) lucide.createIcons();
