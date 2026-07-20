@@ -89,6 +89,7 @@ body {
     letter-spacing: -0.5px;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -320,6 +321,7 @@ textarea:focus {
 input[type="range"] {
     flex: 1;
     -webkit-appearance: none;
+    appearance: none;
     background: var(--border-color);
     height: 6px;
     border-radius: 3px;
@@ -1305,6 +1307,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     margin-bottom: 8px;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
