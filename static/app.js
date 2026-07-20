@@ -61,9 +61,11 @@ function initApp() {
     let currentGuideData = null;
 
     // Synchronize range slider value display
-    questionCountInput.addEventListener("input", (e) => {
-        questionCountVal.textContent = e.target.value;
-    });
+    if (questionCountInput && questionCountVal) {
+        questionCountInput.addEventListener("input", (e) => {
+            questionCountVal.textContent = e.target.value;
+        });
+    }
 
     // DOM Elements for Auth
     const loginBtn = document.getElementById("loginBtn");
@@ -1027,13 +1029,14 @@ function initApp() {
     }
 
     // Form submission
-    generatorForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    if (generatorForm) {
+        generatorForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        const checkedCategories = [];
-        document.querySelectorAll("input[name='categories']:checked").forEach(cb => {
-            checkedCategories.push(cb.value);
-        });
+            const checkedCategories = [];
+            document.querySelectorAll("input[name='categories']:checked").forEach(cb => {
+                checkedCategories.push(cb.value);
+            });
 
         if (checkedCategories.length === 0) {
             alert("Please select at least one question category.");
@@ -1804,37 +1807,41 @@ function initApp() {
     }
 
     // Copy JSON to clipboard
-    copyBtn.addEventListener("click", () => {
-        if (!currentGuideData) return;
-        
-        navigator.clipboard.writeText(JSON.stringify(currentGuideData, null, 2)).then(() => {
-            const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = `<i data-lucide="check" style="color:var(--color-success)"></i> Copied!`;
-            lucide.createIcons();
-            setTimeout(() => {
-                copyBtn.innerHTML = originalHTML;
+    if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+            if (!currentGuideData) return;
+            
+            navigator.clipboard.writeText(JSON.stringify(currentGuideData, null, 2)).then(() => {
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i data-lucide="check" style="color:var(--color-success)"></i> Copied!`;
                 lucide.createIcons();
-            }, 2000);
-        }).catch(err => {
-            console.error("Could not copy text: ", err);
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 2000);
+            }).catch(err => {
+                console.error("Could not copy text: ", err);
+            });
         });
-    });
+    }
 
     // Export Guide to Markdown file download
-    exportMdBtn.addEventListener("click", () => {
-        if (!currentGuideData) return;
-        const mdText = exportToMarkdown(currentGuideData);
-        const blob = new Blob([mdText], { type: "text/markdown;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        
-        const cleanTitle = currentGuideData.job_title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-        link.setAttribute("download", `interview-guide-${cleanTitle}.md`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
+    if (exportMdBtn) {
+        exportMdBtn.addEventListener("click", () => {
+            if (!currentGuideData) return;
+            const mdText = exportToMarkdown(currentGuideData);
+            const blob = new Blob([mdText], { type: "text/markdown;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            
+            const cleanTitle = currentGuideData.job_title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+            link.setAttribute("download", `interview-guide-${cleanTitle}.md`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
 
     // Build Markdown template
     function exportToMarkdown(guide) {
