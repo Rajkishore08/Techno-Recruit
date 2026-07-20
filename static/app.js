@@ -55,17 +55,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const userNameElement = document.getElementById("userName");
     const authLockOverlay = document.getElementById("authLockOverlay");
 
+    // Default Public Client Config for Firebase Web App
+    const defaultPublicFirebaseConfig = {
+        apiKey: "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
+        authDomain: "techno-recruit.firebaseapp.com",
+        projectId: "techno-recruit",
+        storageBucket: "techno-recruit.firebasestorage.app",
+        messagingSenderId: "235364274013",
+        appId: "1:235364274013:web:9db2497f8946987989e2b4",
+        measurementId: "G-LKVL7NWK5L"
+    };
+
     // Initialize Firebase
     async function initFirebase() {
-        let firebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: "",
-            measurementId: ""
-        };
+        let firebaseConfig = { ...defaultPublicFirebaseConfig };
 
         try {
             // Priority 1: Check Firebase Hosting auto-init configuration
@@ -77,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.log("Firebase initialized dynamically via Hosting.");
                 }
             } else {
-                // Priority 2: Backend config endpoint (reads from .env)
+                // Priority 2: Backend config endpoint
                 const response = await fetch(`${API_BASE}/api/config`);
                 if (response.ok) {
                     const bConfig = await response.json();
@@ -88,77 +91,86 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         } catch (e) {
-            console.warn("Could not load dynamic Firebase configuration.", e);
+            console.warn("Using default public client config fallback.", e);
         }
 
-        if (!firebaseConfig.apiKey) {
-            console.warn("Firebase configuration is missing. Ensure environment variables or Firebase Hosting config are set.");
-            return;
+        try {
+            const app = initializeApp(firebaseConfig);
+            authInstance = getAuth(app);
+
+            // Monitor Auth State
+            onAuthStateChanged(authInstance, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    currentIdToken = await user.getIdToken();
+                    
+                    // Update UI state
+                    loginBtn.style.display = "none";
+                    userProfile.style.display = "flex";
+                    userAvatar.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
+                    userNameElement.textContent = user.displayName || user.email;
+                    authLockOverlay.style.display = "none";
+                    
+                    // Load user's history list
+                    loadHistoryList();
+                } else {
+                    currentUser = null;
+                    currentIdToken = null;
+                    
+                    // Reset UI state
+                    loginBtn.style.display = "flex";
+                    userProfile.style.display = "none";
+                    authLockOverlay.style.display = "flex";
+                    
+                    // Clear history list display and active guides
+                    historyList.innerHTML = `
+                        <div class="history-empty">
+                            <i data-lucide="lock"></i>
+                            <p>Sign in to view history</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    resultsContainer.style.display = "none";
+                    traceContainer.style.display = "none";
+                }
+            });
+        } catch (err) {
+            console.error("Firebase App initialization failed:", err);
         }
-
-        const app = initializeApp(firebaseConfig);
-        authInstance = getAuth(app);
-
-        // Attach Auth Event Handlers
-        const provider = new GoogleAuthProvider();
-
-        const handleLogin = async () => {
-            try {
-                await signInWithPopup(authInstance, provider);
-            } catch (err) {
-                console.error("Sign in failed:", err);
-                alert(`Authentication error: ${err.message}`);
-            }
-        };
-
-        loginBtn.addEventListener("click", handleLogin);
-        overlayLoginBtn.addEventListener("click", handleLogin);
-
-        logoutBtn.addEventListener("click", async () => {
-            try {
-                await signOut(authInstance);
-            } catch (err) {
-                console.error("Sign out failed:", err);
-            }
-        });
-
-        // Monitor Auth State
-        onAuthStateChanged(authInstance, async (user) => {
-            if (user) {
-                currentUser = user;
-                currentIdToken = await user.getIdToken();
-                
-                // Update UI state
-                loginBtn.style.display = "none";
-                userProfile.style.display = "flex";
-                userAvatar.src = user.photoURL || "https://www.gravatar.com/avatar/?d=mp";
-                userNameElement.textContent = user.displayName || user.email;
-                authLockOverlay.style.display = "none";
-                
-                // Load user's history list
-                loadHistoryList();
-            } else {
-                currentUser = null;
-                currentIdToken = null;
-                
-                // Reset UI state
-                loginBtn.style.display = "flex";
-                userProfile.style.display = "none";
-                authLockOverlay.style.display = "flex";
-                
-                // Clear history list display and active guides
-                historyList.innerHTML = `
-                    <div class="history-empty">
-                        <i data-lucide="lock"></i>
-                        <p>Sign in to view history</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                resultsContainer.style.display = "none";
-                traceContainer.style.display = "none";
-            }
-        });
     }
+
+    // Attach Auth Event Handlers immediately so buttons are always responsive
+    const handleLogin = async () => {
+        try {
+            if (!authInstance) {
+                await initFirebase();
+            }
+            if (!authInstance) {
+                const app = initializeApp(defaultPublicFirebaseConfig);
+                authInstance = getAuth(app);
+            }
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(authInstance, provider);
+        } catch (err) {
+            console.error("Sign in failed:", err);
+            alert(`Authentication error: ${err.message}`);
+        }
+    };
+
+    loginBtn.addEventListener("click", handleLogin);
+    overlayLoginBtn.addEventListener("click", handleLogin);
+
+    logoutBtn.addEventListener("click", async () => {
+        try {
+            if (authInstance) {
+                await signOut(authInstance);
+            }
+        } catch (err) {
+            console.error("Sign out failed:", err);
+        }
+    });
+    // Trigger Firebase init
+    initFirebase();
 
     // Tab Switcher Logic
     const tabArchitectBtn = document.getElementById("tabArchitectBtn");
