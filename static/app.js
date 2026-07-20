@@ -401,12 +401,8 @@ function initApp() {
     }
 
     // INTERACTIVE ONBOARDING TOUR MODAL LOGIC
-    const onboardingModal = document.getElementById("onboardingModal");
     const onboardingStepContent = document.getElementById("onboardingStepContent");
     const onboardingStepIndicators = document.getElementById("onboardingStepIndicators");
-    const closeOnboardingBtn = document.getElementById("closeOnboardingBtn");
-    const onboardingNextBtn = document.getElementById("onboardingNextBtn");
-    const onboardingPrevBtn = document.getElementById("onboardingPrevBtn");
 
     let currentOnboardingStep = 0;
 
@@ -611,7 +607,6 @@ function initApp() {
     const scoreComparisonBanner = document.getElementById("scoreComparisonBanner");
     const sideBySideTableCard = document.getElementById("sideBySideTableCard");
     const rolesGrid = document.getElementById("rolesGrid");
-    const careerHistoryList = document.getElementById("careerHistoryList");
 
     const candidateSelectorSelect = document.getElementById("candidateSelectorSelect");
     const candidateNameInput = document.getElementById("candidateNameInput");
