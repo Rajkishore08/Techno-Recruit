@@ -55,20 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const userNameElement = document.getElementById("userName");
     const authLockOverlay = document.getElementById("authLockOverlay");
 
-    // Default Public Client Config for Firebase Web App
-    const defaultPublicFirebaseConfig = {
-        apiKey: "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
-        authDomain: "techno-recruit.firebaseapp.com",
-        projectId: "techno-recruit",
-        storageBucket: "techno-recruit.firebasestorage.app",
-        messagingSenderId: "235364274013",
-        appId: "1:235364274013:web:9db2497f8946987989e2b4",
-        measurementId: "G-LKVL7NWK5L"
-    };
-
-    // Initialize Firebase
+    // Initialize Firebase dynamically from Firebase Hosting init.json or backend environment
     async function initFirebase() {
-        let firebaseConfig = { ...defaultPublicFirebaseConfig };
+        let firebaseConfig = null;
 
         try {
             // Priority 1: Check Firebase Hosting auto-init configuration
@@ -79,19 +68,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     firebaseConfig = hConfig;
                     console.log("Firebase initialized dynamically via Hosting.");
                 }
-            } else {
-                // Priority 2: Backend config endpoint
+            }
+        } catch (e) {
+            console.warn("Hosting init.json not available.", e);
+        }
+
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            try {
+                // Priority 2: Backend config endpoint (reads from .env)
                 const response = await fetch(`${API_BASE}/api/config`);
                 if (response.ok) {
                     const bConfig = await response.json();
                     if (bConfig && bConfig.apiKey) {
                         firebaseConfig = bConfig;
-                        console.log("Firebase config loaded from environment.");
+                        console.log("Firebase config loaded from backend environment.");
                     }
                 }
+            } catch (e) {
+                console.warn("Backend config endpoint not available.", e);
             }
-        } catch (e) {
-            console.warn("Using default public client config fallback.", e);
+        }
+
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            console.warn("Firebase configuration is missing. Ensure environment variables or Firebase Hosting config are set.");
+            return;
         }
 
         try {
@@ -146,8 +146,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 await initFirebase();
             }
             if (!authInstance) {
-                const app = initializeApp(defaultPublicFirebaseConfig);
-                authInstance = getAuth(app);
+                alert("Firebase configuration is missing. Ensure your environment variables are set in your .env or backend config.");
+                return;
             }
             const provider = new GoogleAuthProvider();
             await signInWithPopup(authInstance, provider);
