@@ -1121,6 +1121,7 @@ function initApp() {
             loadHistoryList(); // Refresh history sidebar
         }
     });
+}
 
     function handleStreamEvent(event) {
         if (event.iteration) {
