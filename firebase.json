@@ -1,5 +1,7 @@
 {
   "hosting": {
+    "site": "techno-recruit",
+    "app": "1:235364274013:web:9db2497f8946987989e2b4",
     "public": "static",
     "ignore": [
       "firebase.json",
