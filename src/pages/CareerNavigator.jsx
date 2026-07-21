@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp, Users, AlertTriangle, Check, Target } from 'lucide-react';
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,18 @@ const PREDEFINED_TECH_ROLES = [
   { title: "Mobile Application Developer", domain: "Mobile Engineering", desc: "React Native, Flutter, Swift (iOS), Kotlin (Android)" },
   { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" }
 ];
+
+// Helper to format bold markdown (**text**) into JSX
+function renderFormattedBoldText(text) {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={idx} style={{ color: 'var(--color-primary-light)', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
 
 export default function CareerNavigator() {
   const { currentIdToken } = useAuth();
@@ -142,12 +154,17 @@ export default function CareerNavigator() {
         {/* Results Container */}
         {results && (
           <div className="navigator-results">
-            {/* Header Card */}
+            {/* Candidate Header Summary */}
             <div className="card" style={{ padding: '24px', marginBottom: '20px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95))' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                👤 {results.candidate_name || "Candidate Profile"}
-              </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginTop: '6px', lineHeight: 1.6 }}>{results.candidate_summary}</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <span className="badge-active" style={{ marginBottom: '8px', width: 'fit-content' }}><span className="dot"></span> CAREER NAVIGATOR REPORT</span>
+                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                    👤 {results.candidate_name || candidateName || "Candidate Profile"}
+                  </h2>
+                </div>
+              </div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginTop: '10px', lineHeight: 1.6 }}>{results.candidate_summary}</p>
             </div>
 
             {/* Why Best Fit Card */}
@@ -156,7 +173,9 @@ export default function CareerNavigator() {
                 <h4 style={{ color: 'var(--color-success)', fontSize: '14px', fontWeight: 700, margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Sparkles size={16} /> Why This Candidate Is The Best Fit
                 </h4>
-                <p style={{ color: 'var(--text-primary)', fontSize: '13.5px', lineHeight: 1.6, margin: 0 }}>{results.why_best_fit}</p>
+                <div style={{ color: 'var(--text-primary)', fontSize: '13.5px', lineHeight: 1.6 }}>
+                  {renderFormattedBoldText(results.why_best_fit)}
+                </div>
               </div>
             )}
 
@@ -164,7 +183,7 @@ export default function CareerNavigator() {
             {results.profile_and_project_links && results.profile_and_project_links.length > 0 && (
               <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-light)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <LinkIcon size={14} /> Extracted Hyperlinks ({results.profile_and_project_links.length})
+                  <LinkIcon size={14} /> Extracted Hyperlinks & Portfolio ({results.profile_and_project_links.length})
                 </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {results.profile_and_project_links.map((link, idx) => (
@@ -177,17 +196,81 @@ export default function CareerNavigator() {
               </div>
             )}
 
+            {/* Detailed Highlights Grid (Leadership, Achievements, Experience) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+              {/* Leadership & Community */}
+              {results.leadership_and_community && results.leadership_and_community.length > 0 && (
+                <div className="card" style={{ padding: '20px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#c084fc', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={16} /> Leadership & Community Initiatives
+                  </h4>
+                  <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
+                    {results.leadership_and_community.map((bullet, idx) => (
+                      <li key={idx} style={{ marginBottom: '8px' }}>{renderFormattedBoldText(bullet)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Achievements & Competitions */}
+              {results.achievements_and_competitions && results.achievements_and_competitions.length > 0 && (
+                <div className="card" style={{ padding: '20px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#f59e0b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Award size={16} /> Competitive Achievements & Hackathons
+                  </h4>
+                  <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
+                    {results.achievements_and_competitions.map((bullet, idx) => (
+                      <li key={idx} style={{ marginBottom: '8px' }}>{renderFormattedBoldText(bullet)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Work & Internship Experience */}
+              {results.work_and_internship_experience && results.work_and_internship_experience.length > 0 && (
+                <div className="card" style={{ padding: '20px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-success)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Briefcase size={16} /> Internships & Work Experience
+                  </h4>
+                  <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>
+                    {results.work_and_internship_experience.map((bullet, idx) => (
+                      <li key={idx} style={{ marginBottom: '8px' }}>{renderFormattedBoldText(bullet)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Dynamic Career Recommendations & Skill Gap Improvements */}
+            {results.dynamic_recommendations && results.dynamic_recommendations.length > 0 && (
+              <div className="card" style={{ padding: '20px', marginBottom: '24px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+                <h4 style={{ color: '#38bdf8', fontSize: '14px', fontWeight: 700, margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <TrendingUp size={16} /> Dynamic Career Recommendations & Skill Gap Improvements
+                </h4>
+                <ul style={{ paddingLeft: '18px', margin: 0, color: 'var(--text-primary)', fontSize: '13.5px', lineHeight: 1.6 }}>
+                  {results.dynamic_recommendations.map((bullet, idx) => (
+                    <li key={idx} style={{ marginBottom: '8px' }}>{renderFormattedBoldText(bullet)}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Recommended Roles Grid */}
-            <div className="roles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Target size={18} style={{ color: 'var(--color-primary-light)' }} /> Recommended Matching Roles
+            </h3>
+
+            <div className="roles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '28px' }}>
               {(results.suggested_roles || []).map((role, idx) => (
-                <div key={idx} className="card role-card" style={{ padding: '20px' }}>
+                <div key={idx} className="card role-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <h4 style={{ color: 'var(--color-primary-light)', fontSize: '16px', fontWeight: 700, margin: 0 }}>{role.role_title}</h4>
                     <span className="domain-pill" style={{ background: 'rgba(99,102,241,0.2)', color: 'var(--color-primary-light)', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>{role.domain}</span>
                   </div>
+
                   <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>{role.match_summary}</p>
 
-                  <div className="level-scores-box" style={{ background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px' }}>
+                  <div className="level-scores-box" style={{ background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
                       <span style={{ color: 'var(--text-secondary)' }}>Junior Match</span>
                       <span style={{ fontWeight: 700, color: 'var(--color-success)' }}>{role.beginner_score}%</span>
@@ -201,6 +284,41 @@ export default function CareerNavigator() {
                       <span style={{ fontWeight: 700, color: '#f59e0b' }}>{role.experienced_score}%</span>
                     </div>
                   </div>
+
+                  {/* Key Strengths */}
+                  {role.key_strengths && role.key_strengths.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-success)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Check size={14} /> Candidate Strengths:
+                      </div>
+                      <ul style={{ paddingLeft: '16px', margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {role.key_strengths.map((str, sidx) => (
+                          <li key={sidx}>{renderFormattedBoldText(str)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Skill Gaps */}
+                  {role.skill_gaps && role.skill_gaps.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <AlertTriangle size={14} /> Skill Gaps to Improve:
+                      </div>
+                      <ul style={{ paddingLeft: '16px', margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {role.skill_gaps.map((gap, gidx) => (
+                          <li key={gidx}>{renderFormattedBoldText(gap)}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Recommended Next Steps */}
+                  {role.recommended_next_steps && (
+                    <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px dashed var(--border-color)', fontSize: '12px', color: 'var(--color-primary-light)' }}>
+                      <strong>Next Step:</strong> {role.recommended_next_steps}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
