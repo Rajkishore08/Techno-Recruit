@@ -707,3 +707,100 @@ def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
         print(f"Firestore career history read error: {e}")
         return []
 
+
+def run_talent_search_agent(search_query: str, candidate_records: List[Dict[str, Any]]) -> tuple:
+    """
+    Vector RAG Talent Search Agent:
+    Performs AI semantic matching and relevance re-ranking across candidate records in the talent pool.
+    Returns ranked candidate matches with suitability percentages and search query fit justifications.
+    """
+    if not candidate_records:
+        return json.dumps({"matched_candidates": [], "query": search_query, "total_matches": 0}), {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+    # Format candidate summaries for LLM semantic scoring
+    candidates_formatted = []
+    for idx, record in enumerate(candidate_records):
+        data = record.get("data", {})
+        c_name = record.get("candidate_name") or data.get("candidate_name") or f"Candidate #{idx+1}"
+        analysis_id = record.get("analysis_id", f"c_{idx}")
+        filename = record.get("filename", "resume.pdf")
+        
+        candidates_formatted.append(f"""
+CANDIDATE #{idx+1} [ID: {analysis_id}]:
+- Name: {c_name} (Filename: {filename})
+- Summary: {data.get('candidate_summary', '')}
+- Why Best Fit: {data.get('why_best_fit', '')}
+- Top Skills: {', '.join(data.get('top_skills_identified', []))}
+- Leadership: {', '.join(data.get('leadership_and_community', []))}
+- Achievements: {', '.join(data.get('achievements_and_competitions', []))}
+- Experience: {', '.join(data.get('work_and_internship_experience', []))}
+""")
+
+    candidates_blob = "\n".join(candidates_formatted)
+
+    prompt = f"""You are a Senior Talent Acquisition Vector RAG Search & Re-ranking Agent.
+Evaluate the following candidate database against the recruiter's search query:
+
+RECRUITER SEARCH QUERY: "{search_query}"
+
+--- CANDIDATE TALENT POOL ---
+{candidates_blob}
+--- END CANDIDATE POOL ---
+
+Perform a deep semantic relevance analysis:
+1. Calculate a "relevance_score" (0 to 100%) for EACH candidate based on how closely their skills, projects, hackathons, and experience match the search query.
+2. Filter and rank candidates, including only those with relevance_score >= 35%.
+3. For each candidate, generate a compelling 1-2 sentence "match_reasoning" explaining specifically why they fit the recruiter's search query.
+
+Format output strictly as JSON with keys:
+- "query": "{search_query}"
+- "total_matches": Integer count
+- "matched_candidates": A list of objects sorted by relevance_score descending, each containing:
+    - "analysis_id": String (matches candidate ID)
+    - "candidate_name": String
+    - "filename": String
+    - "relevance_score": Integer (0-100)
+    - "match_reasoning": String
+    - "top_skills": List of strings
+
+Return ONLY valid JSON.
+"""
+    return query_groq_helper(prompt, json_mode=True)
+
+
+def run_ats_optimizer_agent(resume_text: str, job_title: str, job_description: str) -> tuple:
+    """
+    AI Resume Enhancer & ATS Optimizer Agent:
+    Compares candidate resume against target Job Description, conducts ATS keyword gap analysis,
+    and generates a fully tailored, high-scoring ATS resume with action verbs and impact metrics.
+    """
+    prompt = f"""You are a Master Certified Executive Resume Writer & Senior ATS Optimization Specialist Agent.
+Perform a comprehensive ATS audit and resume enhancement for the candidate targeting this specific job opening:
+
+TARGET JOB TITLE: {job_title}
+TARGET JOB DESCRIPTION:
+{job_description}
+
+--- CANDIDATE CURRENT RESUME ---
+{resume_text}
+--- END CANDIDATE RESUME ---
+
+Perform a deep ATS gap analysis and resume rewrite:
+1. "ats_score": Calculate an overall ATS compatibility match percentage (0 to 100).
+2. "matched_keywords": List 5-10 technical skills, tools, methodologies, and qualifications found in BOTH the resume and Job Description.
+3. "missing_keywords": List 4-8 critical ATS keywords, certifications, tools, or frameworks present in the Job Description but MISSING from the current resume.
+4. "formatting_and_impact_improvements": List 3-5 specific, actionable bullet points recommending how to improve bullet impact (using strong action verbs and quantitative metrics like %, $, time saved).
+5. "ats_optimized_resume_text": Write a COMPLETE, beautifully formatted, professional, ATS-optimized version of the resume. Incorporate the missing keywords naturally, enhance action verbs, structure clear sections (HEADER, SUMMARY, CORE COMPETENCIES, WORK EXPERIENCE, PROJECTS, EDUCATION), and highlight impact metrics.
+
+Format the output strictly as a JSON object with keys:
+- "job_title": "{job_title}"
+- "ats_score": Integer (0-100)
+- "matched_keywords": List of strings
+- "missing_keywords": List of strings
+- "formatting_and_impact_improvements": List of strings
+- "ats_optimized_resume_text": String (full enhanced text ready for ATS submission)
+
+Return ONLY valid JSON.
+"""
+    return query_groq_helper(prompt, json_mode=True)
+

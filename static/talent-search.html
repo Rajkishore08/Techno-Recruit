@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techno Recruit — AI Semantic Talent Search & Vector RAG Matcher</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body data-page="talent-search">
+    <div class="app-layout">
+        <!-- TOP HEADER -->
+        <header class="app-header">
+            <div class="header-container">
+                <a href="/index.html" class="brand-logo" style="text-decoration:none;">
+                    <div class="logo-icon">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">Techno Recruit</span>
+                        <span class="logo-subtitle">AI TALENT INTELLIGENCE</span>
+                    </div>
+                </a>
+
+                <nav class="app-tabs">
+                    <a href="/index.html" class="tab-btn">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/navigator.html" class="tab-btn">
+                        <i data-lucide="compass"></i>
+                        <span>Career Navigator</span>
+                    </a>
+                    <a href="/talent-search.html" class="tab-btn active">
+                        <i data-lucide="search-code"></i>
+                        <span>Talent Search</span>
+                        <span class="tab-badge" style="background:linear-gradient(135deg,#38bdf8,#6366f1);">VECTOR RAG</span>
+                    </a>
+                    <a href="/architect.html" class="tab-btn">
+                        <i data-lucide="brain-circuit"></i>
+                        <span>Interview Architect</span>
+                    </a>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="header-auth" id="headerAuth">
+                        <button class="btn-primary" id="loginBtn">
+                            <i data-lucide="log-in"></i>
+                            <span>Sign In with Google</span>
+                        </button>
+                        <div class="user-profile" id="userProfile" style="display: none;">
+                            <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
+                            <span class="user-name" id="userName">User</span>
+                            <button class="btn-icon" id="logoutBtn" title="Sign Out">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- OVERLAY SIDEBAR DRAWER FOR HISTORY -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3><i data-lucide="clock"></i> Screening History</h3>
+                <button type="button" class="btn-close-sidebar" id="closeSidebarBtn" title="Close Drawer">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i data-lucide="file-text"></i> Candidate Resumes Evaluated
+                </div>
+                <div class="history-list" id="careerHistoryList">
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>No saved resume runs</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">
+                    <i data-lucide="folder"></i> Interview Guides Generated
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i data-lucide="folder-open"></i>
+                        <p>No generated guides yet</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <div class="content-container">
+                <div class="page-hero" style="margin-bottom: 24px;">
+                    <div class="page-hero-title" style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(99, 102, 241, 0.2)); display: flex; align-items: center; justify-content: center; color: var(--color-primary-light);">
+                            <i data-lucide="search-code" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0;">AI Semantic Talent Search & RAG Matcher</h1>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin: 2px 0 0 0;">Query candidate talent pool in plain English to retrieve AI-ranked matches with relevance fit reasoning</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEARCH CONTAINER CARD -->
+                <div class="card talent-search-box-card" style="margin-bottom: 28px; padding: 24px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="sparkles"></i> Natural Language Vector Query
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="talentSearchQueryInput" placeholder="e.g., Full stack engineers who won hackathons and have GDSC leadership experience..." style="flex: 1; min-width: 300px; min-height: 48px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0 18px; color: #fff; font-size: 14px;">
+                        <button type="button" class="btn-primary" id="executeTalentSearchBtn" style="min-height: 48px; padding: 0 24px; font-weight: 700;">
+                            <i data-lucide="search"></i>
+                            <span>Search Talent Pool</span>
+                        </button>
+                    </div>
+
+                    <!-- QUICK SUGGESTION PROMPT PILLS -->
+                    <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Sample Queries:</span>
+                        <button type="button" class="search-prompt-pill" data-query="Full stack developers with React, Node.js and MongoDB skills">Full Stack Developers</button>
+                        <button type="button" class="search-prompt-pill" data-query="Hackathon winners and competitive programming champions">Hackathon Winners</button>
+                        <button type="button" class="search-prompt-pill" data-query="Candidates with GDSC or Student Developers Cell leadership roles">GDSC & Student Leaders</button>
+                        <button type="button" class="search-prompt-pill" data-query="UI/UX Designers with Figma prototyping experience">UI/UX & Product Designers</button>
+                    </div>
+
+                    <div id="talentSearchLoading" style="display: none; margin-top: 16px; font-size: 13px; color: var(--color-info);">
+                        <i data-lucide="loader-2" class="spin" style="width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i>
+                        Executing AI vector similarity search & re-ranking candidates...
+                    </div>
+                </div>
+
+                <!-- SEARCH RESULTS GRID -->
+                <div id="talentSearchResults" style="display: none;">
+                    <div class="results-header-banner" id="talentSearchBanner" style="margin-bottom: 20px; padding: 14px 20px; border-radius: 12px; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); color: var(--text-primary); display: flex; justify-content: space-between; align-items: center;">
+                        <!-- Injected dynamically via JavaScript -->
+                    </div>
+
+                    <div class="talent-search-grid" id="talentSearchGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                        <!-- Injected dynamically via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating History Button in bottom left -->
+    <button id="floatingHistoryBtn" class="floating-history-btn" title="View Saved Sessions">
+        <i data-lucide="history"></i>
+        <span>History</span>
+    </button>
+
+    <!-- Scripts -->
+    <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -369,6 +369,14 @@ function initApp() {
             if (document.body.dataset.page !== "architect") {
                 window.location.href = "/architect.html";
             }
+        } else if (pageId === "talent-search") {
+            if (document.body.dataset.page !== "talent-search") {
+                window.location.href = "/talent-search.html";
+            }
+        } else if (pageId === "ats-optimizer") {
+            if (document.body.dataset.page !== "ats-optimizer") {
+                window.location.href = "/ats-optimizer.html";
+            }
         }
     }
 
@@ -474,6 +482,331 @@ function initApp() {
             if (!customRoleInput.contains(e.target) && !customRoleAutocompleteList.contains(e.target)) {
                 customRoleAutocompleteList.style.display = "none";
             }
+        });
+    }
+
+    // AI Semantic Talent Pool Search Setup
+    const talentSearchQueryInput = document.getElementById("talentSearchQueryInput");
+    const executeTalentSearchBtn = document.getElementById("executeTalentSearchBtn");
+    const talentSearchLoading = document.getElementById("talentSearchLoading");
+    const talentSearchResults = document.getElementById("talentSearchResults");
+    const talentSearchBanner = document.getElementById("talentSearchBanner");
+    const talentSearchGrid = document.getElementById("talentSearchGrid");
+
+    async function executeTalentSearch(queryText) {
+        if (!queryText || !queryText.trim()) {
+            showToast("Please enter a talent search query.", "warning");
+            return;
+        }
+
+        if (!currentIdToken) {
+            showToast("Please sign in with Google to search your candidate talent pool.", "warning");
+            return;
+        }
+
+        executeTalentSearchBtn.disabled = true;
+        talentSearchLoading.style.display = "block";
+        talentSearchResults.style.display = "none";
+
+        try {
+            const response = await fetch(`${API_BASE}/api/search-talent-pool`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${currentIdToken}`
+                },
+                body: JSON.stringify({ query: queryText.trim() })
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to execute talent search query.");
+            }
+
+            const res = await response.json();
+            const searchData = res.data || {};
+            const matches = searchData.matched_candidates || [];
+
+            talentSearchResults.style.display = "block";
+
+            if (talentSearchBanner) {
+                talentSearchBanner.innerHTML = `
+                    <div>
+                        <strong style="font-size:15px; color:#fff;">Search Results for: "${searchData.query || queryText}"</strong>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Retrieved ${matches.length} matching candidate profiles sorted by vector relevance score</div>
+                    </div>
+                    <span class="profile-tag" style="background:rgba(56,189,248,0.2); color:#38bdf8; font-weight:700; padding:4px 10px; border-radius:20px; font-size:12px;">
+                        ${matches.length} Matches Found
+                    </span>
+                `;
+            }
+
+            if (talentSearchGrid) {
+                if (matches.length === 0) {
+                    talentSearchGrid.innerHTML = `
+                        <div class="card" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-secondary);">
+                            <i data-lucide="search-x" style="width: 36px; height: 36px; color: var(--text-muted); margin-bottom: 12px;"></i>
+                            <h4 style="color: var(--text-primary); margin-bottom: 4px;">No Candidate Matches Found</h4>
+                            <p style="font-size: 13px; margin: 0;">Try broadening your query terms or uploading more resumes into the Talent Pool.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                talentSearchGrid.innerHTML = matches.map(match => {
+                    const score = match.relevance_score || 0;
+                    const scoreColor = score >= 80 ? "var(--color-success)" : (score >= 60 ? "var(--color-primary-light)" : "#f59e0b");
+                    const skills = (match.top_skills || []).map(s => `<span class="overview-skill-tag" style="font-size:11px; padding:3px 8px;">${s}</span>`).join("");
+
+                    return `
+                        <div class="card candidate-search-match-card" style="padding: 20px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <h4 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">👤 ${match.candidate_name}</h4>
+                                    <span style="font-size: 11px; color: var(--text-secondary);">📄 ${match.filename || 'resume.pdf'}</span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 16px; font-weight: 800; color: ${scoreColor}; font-family: var(--font-heading);">${score}%</span>
+                                    <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Match Fit</div>
+                                </div>
+                            </div>
+
+                            <div style="padding: 10px 14px; border-radius: 8px; background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 14px;">
+                                <div style="font-size: 11px; font-weight: 700; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> AI Match Reasoning
+                                </div>
+                                <p style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5; margin: 0;">${match.match_reasoning || 'Strong candidate alignment with target query requirements.'}</p>
+                            </div>
+
+                            ${skills ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;">${skills}</div>` : ''}
+
+                            <button type="button" class="btn-secondary inspect-talent-match-btn" data-analysis-id="${match.analysis_id}" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px 12px;">
+                                <span>Inspect Full Scorecard</span>
+                                <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join("");
+
+                // Attach click handlers to inspect buttons
+                talentSearchGrid.querySelectorAll(".inspect-talent-match-btn").forEach(btn => {
+                    btn.addEventListener("click", (e) => {
+                        const targetId = e.currentTarget.dataset.analysisId;
+                        if (targetId) {
+                            switchTab("navigator", targetId);
+                        }
+                    });
+                });
+                lucide.createIcons();
+            }
+        } catch (e) {
+            showToast(`Talent Search Error: ${e.message}`, "error");
+        } finally {
+            executeTalentSearchBtn.disabled = false;
+            talentSearchLoading.style.display = "none";
+        }
+    }
+
+    if (executeTalentSearchBtn && talentSearchQueryInput) {
+        executeTalentSearchBtn.addEventListener("click", () => {
+            executeTalentSearch(talentSearchQueryInput.value);
+        });
+
+        talentSearchQueryInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                executeTalentSearch(talentSearchQueryInput.value);
+            }
+        });
+
+        document.querySelectorAll(".search-prompt-pill").forEach(pill => {
+            pill.addEventListener("click", (e) => {
+                const q = e.currentTarget.dataset.query;
+                if (q) {
+                    talentSearchQueryInput.value = q;
+                    executeTalentSearch(q);
+                }
+            });
+        });
+    }
+
+    // AI Resume Enhancer & ATS Optimizer Setup
+    const atsResumeDropzone = document.getElementById("atsResumeDropzone");
+    const atsResumeFileInput = document.getElementById("atsResumeFileInput");
+    const atsResumeDropzoneContent = document.getElementById("atsResumeDropzoneContent");
+    const atsResumeTextArea = document.getElementById("atsResumeTextArea");
+    const atsJobTitleInput = document.getElementById("atsJobTitleInput");
+    const atsJobDescTextArea = document.getElementById("atsJobDescTextArea");
+    const runAtsOptimizerBtn = document.getElementById("runAtsOptimizerBtn");
+    const atsOptimizerLoading = document.getElementById("atsOptimizerLoading");
+    const atsResultsContainer = document.getElementById("atsResultsContainer");
+    const atsRoleTitleHeading = document.getElementById("atsRoleTitleHeading");
+    const atsScoreValue = document.getElementById("atsScoreValue");
+    const atsMatchedKeywordsPills = document.getElementById("atsMatchedKeywordsPills");
+    const atsMissingKeywordsPills = document.getElementById("atsMissingKeywordsPills");
+    const atsImpactImprovementsList = document.getElementById("atsImpactImprovementsList");
+    const atsOptimizedResumeText = document.getElementById("atsOptimizedResumeText");
+    const copyAtsResumeBtn = document.getElementById("copyAtsResumeBtn");
+    const downloadAtsResumeBtn = document.getElementById("downloadAtsResumeBtn");
+
+    let selectedAtsFile = null;
+
+    if (atsResumeDropzone && atsResumeFileInput) {
+        atsResumeDropzone.addEventListener("click", () => atsResumeFileInput.click());
+
+        atsResumeFileInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                selectedAtsFile = e.target.files[0];
+                atsResumeDropzoneContent.innerHTML = `
+                    <i data-lucide="file-check" class="dropzone-icon" style="width: 32px; height: 32px; color: var(--color-success);"></i>
+                    <p class="dropzone-title" style="font-size: 14px; font-weight: 700; color: #fff;">${selectedAtsFile.name}</p>
+                    <p class="dropzone-subtitle" style="font-size: 12px; color: var(--color-success);">Resume file ready for ATS optimization</p>
+                `;
+                lucide.createIcons();
+            }
+        });
+
+        atsResumeDropzone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            atsResumeDropzone.classList.add("dragover");
+        });
+
+        atsResumeDropzone.addEventListener("dragleave", () => {
+            atsResumeDropzone.classList.remove("dragover");
+        });
+
+        atsResumeDropzone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            atsResumeDropzone.classList.remove("dragover");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                selectedAtsFile = e.dataTransfer.files[0];
+                atsResumeDropzoneContent.innerHTML = `
+                    <i data-lucide="file-check" class="dropzone-icon" style="width: 32px; height: 32px; color: var(--color-success);"></i>
+                    <p class="dropzone-title" style="font-size: 14px; font-weight: 700; color: #fff;">${selectedAtsFile.name}</p>
+                    <p class="dropzone-subtitle" style="font-size: 12px; color: var(--color-success);">Resume file ready for ATS optimization</p>
+                `;
+                lucide.createIcons();
+            }
+        });
+    }
+
+    if (runAtsOptimizerBtn) {
+        runAtsOptimizerBtn.addEventListener("click", async () => {
+            const jobTitle = atsJobTitleInput ? atsJobTitleInput.value.trim() : "";
+            const jobDesc = atsJobDescTextArea ? atsJobDescTextArea.value.trim() : "";
+            const rawResumeText = atsResumeTextArea ? atsResumeTextArea.value.trim() : "";
+
+            if (!selectedAtsFile && !rawResumeText) {
+                showToast("Please upload a resume file or paste resume text.", "warning");
+                return;
+            }
+
+            if (!jobDesc) {
+                showToast("Please enter target Job Description & key requirements.", "warning");
+                return;
+            }
+
+            runAtsOptimizerBtn.disabled = true;
+            atsOptimizerLoading.style.display = "block";
+            atsResultsContainer.style.display = "none";
+
+            try {
+                const formData = new FormData();
+                if (selectedAtsFile) {
+                    formData.append("file", selectedAtsFile);
+                } else {
+                    formData.append("resume_text", rawResumeText);
+                }
+                formData.append("job_title", jobTitle || "Target Role");
+                formData.append("job_description", jobDesc);
+
+                const response = await fetch(`${API_BASE}/api/optimize-resume`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errJson = await response.json().catch(() => ({}));
+                    throw new Error(errJson.detail || "Failed to execute ATS optimization.");
+                }
+
+                const result = await response.json();
+                const data = result.data || {};
+
+                atsResultsContainer.style.display = "block";
+
+                if (atsRoleTitleHeading) {
+                    atsRoleTitleHeading.textContent = `Target Role: ${data.job_title || jobTitle || 'Target Position'}`;
+                }
+
+                if (atsScoreValue) {
+                    const score = data.ats_score || 0;
+                    atsScoreValue.textContent = `${score}%`;
+                    atsScoreValue.style.color = score >= 80 ? "var(--color-success)" : (score >= 60 ? "var(--color-primary-light)" : "#f59e0b");
+                }
+
+                if (atsMatchedKeywordsPills) {
+                    const matched = data.matched_keywords || [];
+                    atsMatchedKeywordsPills.innerHTML = matched.length ? matched.map(kw => `
+                        <span class="domain-pill" style="background:rgba(16,185,129,0.18); color:#34d399; border:1px solid rgba(16,185,129,0.3); font-size:12px; padding:4px 10px; font-weight:600;">✓ ${kw}</span>
+                    `).join("") : `<span style="font-size:13px; color:var(--text-muted);">No exact matching keywords found</span>`;
+                }
+
+                if (atsMissingKeywordsPills) {
+                    const missing = data.missing_keywords || [];
+                    atsMissingKeywordsPills.innerHTML = missing.length ? missing.map(kw => `
+                        <span class="domain-pill" style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); font-size:12px; padding:4px 10px; font-weight:600;">+ ${kw}</span>
+                    `).join("") : `<span style="font-size:13px; color:var(--color-success);">Zero critical keywords missing! Excellent coverage.</span>`;
+                }
+
+                if (atsImpactImprovementsList) {
+                    const improvements = data.formatting_and_impact_improvements || [];
+                    atsImpactImprovementsList.innerHTML = improvements.map(imp => `
+                        <li style="margin-bottom: 8px;">${imp}</li>
+                    `).join("");
+                }
+
+                if (atsOptimizedResumeText) {
+                    atsOptimizedResumeText.textContent = data.ats_optimized_resume_text || "No resume text generated.";
+                }
+
+                showToast("AI Resume Optimization & ATS Gap Audit Complete!", "success");
+            } catch (err) {
+                showToast(`ATS Optimization Error: ${err.message}`, "error");
+            } finally {
+                runAtsOptimizerBtn.disabled = false;
+                atsOptimizerLoading.style.display = "none";
+            }
+        });
+    }
+
+    if (copyAtsResumeBtn && atsOptimizedResumeText) {
+        copyAtsResumeBtn.addEventListener("click", () => {
+            const text = atsOptimizedResumeText.textContent;
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Tailored ATS resume content copied to clipboard!", "success");
+            }).catch(err => {
+                showToast("Failed to copy text", "error");
+            });
+        });
+    }
+
+    if (downloadAtsResumeBtn && atsOptimizedResumeText) {
+        downloadAtsResumeBtn.addEventListener("click", () => {
+            const text = atsOptimizedResumeText.textContent;
+            if (!text) return;
+            const jTitle = (atsJobTitleInput && atsJobTitleInput.value.trim()) ? atsJobTitleInput.value.trim() : "Target_Role";
+            const cleanFilename = `${jTitle.replace(/[^a-zA-Z0-9_-]/g, "_")}_ATS_Optimized_Resume.txt`;
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = cleanFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Downloaded ${cleanFilename}`, "success");
         });
     }
 
