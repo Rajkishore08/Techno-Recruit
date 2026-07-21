@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp, Users, AlertTriangle, Check, Target } from 'lucide-react';
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
@@ -39,6 +39,8 @@ export default function CareerNavigator() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [rawResumeText, setRawResumeText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
+  const [progressMsg, setProgressMsg] = useState('');
   const [results, setResults] = useState(null);
   const [baselineSession, setBaselineSession] = useState(null);
   const [error, setError] = useState(null);
@@ -48,6 +50,8 @@ export default function CareerNavigator() {
   const [customRoleLoading, setCustomRoleLoading] = useState(false);
   const [customRoleResult, setCustomRoleResult] = useState(null);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
+
+  const resultsRef = useRef(null);
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
@@ -60,6 +64,25 @@ export default function CareerNavigator() {
     }
     setError(null);
     setLoading(true);
+    setProgressPercent(10);
+    setProgressMsg("Extracting candidate background & parsed links...");
+
+    // Simulated progress bar ticker
+    const timer = setInterval(() => {
+      setProgressPercent(prev => {
+        if (prev < 30) {
+          setProgressMsg("Evaluating leadership, hackathons & internships...");
+          return prev + 15;
+        } else if (prev < 65) {
+          setProgressMsg("Calculating Junior, Mid-Level & Senior match scores...");
+          return prev + 12;
+        } else if (prev < 90) {
+          setProgressMsg("Generating dynamic career recommendations & skill gap insights...");
+          return prev + 5;
+        }
+        return prev;
+      });
+    }, 400);
 
     try {
       const formData = new FormData();
@@ -71,10 +94,25 @@ export default function CareerNavigator() {
       if (candidateName) formData.append("candidate_name", candidateName);
 
       const res = await suggestRoles(formData, currentIdToken);
-      setResults(res.data);
+      clearInterval(timer);
+      setProgressPercent(100);
+      setProgressMsg("Analysis Complete!");
+
+      const resData = res.data;
+      if (res.session && res.session.resume_text) {
+        resData.resume_text = res.session.resume_text;
+        setRawResumeText(res.session.resume_text);
+      }
+      setResults(resData);
       setBaselineSession(res.baseline_session);
       refreshHistory();
+
+      // Smooth auto-scroll to results
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
     } catch (err) {
+      clearInterval(timer);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -83,15 +121,44 @@ export default function CareerNavigator() {
 
   const handleCustomRoleAnalyze = async (roleTitle) => {
     const titleToUse = roleTitle || customRoleInput;
-    if (!titleToUse.trim() || !rawResumeText.trim()) return;
+    if (!titleToUse.trim()) {
+      setError("Please enter or select a custom role title.");
+      return;
+    }
 
+    let textToUse = rawResumeText.trim();
+    if (!textToUse && results && results.resume_text) {
+      textToUse = results.resume_text;
+    }
+
+    if (!textToUse && selectedFile) {
+      try {
+        const parsed = await parseResume(selectedFile, currentIdToken);
+        if (parsed.resume_text) {
+          textToUse = parsed.resume_text;
+          setRawResumeText(textToUse);
+        }
+      } catch (e) {
+        console.error("Resume file parse error:", e);
+      }
+    }
+
+    if (!textToUse) {
+      setError("Please upload a resume or paste resume text first.");
+      return;
+    }
+
+    setError(null);
     setCustomRoleLoading(true);
     setAutocompleteOpen(false);
+    setCustomRoleResult(null);
+
     try {
-      const data = await analyzeCustomRole(rawResumeText, titleToUse.trim());
+      const data = await analyzeCustomRole(textToUse, titleToUse.trim());
       setCustomRoleResult(data);
     } catch (e) {
       console.error(e);
+      setError(`Custom role evaluation failed: ${e.message}`);
     } finally {
       setCustomRoleLoading(false);
     }
@@ -135,6 +202,29 @@ export default function CareerNavigator() {
 
           {error && <div style={{ marginTop: '12px', color: 'var(--color-error)', fontSize: '13px' }}>{error}</div>}
 
+          {/* AI Progress Bar */}
+          {loading && (
+            <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--color-primary-light)', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={16} className="spin" style={{ color: 'var(--color-primary-light)' }} /> {progressMsg}
+                </span>
+                <span style={{ color: 'var(--color-primary-light)' }}>{progressPercent}%</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div 
+                  style={{ 
+                    width: `${progressPercent}%`, 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, #6366f1, #10b981)', 
+                    borderRadius: '4px', 
+                    transition: 'width 0.3s ease' 
+                  }} 
+                />
+              </div>
+            </div>
+          )}
+
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <button className="btn-primary" onClick={handleAnalyze} disabled={loading} style={{ minHeight: '48px', padding: '0 32px', fontSize: '15px', fontWeight: 700 }}>
               {loading ? <Loader2 className="spin" size={18} /> : <Sparkles size={18} />}
@@ -143,9 +233,9 @@ export default function CareerNavigator() {
           </div>
         </div>
 
-        {/* Results Container */}
+        {/* Results Container with Ref for Auto-Scroll */}
         {results && (
-          <div className="navigator-results">
+          <div className="navigator-results" ref={resultsRef}>
             {/* Candidate Header Summary */}
             <div className="card" style={{ padding: '24px', marginBottom: '20px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95))' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -338,7 +428,7 @@ export default function CareerNavigator() {
                   {autocompleteOpen && (
                     <div className="autocomplete-dropdown-list" style={{ display: 'block' }}>
                       {PREDEFINED_TECH_ROLES.filter(r => !customRoleInput || r.title.toLowerCase().includes(customRoleInput.toLowerCase())).map((item, idx) => (
-                        <div key={idx} className="autocomplete-dropdown-item" onClick={() => { setCustomRoleInput(item.title); setAutocompleteOpen(false); }}>
+                        <div key={idx} className="autocomplete-dropdown-item" onClick={() => { setCustomRoleInput(item.title); setAutocompleteOpen(false); handleCustomRoleAnalyze(item.title); }}>
                           <div className="autocomplete-item-title">
                             <span>{item.title}</span>
                             <span className="autocomplete-item-domain">{item.domain}</span>
