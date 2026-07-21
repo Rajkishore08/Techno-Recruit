@@ -5,7 +5,7 @@ const getApiBase = () => {
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
     return "http://localhost:8080";
   }
-  return window.API_BASE_URL || "";
+  return window.API_BASE_URL || "https://techno-recruit.onrender.com";
 };
 
 export const API_BASE = getApiBase();
