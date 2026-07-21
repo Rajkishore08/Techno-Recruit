@@ -399,9 +399,86 @@ function initApp() {
         }
     });
 
+    // Embedded Predefined Roles Database & Live Autocomplete Dropdown
+    const PREDEFINED_TECH_ROLES = [
+        { title: "Full Stack Engineer", domain: "Software Engineering", desc: "Build frontend & backend web applications end-to-end" },
+        { title: "Frontend Engineer", domain: "Software Engineering", desc: "React, Vue, TypeScript, UI/UX implementation & performance" },
+        { title: "Backend Engineer", domain: "Software Engineering", desc: "Node.js, Python, Java, Microservices, REST & GraphQL APIs" },
+        { title: "DevOps & Cloud Engineer", domain: "Infrastructure & Cloud", desc: "AWS, Docker, Kubernetes, CI/CD pipelines & Infrastructure as Code" },
+        { title: "Data Engineer", domain: "Data & AI", desc: "ETL pipelines, PySpark, BigQuery, Snowflake, SQL Data Warehousing" },
+        { title: "AI / Machine Learning Engineer", domain: "Data & AI", desc: "PyTorch, TensorFlow, LLMs, Computer Vision & NLP Models" },
+        { title: "Product Manager", domain: "Product & Strategy", desc: "Roadmaps, Agile/Scrum, User Research, Feature Prioritization" },
+        { title: "UI/UX Designer & Product Designer", domain: "Design", desc: "Figma Prototyping, Wireframes, User Testing, Design Systems" },
+        { title: "Mobile Application Developer", domain: "Mobile Engineering", desc: "React Native, Flutter, Swift (iOS), Kotlin (Android)" },
+        { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" },
+        { title: "Site Reliability Engineer (SRE)", domain: "Infrastructure", desc: "High availability, Incident management, Observability & Prometheus" },
+        { title: "Software Architect & Systems Engineer", domain: "Architecture", desc: "Distributed systems, High scalability, System Design, Cloud Architecture" },
+        { title: "QA Automation Engineer", domain: "Quality Assurance", desc: "Selenium, Cypress, Playwright, Automated E2E testing pipelines" },
+        { title: "Blockchain & Smart Contract Developer", domain: "Web3 & Blockchain", desc: "Solidity, Ethereum, Web3.js, DeFi protocols & Security audits" },
+        { title: "Embedded Systems Engineer", domain: "Hardware & IoT", desc: "C/C++, Microcontrollers, RTOS, Firmware & Hardware Integration" },
+        { title: "Data Scientist & Analytics Lead", domain: "Data & AI", desc: "Statistical modeling, Python, Pandas, Predictive analytics & Tableau" },
+        { title: "Solutions Architect", domain: "Technical Sales & Enterprise", desc: "Enterprise cloud integration, Partner technical solutions, AWS/Azure" },
+        { title: "Database Administrator (DBA)", domain: "Data & Infrastructure", desc: "PostgreSQL, MySQL, Performance tuning, Sharding, Replication" },
+        { title: "Technical Program Manager (TPM)", domain: "Management", desc: "Cross-functional engineering execution, Agile delivery, Risk management" },
+        { title: "Game Developer", domain: "Interactive Media", desc: "Unity, Unreal Engine, C#, C++, 3D Graphics & Physics engines" }
+    ];
+
+    const customRoleInput = document.getElementById("customRoleInput");
+    const customRoleAutocompleteList = document.getElementById("customRoleAutocompleteList");
+
+    if (customRoleInput && customRoleAutocompleteList) {
+        function renderAutocompleteMatches(query = "") {
+            const cleanQuery = query.toLowerCase().trim();
+            const matches = PREDEFINED_TECH_ROLES.filter(r => 
+                !cleanQuery || 
+                r.title.toLowerCase().includes(cleanQuery) || 
+                r.domain.toLowerCase().includes(cleanQuery) ||
+                r.desc.toLowerCase().includes(cleanQuery)
+            );
+
+            if (matches.length === 0) {
+                customRoleAutocompleteList.style.display = "none";
+                return;
+            }
+
+            customRoleAutocompleteList.innerHTML = matches.map(r => `
+                <div class="autocomplete-dropdown-item" data-title="${r.title}">
+                    <div class="autocomplete-item-title">
+                        <span>${r.title}</span>
+                        <span class="autocomplete-item-domain">${r.domain}</span>
+                    </div>
+                    <div class="autocomplete-item-desc">${r.desc}</div>
+                </div>
+            `).join("");
+
+            customRoleAutocompleteList.style.display = "block";
+
+            // Click listener for items
+            customRoleAutocompleteList.querySelectorAll(".autocomplete-dropdown-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    customRoleInput.value = item.dataset.title;
+                    customRoleAutocompleteList.style.display = "none";
+                });
+            });
+        }
+
+        customRoleInput.addEventListener("focus", () => {
+            renderAutocompleteMatches(customRoleInput.value);
+        });
+
+        customRoleInput.addEventListener("input", (e) => {
+            renderAutocompleteMatches(e.target.value);
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!customRoleInput.contains(e.target) && !customRoleAutocompleteList.contains(e.target)) {
+                customRoleAutocompleteList.style.display = "none";
+            }
+        });
+    }
+
     // Custom Role Analysis Event Handler
     const analyzeCustomRoleBtn = document.getElementById("analyzeCustomRoleBtn");
-    const customRoleInput = document.getElementById("customRoleInput");
     const customRoleLoading = document.getElementById("customRoleLoading");
 
     if (analyzeCustomRoleBtn && customRoleInput && customRoleLoading) {

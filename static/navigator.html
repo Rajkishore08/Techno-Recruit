@@ -235,7 +235,10 @@
                                 Type any target job title (e.g., Cloud Architect, Product Manager, Security Analyst) to calculate match suitability scores, key strengths, and skill gaps specifically for that role.
                             </p>
                             <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                                <input type="text" id="customRoleInput" placeholder="e.g., DevOps Engineer, Machine Learning Specialist" style="flex: 1; min-width: 250px; min-height: 46px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0 16px; color: #fff;">
+                                <div class="autocomplete-container">
+                                    <input type="text" id="customRoleInput" placeholder="Type or select role (e.g., DevOps, Product Manager, Full Stack)" style="width: 100%; min-height: 46px; background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0 16px; color: #fff;" autocomplete="off">
+                                    <div id="customRoleAutocompleteList" class="autocomplete-dropdown-list"></div>
+                                </div>
                                 <button type="button" class="btn-primary" id="analyzeCustomRoleBtn" style="min-height: 46px;">
                                     <i data-lucide="shield-check"></i>
                                     <span>Analyze Custom Role Fit</span>
