@@ -248,6 +248,10 @@ body {
     padding: 32px 40px;
     min-height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Top Header Bar */
@@ -256,20 +260,26 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .header-banner {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     gap: 20px;
-    padding: 24px 28px;
+    padding: 20px 28px;
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .header-title h1 {
@@ -1379,27 +1389,43 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .user-profile {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background-color: var(--bg-surface-elevated);
     border: 1px solid var(--border-color);
-    padding: 6px 14px;
+    padding: 4px 12px;
     border-radius: 9999px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    max-width: 260px;
+    flex-shrink: 0;
 }
 
-.user-profile .avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 2px solid var(--color-primary);
+.user-profile img,
+.user-profile .avatar,
+#userAvatar,
+img.avatar,
+.user-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    max-width: 34px !important;
+    max-height: 34px !important;
+    border-radius: 50% !important;
+    border: 2px solid var(--color-primary) !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
 }
 
 .user-profile .user-name {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13.5px;
+    font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
 }
 
 .btn-icon {

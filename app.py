@@ -97,8 +97,11 @@ def get_firebase_config():
     }
 
 
+DIST_DIR = BASE_DIR / "dist"
+SERVE_DIR = DIST_DIR if DIST_DIR.exists() else STATIC_DIR
+
 # Mount static files directory at root
-app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+app.mount("/", StaticFiles(directory=SERVE_DIR, html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
