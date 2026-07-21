@@ -4,27 +4,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Techno Recruit — AI Resume Enhancer & ATS Optimizer</title>
-    <link rel="stylesheet" href="/style.css">
+    <meta name="description" content="Compare candidate resume against target JD, identify missing ATS keywords, and generate a downloadable ATS-tailored resume.">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body data-page="ats-optimizer">
     <div class="app-layout">
-        <!-- TOP HEADER -->
-        <header class="app-header">
-            <div class="header-container">
-                <a href="/index.html" class="brand-logo" style="text-decoration:none;">
-                    <div class="logo-icon">
-                        <i data-lucide="sparkles"></i>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="logo">
+                    <i data-lucide="brain-circuit" class="logo-icon"></i>
+                    <h2>Techno Recruit</h2>
+                </div>
+                <button type="button" id="closeSidebarBtn" title="Close History" style="background: none; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: var(--transition-fast);">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <i data-lucide="compass"></i>
+                    <span>Resume Analyses</span>
+                </div>
+                <p class="section-subtitle">Career Score Progress</p>
+                <div class="history-list" id="careerHistoryList">
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>Sign in to view saved candidate runs</p>
                     </div>
-                    <div class="logo-text">
-                        <span class="logo-title">Techno Recruit</span>
-                        <span class="logo-subtitle">AI TALENT INTELLIGENCE</span>
-                    </div>
-                </a>
+                </div>
+            </div>
 
+            <div class="sidebar-section" style="margin-top: 24px;">
+                <div class="section-title">
+                    <i data-lucide="history"></i>
+                    <span>Interview Guides</span>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">
+                        <i data-lucide="file-text"></i>
+                        <p>No past guides saved</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-banner">
+                    <div style="display: flex; gap: 18px; align-items: center;">
+                        <div class="header-title">
+                            <span class="badge-active"><span class="dot"></span> Autonomous Specialist Agent System</span>
+                            <h1>AI Resume Enhancer & ATS Optimizer</h1>
+                            <p class="subtitle">Deep ATS Gap Audit, Keyword Heatmap & Tailored Resume Generator.</p>
+                        </div>
+                    </div>
+                    <div class="header-auth" id="headerAuth">
+                        <button class="btn-primary" id="loginBtn">
+                            <i data-lucide="log-in"></i>
+                            <span>Sign In with Google</span>
+                        </button>
+                        <div class="user-profile" id="userProfile" style="display: none;">
+                            <img src="" id="userAvatar" class="avatar" alt="User Avatar">
+                            <span id="userName" class="user-name"></span>
+                            <button class="btn-icon" id="logoutBtn" title="Sign Out">
+                                <i data-lucide="log-out"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Navigation Header -->
                 <nav class="app-tabs">
                     <a href="/index.html" class="tab-btn">
                         <i data-lucide="layout-dashboard"></i>
@@ -33,6 +94,7 @@
                     <a href="/navigator.html" class="tab-btn">
                         <i data-lucide="compass"></i>
                         <span>Career Navigator</span>
+                        <span class="tab-badge">AI ROLE MATCHER</span>
                     </a>
                     <a href="/ats-optimizer.html" class="tab-btn active">
                         <i data-lucide="file-check-2"></i>
@@ -42,80 +104,20 @@
                     <a href="/talent-search.html" class="tab-btn">
                         <i data-lucide="search-code"></i>
                         <span>Talent Search</span>
+                        <span class="tab-badge" style="background:linear-gradient(135deg,#38bdf8,#6366f1);">VECTOR RAG</span>
                     </a>
                     <a href="/architect.html" class="tab-btn">
                         <i data-lucide="brain-circuit"></i>
                         <span>Interview Architect</span>
                     </a>
+                    <button type="button" class="tab-btn btn-tour-trigger" id="tourBtn" style="margin-left:auto; background:rgba(99,102,241,0.15); color:var(--color-primary-light);">
+                        <i data-lucide="help-circle"></i>
+                        <span>Platform Guide</span>
+                    </button>
                 </nav>
+            </header>
 
-                <div class="header-actions">
-                    <div class="header-auth" id="headerAuth">
-                        <button class="btn-primary" id="loginBtn">
-                            <i data-lucide="log-in"></i>
-                            <span>Sign In with Google</span>
-                        </button>
-                        <div class="user-profile" id="userProfile" style="display: none;">
-                            <img src="" alt="User Avatar" class="user-avatar" id="userAvatar">
-                            <span class="user-name" id="userName">User</span>
-                            <button class="btn-icon" id="logoutBtn" title="Sign Out">
-                                <i data-lucide="log-out"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- OVERLAY SIDEBAR DRAWER FOR HISTORY -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3><i data-lucide="clock"></i> Screening History</h3>
-                <button type="button" class="btn-close-sidebar" id="closeSidebarBtn" title="Close Drawer">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">
-                    <i data-lucide="file-text"></i> Candidate Resumes Evaluated
-                </div>
-                <div class="history-list" id="careerHistoryList">
-                    <div class="history-empty">
-                        <i data-lucide="file-text"></i>
-                        <p>No saved resume runs</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">
-                    <i data-lucide="folder"></i> Interview Guides Generated
-                </div>
-                <div class="history-list" id="historyList">
-                    <div class="history-empty">
-                        <i data-lucide="folder-open"></i>
-                        <p>No generated guides yet</p>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT AREA -->
-        <main class="main-content">
-            <div class="content-container">
-                <div class="page-hero" style="margin-bottom: 24px;">
-                    <div class="page-hero-title" style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(99, 102, 241, 0.2)); display: flex; align-items: center; justify-content: center; color: var(--color-success);">
-                            <i data-lucide="file-check-2" style="width: 24px; height: 24px;"></i>
-                        </div>
-                        <div>
-                            <h1 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0;">AI Resume Enhancer & ATS Optimizer</h1>
-                            <p style="font-size: 13px; color: var(--text-secondary); margin: 2px 0 0 0;">Compare candidate resume against target JD, identify missing ATS keywords, and generate a downloadable ATS-tailored resume</p>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="content-body">
                 <!-- INPUT FORM GRID -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-bottom: 28px;">
                     <!-- Candidate Resume Input Card -->
