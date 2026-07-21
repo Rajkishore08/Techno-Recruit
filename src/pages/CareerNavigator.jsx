@@ -49,16 +49,8 @@ export default function CareerNavigator() {
   const [customRoleResult, setCustomRoleResult] = useState(null);
   const [autocompleteOpen, setAutocompleteOpen] = useState(false);
 
-  const handleFileSelect = async (file) => {
+  const handleFileSelect = (file) => {
     setSelectedFile(file);
-    try {
-      const res = await parseResume(file, currentIdToken);
-      if (res.resume_text) {
-        setRawResumeText(res.resume_text);
-      }
-    } catch (e) {
-      console.error("Auto parse failed:", e);
-    }
   };
 
   const handleAnalyze = async () => {
@@ -364,16 +356,74 @@ export default function CareerNavigator() {
                 </button>
               </div>
 
-              {/* Custom Role Result */}
+              {/* Custom Role Full Detail Result */}
               {customRoleResult && (
-                <div style={{ marginTop: '20px', padding: '16px', borderRadius: '8px', background: 'rgba(15,23,42,0.7)', border: '1px solid var(--color-primary-light)' }}>
-                  <h4 style={{ color: 'var(--color-primary-light)', margin: '0 0 8px 0' }}>{customRoleResult.role_title} Fit Analysis</h4>
-                  <p style={{ fontSize: '13px', color: '#fff', marginBottom: '12px' }}>{customRoleResult.match_summary}</p>
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
-                    <span>Junior: <strong>{customRoleResult.beginner_score}%</strong></span>
-                    <span>Mid-Level: <strong>{customRoleResult.intermediate_score}%</strong></span>
-                    <span>Senior: <strong>{customRoleResult.experienced_score}%</strong></span>
+                <div className="card role-card" style={{ marginTop: '24px', padding: '24px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))', border: '1px solid var(--color-primary-light)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div>
+                      <span className="badge-active" style={{ marginBottom: '6px', fontSize: '11px' }}><span className="dot"></span> CUSTOM ROLE EVALUATION</span>
+                      <h3 style={{ color: 'var(--color-primary-light)', fontSize: '18px', fontWeight: 800, margin: 0 }}>{customRoleResult.role_title}</h3>
+                    </div>
+                    <span className="domain-pill" style={{ background: 'rgba(99,102,241,0.25)', color: 'var(--color-primary-light)', fontSize: '12px', padding: '4px 10px', borderRadius: '6px', fontWeight: 700 }}>
+                      {customRoleResult.domain || "Custom Role"}
+                    </span>
                   </div>
+
+                  <p style={{ fontSize: '13.5px', color: 'var(--text-primary)', marginBottom: '16px', lineHeight: 1.6 }}>
+                    {renderFormattedBoldText(customRoleResult.match_summary)}
+                  </p>
+
+                  <div className="level-scores-box" style={{ background: 'rgba(15,23,42,0.8)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Junior Match Suitability</span>
+                      <span style={{ fontWeight: 800, color: 'var(--color-success)' }}>{customRoleResult.beginner_score}%</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Mid-Level Match Suitability</span>
+                      <span style={{ fontWeight: 800, color: 'var(--color-primary-light)' }}>{customRoleResult.intermediate_score}%</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Senior Match Suitability</span>
+                      <span style={{ fontWeight: 800, color: '#f59e0b' }}>{customRoleResult.experienced_score}%</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    {/* Key Strengths */}
+                    {customRoleResult.key_strengths && customRoleResult.key_strengths.length > 0 && (
+                      <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '14px', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Check size={16} /> Candidate Key Strengths:
+                        </div>
+                        <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                          {customRoleResult.key_strengths.map((str, sidx) => (
+                            <li key={sidx}>{renderFormattedBoldText(str)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Skill Gaps */}
+                    {customRoleResult.skill_gaps && customRoleResult.skill_gaps.length > 0 && (
+                      <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '14px', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#f59e0b', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <AlertTriangle size={16} /> Skill Gaps to Improve:
+                        </div>
+                        <ul style={{ paddingLeft: '18px', margin: 0, fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                          {customRoleResult.skill_gaps.map((gap, gidx) => (
+                            <li key={gidx}>{renderFormattedBoldText(gap)}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Recommended Next Steps */}
+                  {customRoleResult.recommended_next_steps && (
+                    <div style={{ padding: '12px 16px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: '8px', fontSize: '13px', color: '#fff' }}>
+                      <strong style={{ color: 'var(--color-primary-light)' }}>Recommended Next Steps:</strong> {renderFormattedBoldText(customRoleResult.recommended_next_steps)}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

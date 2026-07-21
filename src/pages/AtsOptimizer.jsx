@@ -15,14 +15,8 @@ export default function AtsOptimizer() {
   const [results, setResults] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
 
-  const handleFileSelect = async (file) => {
+  const handleFileSelect = (file) => {
     setSelectedFile(file);
-    try {
-      const res = await parseResume(file, currentIdToken);
-      if (res.resume_text) setRawResumeText(res.resume_text);
-    } catch (e) {
-      console.error(e);
-    }
   };
 
   const handleOptimize = async () => {
