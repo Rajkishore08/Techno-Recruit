@@ -233,7 +233,7 @@ Format the output strictly as a JSON object with keys:
 - "candidate_name": String
 - "candidate_summary": String overview of candidate profile
 - "why_best_fit": String explaining why candidate is the best fit
-- "profile_and_project_links": List of objects [{"title": "...", "url": "..."}]
+- "profile_and_project_links": List of objects [{{"title": "...", "url": "..."}}]
 - "top_skills_identified": List of 5-8 primary technical skills
 - "leadership_and_community": List of 2-4 detailed bullet strings with **bold formatting**
 - "achievements_and_competitions": List of 2-4 detailed bullet strings with **bold formatting**
