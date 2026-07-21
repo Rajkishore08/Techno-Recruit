@@ -19,14 +19,26 @@ const PREDEFINED_TECH_ROLES = [
   { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" }
 ];
 
-// Helper to format bold markdown (**text**) into JSX and strip raw leading bullet characters
 function renderFormattedBoldText(text) {
   if (!text) return null;
-  // Clean raw bullet markers (* , - , • ) from text start
-  let cleaned = text.trim().replace(/^[\*\-•]\s*/, '');
-  const parts = cleaned.split(/(\*\*.*?\*\*)/g);
+  let str = String(text).trim();
+
+  // 1. Strip raw bullet markers at text start (- , • )
+  str = str.replace(/^[\-\•]\s*/, '');
+
+  // 2. Fix unmatched single-star prefix paired with double-star suffix (*text** -> **text**)
+  if (str.startsWith('*') && !str.startsWith('**') && str.endsWith('**')) {
+    str = '*' + str;
+  } else if (str.startsWith('* ') && str.endsWith('**')) {
+    str = str.replace(/^\*\s*/, '**');
+  } else if (str.startsWith('* ') && !str.includes('**')) {
+    str = str.replace(/^\*\s*/, '');
+  }
+
+  // 3. Parse remaining bold tokens (**text**) into <strong> tags
+  const parts = str.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, idx) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
       return <strong key={idx} style={{ color: 'var(--color-primary-light)', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
     }
     return part;
