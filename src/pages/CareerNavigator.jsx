@@ -47,7 +47,7 @@ function renderFormattedBoldText(text) {
 
 export default function CareerNavigator() {
   const { currentIdToken } = useAuth();
-  const { refreshHistory } = useHistory();
+  const { refreshHistory, careerHistory } = useHistory();
 
   const [candidateName, setCandidateName] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -58,6 +58,23 @@ export default function CareerNavigator() {
   const [results, setResults] = useState(null);
   const [baselineSession, setBaselineSession] = useState(null);
   const [error, setError] = useState(null);
+
+  // Load pending analysis session when selected from history sidebar drawer
+  useEffect(() => {
+    const pendingId = localStorage.getItem("pending_analysis_id");
+    if (pendingId && careerHistory && careerHistory.length > 0) {
+      const match = careerHistory.find(item => item.analysis_id === pendingId);
+      if (match && match.data) {
+        setResults(match.data);
+        if (match.candidate_name) setCandidateName(match.candidate_name);
+        if (match.resume_snippet) setRawResumeText(match.resume_snippet);
+        localStorage.removeItem("pending_analysis_id");
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    }
+  }, [careerHistory]);
 
   // Custom role state
   const [customRoleInput, setCustomRoleInput] = useState('');

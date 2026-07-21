@@ -11,12 +11,11 @@ export function HistoryProvider({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const refreshHistory = async () => {
-    if (!currentIdToken) return;
     try {
       const cHist = await fetchCareerHistory(currentIdToken);
-      setCareerHistory(cHist);
+      setCareerHistory(Array.isArray(cHist) ? cHist : []);
       const gHist = await fetchGuideHistory(currentIdToken);
-      setGuideHistory(gHist);
+      setGuideHistory(Array.isArray(gHist) ? gHist : []);
     } catch (e) {
       console.error("Failed to load history:", e);
     }
