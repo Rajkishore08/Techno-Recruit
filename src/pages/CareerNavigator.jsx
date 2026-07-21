@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp, Users, AlertTriangle, Check, Target } from 'lucide-react';
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
@@ -19,10 +19,12 @@ const PREDEFINED_TECH_ROLES = [
   { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" }
 ];
 
-// Helper to format bold markdown (**text**) into JSX
+// Helper to format bold markdown (**text**) into JSX and strip raw leading bullet characters
 function renderFormattedBoldText(text) {
   if (!text) return null;
-  const parts = text.split(/(\*\*.*?\*\*)/g);
+  // Clean raw bullet markers (* , - , • ) from text start
+  let cleaned = text.trim().replace(/^[\*\-•]\s*/, '');
+  const parts = cleaned.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return <strong key={idx} style={{ color: 'var(--color-primary-light)', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
@@ -53,6 +55,18 @@ export default function CareerNavigator() {
 
   const resultsRef = useRef(null);
 
+  // Sort suggested roles so the highest matching "Best Fit" role comes FIRST
+  const sortedRoles = useMemo(() => {
+    if (!results || !results.suggested_roles) return [];
+    const rolesCopy = [...results.suggested_roles];
+    rolesCopy.sort((a, b) => {
+      const maxA = Math.max(a.beginner_score || 0, a.intermediate_score || 0, a.experienced_score || 0);
+      const maxB = Math.max(b.beginner_score || 0, b.intermediate_score || 0, b.experienced_score || 0);
+      return maxB - maxA;
+    });
+    return rolesCopy;
+  }, [results]);
+
   const handleFileSelect = (file) => {
     setSelectedFile(file);
   };
@@ -67,7 +81,6 @@ export default function CareerNavigator() {
     setProgressPercent(10);
     setProgressMsg("Extracting candidate background & parsed links...");
 
-    // Simulated progress bar ticker
     const timer = setInterval(() => {
       setProgressPercent(prev => {
         if (prev < 30) {
@@ -107,7 +120,6 @@ export default function CareerNavigator() {
       setBaselineSession(res.baseline_session);
       refreshHistory();
 
-      // Smooth auto-scroll to results
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 150);
@@ -337,14 +349,33 @@ export default function CareerNavigator() {
               </div>
             )}
 
-            {/* Recommended Roles Grid */}
+            {/* Recommended Roles Grid - Sorted with BEST FIT Role displayed FIRST */}
             <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Target size={18} style={{ color: 'var(--color-primary-light)' }} /> Recommended Matching Roles
             </h3>
 
             <div className="roles-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '28px' }}>
-              {(results.suggested_roles || []).map((role, idx) => (
-                <div key={idx} className="card role-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
+              {sortedRoles.map((role, idx) => (
+                <div 
+                  key={idx} 
+                  className="card role-card" 
+                  style={{ 
+                    padding: '20px', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    border: idx === 0 ? '1px solid var(--color-success)' : '1px solid var(--border-color)',
+                    background: idx === 0 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.95) 100%)' : 'var(--bg-surface)'
+                  }}
+                >
+                  {/* BEST FIT MATCH Top Badge for First Card */}
+                  {idx === 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <span className="badge-active" style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--color-success)', border: '1px solid var(--color-success)', fontSize: '11px', padding: '4px 12px', fontWeight: 800, borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <Sparkles size={12} /> ★ BEST FIT MATCH
+                      </span>
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <h4 style={{ color: 'var(--color-primary-light)', fontSize: '16px', fontWeight: 700, margin: 0 }}>{role.role_title}</h4>
                     <span className="domain-pill" style={{ background: 'rgba(99,102,241,0.2)', color: 'var(--color-primary-light)', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>{role.domain}</span>
