@@ -1,16 +1,55 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Users, FileText, Target, Award, Sparkles, Compass, SearchCode, BrainCircuit, ArrowRight, FileCheck2 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Users, FileText, Target, Award, Sparkles, Compass, SearchCode, BrainCircuit, ArrowRight, FileCheck2, ChevronRight, UserCheck } from 'lucide-react';
 import Header from '../components/common/Header';
 import { useHistory } from '../context/HistoryContext';
 
 export default function Dashboard() {
-  const { careerHistory, guideHistory } = useHistory();
+  const { careerHistory, guideHistory, refreshHistory } = useHistory();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshHistory();
+  }, []);
 
   const candidateCount = careerHistory.length;
   const guideCount = guideHistory.length;
-  const avgFit = candidateCount > 0 ? "86%" : "0%";
-  const topDomain = "Full Stack";
+
+  // Calculate dynamic average fit score across all candidates
+  let totalScoreSum = 0;
+  let totalScoreCount = 0;
+  const domainCounts = {};
+
+  careerHistory.forEach(item => {
+    if (item.data && item.data.suggested_roles) {
+      item.data.suggested_roles.forEach(role => {
+        const score = Math.max(role.beginner_score || 0, role.intermediate_score || 0, role.experienced_score || 0);
+        if (score > 0) {
+          totalScoreSum += score;
+          totalScoreCount++;
+        }
+        const dom = role.domain || "Software Engineering";
+        domainCounts[dom] = (domainCounts[dom] || 0) + 1;
+      });
+    }
+  });
+
+  const avgFitNum = totalScoreCount > 0 ? Math.round(totalScoreSum / totalScoreCount) : (candidateCount > 0 ? 86 : 0);
+  const avgFit = candidateCount > 0 ? `${avgFitNum}%` : "0%";
+
+  let topDomain = "Software Engineering";
+  let maxDomainCount = 0;
+  Object.keys(domainCounts).forEach(dom => {
+    if (domainCounts[dom] > maxDomainCount) {
+      maxDomainCount = domainCounts[dom];
+      topDomain = dom;
+    }
+  });
+
+  const handleSelectCandidate = (analysisId) => {
+    localStorage.setItem("pending_analysis_id", analysisId);
+    navigate("/navigator");
+  };
 
   return (
     <div className="content-container">
@@ -21,7 +60,7 @@ export default function Dashboard() {
 
       <div className="content-body">
         {/* Dashboard Welcome Banner */}
-        <section className="card dashboard-hero-card" style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', border: '1px solid var(--color-primary-light)', padding: '24px' }}>
+        <section className="card dashboard-hero-card" style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', border: '1px solid var(--color-primary-light)', padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <span className="badge-active" style={{ marginBottom: '8px', width: 'fit-content' }}><span className="dot"></span> Talent Acquisition Command Center</span>
@@ -38,7 +77,7 @@ export default function Dashboard() {
         </section>
 
         {/* Key Metrics Grid */}
-        <div className="dashboard-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+        <div className="dashboard-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '28px' }}>
           <div className="card metric-tile" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div className="metric-icon" style={{ background: 'rgba(99, 102, 241, 0.15)', color: 'var(--color-primary-light)', width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={22} /></div>
             <div className="metric-data">
@@ -66,11 +105,85 @@ export default function Dashboard() {
           <div className="card metric-tile" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div className="metric-icon" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Award size={22} /></div>
             <div className="metric-data">
-              <span className="metric-val" style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>{topDomain}</span>
+              <span className="metric-val" style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{topDomain}</span>
               <span className="metric-lbl" style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)' }}>Top Evaluated Domain</span>
             </div>
           </div>
         </div>
+
+        {/* Previously Screened Candidates Section */}
+        <section style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserCheck size={20} style={{ color: 'var(--color-primary-light)' }} /> Previously Screened Candidates ({candidateCount})
+            </h3>
+            {candidateCount > 0 && (
+              <Link to="/navigator" style={{ fontSize: '13px', color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                View All in Navigator <ChevronRight size={16} />
+              </Link>
+            )}
+          </div>
+
+          {candidateCount === 0 ? (
+            <div className="card" style={{ padding: '32px', textAlign: 'center', background: 'rgba(15, 23, 42, 0.6)' }}>
+              <Users size={36} style={{ color: 'var(--text-muted)', marginBottom: '12px' }} />
+              <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: 700, marginBottom: '6px' }}>No candidates screened yet</h4>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px' }}>
+                Upload candidate resumes (PDF or DOCX) in Career Navigator to generate suitability scorecards and leadership insights.
+              </p>
+              <Link to="/navigator" className="btn-primary" style={{ display: 'inline-flex', padding: '10px 20px', fontSize: '13px', textDecoration: 'none' }}>
+                <Sparkles size={16} /> Screen First Candidate
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+              {careerHistory.slice(0, 6).map((item, idx) => {
+                const topRole = item.data?.suggested_roles?.[0]?.role_title || "Software Engineer";
+                const topScore = item.data?.suggested_roles?.[0]?.intermediate_score || item.data?.suggested_roles?.[0]?.beginner_score || 85;
+
+                return (
+                  <div 
+                    key={idx} 
+                    className="card" 
+                    onClick={() => handleSelectCandidate(item.analysis_id)}
+                    style={{ 
+                      padding: '20px', 
+                      cursor: 'pointer', 
+                      transition: 'transform 0.2s ease, border-color 0.2s ease',
+                      border: '1px solid var(--border-color)',
+                      background: 'rgba(15, 23, 42, 0.8)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <div>
+                        <span className="badge-active" style={{ fontSize: '10px', padding: '2px 8px', marginBottom: '4px' }}>
+                          V{item.version || 1} • SCREENED
+                        </span>
+                        <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', margin: 0 }}>
+                          👤 {item.candidate_name || "Candidate Profile"}
+                        </h4>
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-success)', background: 'rgba(16, 185, 129, 0.15)', padding: '4px 8px', borderRadius: '6px' }}>
+                        {topScore}% Match
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                      <strong>Top Match:</strong> {topRole}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted)', paddingTop: '10px', borderTop: '1px dashed var(--border-color)' }}>
+                      <span>📄 {item.filename || 'resume.pdf'}</span>
+                      <span style={{ color: 'var(--color-primary-light)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        View Report <ChevronRight size={14} />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {/* Launchpad Cards */}
         <section className="dashboard-launchpad">
