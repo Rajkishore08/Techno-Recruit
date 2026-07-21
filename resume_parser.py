@@ -4,13 +4,29 @@ import pypdf
 import docx
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text from PDF file bytes."""
+    """Extract text and embedded hyperlinks from PDF file bytes."""
     reader = pypdf.PdfReader(io.BytesIO(file_bytes))
     text_parts = []
+    found_urls = set()
+
     for page_num, page in enumerate(reader.pages):
         page_text = page.extract_text()
         if page_text:
             text_parts.append(page_text)
+        
+        # Extract embedded hyperlink annotations (/Annots)
+        try:
+            if "/Annots" in page:
+                for annot in page["/Annots"]:
+                    obj = annot.get_object()
+                    if obj and "/A" in obj and "/URI" in obj["/A"]:
+                        uri = str(obj["/A"]["/URI"]).strip()
+                        if uri and uri not in found_urls:
+                            found_urls.add(uri)
+                            text_parts.append(f"[Hyperlink Annotation: {uri}]")
+        except Exception:
+            pass
+
     return "\n".join(text_parts).strip()
 
 

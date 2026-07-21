@@ -248,6 +248,10 @@ function initApp() {
         loadHistoryList();
         loadCareerHistoryList();
 
+        if (document.body.dataset.page === "dashboard") {
+            renderDashboardMetrics();
+        }
+
         if (document.body.dataset.page === "login") {
             window.location.href = "/index.html";
         }
@@ -542,13 +546,24 @@ function initApp() {
         if (!currentIdToken) return;
 
         try {
+            // Fetch career history metrics
             const historyResp = await fetch(`${API_BASE}/api/career-history`, {
                 headers: { "Authorization": `Bearer ${currentIdToken}` }
             });
-            if (!historyResp.ok) return;
+            let items = [];
+            if (historyResp.ok) {
+                items = await historyResp.json();
+                if (dashMetricCandidates) dashMetricCandidates.textContent = items.length;
+            }
 
-            const items = await historyResp.json();
-            if (dashMetricCandidates) dashMetricCandidates.textContent = items.length;
+            // Fetch guides metrics
+            const guidesResp = await fetch(`${API_BASE}/api/history`, {
+                headers: { "Authorization": `Bearer ${currentIdToken}` }
+            });
+            if (guidesResp.ok) {
+                const guides = await guidesResp.json();
+                if (dashMetricGuides) dashMetricGuides.textContent = guides.length;
+            }
 
             if (items && items.length > 0) {
                 // Compute average score & top domain
@@ -1131,17 +1146,84 @@ function initApp() {
             if (sideBySideTableCard) sideBySideTableCard.style.display = "none";
         }
 
+        function parseBold(text) {
+            if (!text) return "";
+            let str = String(text);
+            
+            // 1. Replace explicit markdown **bold**
+            str = str.replace(/\*\*(.*?)\*\*/g, '<strong class="highlight-strong">$1</strong>');
+
+            // 2. Highlight key action words / awards
+            str = str.replace(/\b(Winner of the|Winner of|Winner at|Winner|Runner-up in the|Runner-up at|Runner-up|Runner Up|1st Place|First Place|Top 3|Secured|Won)\b/gi, '<span class="highlight-gold">$1</span>');
+
+            // 3. Highlight key job roles / leadership titles
+            str = str.replace(/\b(Full Stack Developer Intern|Full Stack Developer|Frontend Developer|Backend Developer|Product Designer|UI\/UX Designer|Campus Lead|Associate Director|Secretary|Design Lead|Digital Illustrator|Software Engineer|Data Scientist|DevOps Engineer|Project Lead|Co-founded)\b/gi, '<span class="highlight-cyan">$1</span>');
+
+            // 4. Highlight key organization / institution names
+            str = str.replace(/\b(Google Developer Group On Campus - CIT|Google Developer Group|Google Developer Groups|Student Developers Cell - CIT|Student Developers Cell|Xthlete|TIA IT|NIT Surathkal|NITK|Amrita Vishwa Vidyapeetham|Create Digital Solutions|Snippet Script|CIT)\b/gi, '<span class="highlight-purple">$1</span>');
+
+            // 5. Highlight hackathon & project names
+            str = str.replace(/\b(Quantum Challenge 2023|CryptoShield 2K24|HackVerse 5\.0|Beyond Abstraction|Altruisty Design Challenge|DeFai-Nexus|Eco-Fortune|Techno Badge|Student Shield)\b/gi, '<span class="highlight-emerald">$1</span>');
+
+            return str;
+        }
+
         // Render Candidate Overview Card
         const topSkills = data.top_skills_identified || [];
+
+        // Build Extracted Links Section
+        let linksHtml = "";
+        const rawLinks = data.profile_and_project_links || [];
+        if (Array.isArray(rawLinks) && rawLinks.length > 0) {
+            linksHtml = `
+                <div class="overview-links-section" style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+                    <div style="font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="link-2" style="width:15px; height:15px; color:var(--color-primary-light);"></i>
+                        Extracted Profile & Project Hyperlinks (${rawLinks.length})
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        ${rawLinks.map(l => {
+                            const url = l.url || "#";
+                            const title = l.title || l.label || url;
+                            return `
+                                <a href="${url}" target="_blank" rel="noopener noreferrer" class="extracted-link-badge" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:var(--color-primary-light); text-decoration:none; font-size:12px; font-weight:600; transition:all 0.2s;">
+                                    <i data-lucide="external-link" style="width:13px; height:13px;"></i>
+                                    <span>${parseBold(title)}</span>
+                                </a>
+                            `;
+                        }).join("")}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Build Why Best Fit Card
+        let bestFitHtml = "";
+        if (data.why_best_fit) {
+            bestFitHtml = `
+                <div class="why-best-fit-card" style="margin-top:16px; padding:16px 20px; border-radius:12px; background:linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(99,102,241,0.15) 100%); border:1px solid rgba(16,185,129,0.35); color:var(--text-primary); box-shadow:0 4px 14px rgba(0,0,0,0.2);">
+                    <div style="font-size:13px; font-weight:800; color:var(--color-success); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="award" style="width:18px; height:18px;"></i>
+                        Why This Candidate Is The Best Fit
+                    </div>
+                    <p style="font-size:13.5px; line-height:1.6; color:var(--text-primary); margin:0;">
+                        ${parseBold(data.why_best_fit)}
+                    </p>
+                </div>
+            `;
+        }
+
         candidateOverviewCard.innerHTML = `
             <div class="overview-title">
                 <i data-lucide="user-check"></i>
                 Candidate Profile: ${cName}${cVer}
             </div>
-            <p class="overview-summary">${data.candidate_summary || "Candidate background analyzed successfully."}</p>
-            <div class="overview-skills-tags">
-                ${topSkills.map(s => `<span class="overview-skill-tag">${s}</span>`).join("")}
+            <p class="overview-summary">${parseBold(data.candidate_summary) || "Candidate background analyzed successfully."}</p>
+            ${bestFitHtml}
+            <div class="overview-skills-tags" style="margin-top:14px;">
+                ${topSkills.map(s => `<span class="overview-skill-tag" style="font-weight:700;">${parseBold(s)}</span>`).join("")}
             </div>
+            ${linksHtml}
         `;
 
         // Render Experience Highlight Cards (Leadership, Hackathons, Internships)
@@ -1153,22 +1235,22 @@ function initApp() {
         if (leadershipList) {
             const raw = data.leadership_and_community;
             const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Led student developer initiatives, club projects, and peer technical mentoring."];
-            leadershipList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
+            leadershipList.innerHTML = items.map(i => `<li>${parseBold(typeof i === 'string' ? i : JSON.stringify(i))}</li>`).join("");
         }
         if (hackathonList) {
             const raw = data.achievements_and_competitions;
             const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Competed in technical hackathons, coding contests, and academic competitions."];
-            hackathonList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
+            hackathonList.innerHTML = items.map(i => `<li>${parseBold(typeof i === 'string' ? i : JSON.stringify(i))}</li>`).join("");
         }
         if (internshipList) {
             const raw = data.work_and_internship_experience;
             const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Software engineering internship experience, client development, and startup project work."];
-            internshipList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
+            internshipList.innerHTML = items.map(i => `<li>${parseBold(typeof i === 'string' ? i : JSON.stringify(i))}</li>`).join("");
         }
         if (recommendationsList) {
             const raw = data.dynamic_recommendations;
             const items = (Array.isArray(raw) && raw.length > 0) ? raw : ["Highlight quantitative metrics for project impact, student community leadership, and hackathon wins."];
-            recommendationsList.innerHTML = items.map(i => `<li>${typeof i === 'string' ? i : JSON.stringify(i)}</li>`).join("");
+            recommendationsList.innerHTML = items.map(i => `<li>${parseBold(typeof i === 'string' ? i : JSON.stringify(i))}</li>`).join("");
         }
 
         rolesGrid.innerHTML = "";
@@ -1177,8 +1259,8 @@ function initApp() {
             const roleCard = document.createElement("div");
             roleCard.className = "role-card";
 
-            const strengths = (role.key_strengths || []).map(s => `<li>${s}</li>`).join("");
-            const gaps = (role.skill_gaps || []).map(g => `<li>${g}</li>`).join("");
+            const strengths = (role.key_strengths || []).map(s => `<li>${parseBold(s)}</li>`).join("");
+            const gaps = (role.skill_gaps || []).map(g => `<li>${parseBold(g)}</li>`).join("");
 
             roleCard.innerHTML = `
                 <div class="role-card-header">
