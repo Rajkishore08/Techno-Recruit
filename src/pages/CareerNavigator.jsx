@@ -58,6 +58,21 @@ export default function CareerNavigator() {
   const [results, setResults] = useState(null);
   const [baselineSession, setBaselineSession] = useState(null);
   const [error, setError] = useState(null);
+  const [placeholderName, setPlaceholderName] = useState('e.g., Sarah Jenkins, Priya Sharma');
+
+  useEffect(() => {
+    const RANDOM_NAMES = [
+      "Sarah Jenkins", "Alex Rivera", "Priya Sharma", "Chen Wei", "David Kim", 
+      "Sofia Rodriguez", "Marcus Vance", "Emily Watson", "Yusuf Demir", "Amara Okafor",
+      "Kavitha R", "Siddharth Sen", "Meera Nair", "Arjun Patel", "Aditya Joshi"
+    ];
+    const n1 = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    let n2 = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    while (n2 === n1) {
+      n2 = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+    }
+    setPlaceholderName(`e.g., ${n1}, ${n2}`);
+  }, []);
 
   // Load pending analysis session when selected from history sidebar drawer
   useEffect(() => {
@@ -225,7 +240,7 @@ export default function CareerNavigator() {
               type="text" 
               value={candidateName} 
               onChange={e => setCandidateName(e.target.value)} 
-              placeholder="e.g., Pavimalini T, Rajkishore S" 
+              placeholder={placeholderName} 
               style={{ width: '100%', minHeight: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff' }} 
             />
           </div>

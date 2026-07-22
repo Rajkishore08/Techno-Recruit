@@ -29,9 +29,23 @@ function ProtectedLayout({ children }) {
   return (
     <div className="app-layout">
       <SidebarDrawer />
-      <main className="main-content">
-        {children}
-      </main>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', overflowX: 'hidden' }}>
+        <main className="main-content" style={{ flex: 1 }}>
+          {children}
+        </main>
+        <footer style={{
+          textAlign: 'center',
+          padding: '24px 0',
+          borderTop: '1px solid var(--border-color)',
+          background: 'rgba(11, 17, 32, 0.4)',
+          color: 'var(--text-muted)',
+          fontSize: '12px',
+          fontWeight: 600,
+          letterSpacing: '0.05em'
+        }}>
+          Developed by <span style={{ color: 'var(--color-accent)' }}>Raj Kishore S</span>
+        </footer>
+      </div>
       <FloatingHistoryBtn />
     </div>
   );
