@@ -30,6 +30,8 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).parent
 STATIC_DIR = BASE_DIR / "static"
+DIST_DIR = BASE_DIR / "dist"
+SERVE_DIR = DIST_DIR if DIST_DIR.exists() else STATIC_DIR
 
 app = FastAPI(
     title="Techno Recruit — AI Talent Intelligence & Multi-Agent Platform",
@@ -60,9 +62,25 @@ app.include_router(architect_router)
 
 @app.get("/favicon.ico")
 def favicon():
-    fav = STATIC_DIR / "favicon.ico"
+    fav = SERVE_DIR / "favicon.png"
     if fav.exists():
         return FileResponse(fav)
+    return Response(status_code=204)
+
+
+@app.get("/favicon.png")
+def favicon_png():
+    fav = SERVE_DIR / "favicon.png"
+    if fav.exists():
+        return FileResponse(fav)
+    return Response(status_code=204)
+
+
+@app.get("/logo.png")
+def logo_png():
+    logo = SERVE_DIR / "logo.png"
+    if logo.exists():
+        return FileResponse(logo)
     return Response(status_code=204)
 
 
@@ -96,9 +114,6 @@ def get_firebase_config():
         "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID") or DEFAULT_PUBLIC_FIREBASE_CONFIG["measurementId"]
     }
 
-
-DIST_DIR = BASE_DIR / "dist"
-SERVE_DIR = DIST_DIR if DIST_DIR.exists() else STATIC_DIR
 
 # Mount static files directory at root
 app.mount("/", StaticFiles(directory=SERVE_DIR, html=True), name="static")
