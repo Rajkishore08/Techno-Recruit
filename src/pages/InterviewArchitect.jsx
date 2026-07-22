@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { BrainCircuit, Sparkles, CheckSquare, Loader2, Award, FileText, CheckCircle2, ChevronRight, HelpCircle } from 'lucide-react';
+import { 
+  BrainCircuit, Sparkles, CheckSquare, Loader2, Award, FileText, CheckCircle2, 
+  ChevronRight, HelpCircle, UserCheck, AlertTriangle, Wrench, ClipboardCheck, Database, CheckCircle 
+} from 'lucide-react';
 import Header from '../components/common/Header';
 import { useAuth } from '../context/AuthContext';
 import { fetchWithAuth } from '../services/api';
@@ -11,6 +14,17 @@ const CATEGORIES = [
   "Behavioral & Culture Fit",
   "Leadership & Project Ownership",
   "Domain Expertise"
+];
+
+const STEPS = [
+  { id: "JD_PARSING", label: "JD Parser", icon: FileText },
+  { id: "RESUME_MATCHING", label: "Resume Matcher", icon: UserCheck },
+  { id: "SYLLABUS_DESIGN", label: "Syllabus Designer", icon: Award },
+  { id: "QUESTION_GENERATION", label: "Question Writer", icon: HelpCircle },
+  { id: "CRITIQUE", label: "Critic Agent", icon: AlertTriangle },
+  { id: "REFINEMENT", label: "Refiner Agent", icon: Wrench },
+  { id: "SCORECARD_BUILDING", label: "Scorecard Agent", icon: ClipboardCheck },
+  { id: "DB_LOGGING", label: "DB Logger", icon: Database },
 ];
 
 export default function InterviewArchitect() {
@@ -79,11 +93,11 @@ export default function InterviewArchitect() {
           if (line.startsWith("data: ")) {
             try {
               const data = JSON.parse(line.slice(6));
-              if (data.phase === "FINAL_RESULT") {
-                setGeneratedGuide(data.guide);
-              } else {
-                setSseTraces(prev => [...prev, data]);
+              if (data.phase === "COMPLETED") {
+                setGeneratedGuide(data.data);
               }
+              // Add to sse traces
+              setSseTraces(prev => [...prev, data]);
             } catch (e) {
               console.error("Parse SSE chunk error:", e);
             }
@@ -184,22 +198,110 @@ export default function InterviewArchitect() {
           </div>
         </div>
 
-        {/* SSE Trace Visualizer */}
-        {sseTraces.length > 0 && (
-          <div className="card" style={{ padding: '20px', marginBottom: '28px', background: 'rgba(15,23,42,0.85)' }}>
-            <h4 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--color-primary-light)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={16} /> Autonomous Agent Loop Activity Stream
-            </h4>
-            <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {sseTraces.map((tr, idx) => (
-                <div key={idx} style={{ fontSize: '12.5px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>[{tr.phase}]</span>
-                  <span>{tr.message}</span>
+        {/* SSE Trace Visualizer & Flowchart */}
+        {sseTraces.length > 0 && (() => {
+          const activeTrace = sseTraces[sseTraces.length - 1];
+          const activePhase = activeTrace?.phase || "";
+          
+          const getStepStatus = (stepId) => {
+            if (activePhase === "COMPLETED") return "completed";
+            const traceIdx = sseTraces.findIndex(t => t.phase === stepId);
+            if (stepId === activePhase) return "active";
+            if (traceIdx !== -1) return "completed";
+            return "pending";
+          };
+
+          return (
+            <div className="card" style={{ padding: '24px', marginBottom: '28px', background: 'rgba(11, 17, 32, 0.85)', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles className="spin-slow" size={16} /> Autonomous Multi-Agent Work Pipeline
+              </h4>
+
+              {/* Grid of Steps */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                {STEPS.map((step, idx) => {
+                  // Skip resume matching step if no resume uploaded and not started
+                  if (step.id === "RESUME_MATCHING" && !resumeText.trim() && getStepStatus(step.id) === "pending") {
+                    return null;
+                  }
+                  
+                  const status = getStepStatus(step.id);
+                  const Icon = step.icon;
+                  
+                  let cardBg = 'rgba(15, 23, 42, 0.4)';
+                  let border = '1px solid var(--border-color)';
+                  let iconColor = 'var(--text-disabled)';
+                  let isCurrent = status === 'active';
+                  
+                  if (status === 'completed') {
+                    cardBg = 'rgba(34, 197, 94, 0.06)';
+                    border = '1px solid rgba(34, 197, 94, 0.25)';
+                    iconColor = 'var(--color-success)';
+                  } else if (status === 'active') {
+                    cardBg = 'rgba(37, 99, 235, 0.12)';
+                    border = '1px solid var(--color-accent)';
+                    iconColor = 'var(--color-accent)';
+                  }
+
+                  return (
+                    <div key={idx} style={{ 
+                      background: cardBg, 
+                      border, 
+                      borderRadius: '12px', 
+                      padding: '14px 10px', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      textAlign: 'center',
+                      position: 'relative',
+                      boxShadow: isCurrent ? '0 0 15px rgba(56, 189, 248, 0.2)' : 'none',
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div style={{ 
+                        background: isCurrent ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.6)', 
+                        padding: '10px', 
+                        borderRadius: '50%', 
+                        color: iconColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <Icon size={18} className={isCurrent ? 'spin-slow' : ''} />
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: status === 'pending' ? 'var(--text-disabled)' : '#fff' }}>
+                        {step.label}
+                      </span>
+                      <span style={{ 
+                        fontSize: '9px', 
+                        fontWeight: 800, 
+                        textTransform: 'uppercase',
+                        color: status === 'completed' ? 'var(--color-success)' : isCurrent ? 'var(--color-accent)' : 'var(--text-disabled)'
+                      }}>
+                        {status === 'completed' ? 'Done ✓' : isCurrent ? 'Active...' : 'Waiting'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Stream Logs */}
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                <h5 style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '10px' }}>Activity Logs</h5>
+                <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '6px' }}>
+                  {sseTraces.map((tr, idx) => (
+                    <div key={idx} style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: '8px', lineHeight: 1.4 }}>
+                      <span style={{ color: tr.phase === "COMPLETED" ? 'var(--color-success)' : tr.phase === "ERROR" ? 'var(--color-error)' : 'var(--color-accent)', fontWeight: 800, flexShrink: 0 }}>
+                        [{tr.phase}]
+                      </span>
+                      <span>{tr.message}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Generated Guide View */}
         {generatedGuide && (
