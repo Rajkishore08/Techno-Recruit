@@ -90,28 +90,18 @@ def index():
     return FileResponse(STATIC_DIR / "index.html")
 
 
-DEFAULT_PUBLIC_FIREBASE_CONFIG = {
-    "apiKey": "AIzaSyBJa0JPhdfdGI8qsVsLyvB87VvqvFb4LR8",
-    "authDomain": "techno-recruit.firebaseapp.com",
-    "projectId": "techno-recruit",
-    "storageBucket": "techno-recruit.firebasestorage.app",
-    "messagingSenderId": "235364274013",
-    "appId": "1:235364274013:web:9db2497f8946987989e2b4",
-    "measurementId": "G-LKVL7NWK5L"
-}
-
 @app.get("/api/config")
 @app.get("/__/firebase/init.json")
 def get_firebase_config():
     """Returns public Firebase configuration for client SDK initialization."""
     return {
-        "apiKey": os.environ.get("FIREBASE_API_KEY") or DEFAULT_PUBLIC_FIREBASE_CONFIG["apiKey"],
-        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN") or DEFAULT_PUBLIC_FIREBASE_CONFIG["authDomain"],
-        "projectId": os.environ.get("FIREBASE_PROJECT_ID") or DEFAULT_PUBLIC_FIREBASE_CONFIG["projectId"],
-        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET") or DEFAULT_PUBLIC_FIREBASE_CONFIG["storageBucket"],
-        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID") or DEFAULT_PUBLIC_FIREBASE_CONFIG["messagingSenderId"],
-        "appId": os.environ.get("FIREBASE_APP_ID") or DEFAULT_PUBLIC_FIREBASE_CONFIG["appId"],
-        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID") or DEFAULT_PUBLIC_FIREBASE_CONFIG["measurementId"]
+        "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
+        "authDomain": os.environ.get("FIREBASE_AUTH_DOMAIN", ""),
+        "projectId": os.environ.get("FIREBASE_PROJECT_ID", ""),
+        "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET", ""),
+        "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "appId": os.environ.get("FIREBASE_APP_ID", ""),
+        "measurementId": os.environ.get("FIREBASE_MEASUREMENT_ID", "")
     }
 
 

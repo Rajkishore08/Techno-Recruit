@@ -1,6 +1,6 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { HistoryProvider } from './context/HistoryContext';
 import SidebarDrawer from './components/common/SidebarDrawer';
 import FloatingHistoryBtn from './components/common/FloatingHistoryBtn';
@@ -9,24 +9,47 @@ import CareerNavigator from './pages/CareerNavigator';
 import AtsOptimizer from './pages/AtsOptimizer';
 import TalentSearch from './pages/TalentSearch';
 import InterviewArchitect from './pages/InterviewArchitect';
+import Login from './pages/Login';
+
+function ProtectedLayout({ children }) {
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid var(--color-accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <div className="app-layout">
+      <SidebarDrawer />
+      <main className="main-content">
+        {children}
+      </main>
+      <FloatingHistoryBtn />
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <AuthProvider>
       <HistoryProvider>
-        <div className="app-layout">
-          <SidebarDrawer />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/navigator" element={<CareerNavigator />} />
-              <Route path="/ats-optimizer" element={<AtsOptimizer />} />
-              <Route path="/talent-search" element={<TalentSearch />} />
-              <Route path="/architect" element={<InterviewArchitect />} />
-            </Routes>
-          </main>
-          <FloatingHistoryBtn />
-        </div>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
+          <Route path="/navigator" element={<ProtectedLayout><CareerNavigator /></ProtectedLayout>} />
+          <Route path="/ats-optimizer" element={<ProtectedLayout><AtsOptimizer /></ProtectedLayout>} />
+          <Route path="/talent-search" element={<ProtectedLayout><TalentSearch /></ProtectedLayout>} />
+          <Route path="/architect" element={<ProtectedLayout><InterviewArchitect /></ProtectedLayout>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </HistoryProvider>
     </AuthProvider>
   );
