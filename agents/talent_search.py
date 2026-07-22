@@ -20,15 +20,25 @@ def run_talent_search_agent(search_query: str, candidate_records: List[Dict[str,
         analysis_id = record.get("analysis_id", f"c_{idx}")
         filename = record.get("filename", "resume.pdf")
         
+        # Extract full resume context if saved, fallback to snippet or text properties
+        full_resume = record.get("resume_text") or record.get("resume_snippet") or ""
+        
+        # Safe extraction for lists
+        top_skills = data.get('top_skills_identified') or data.get('matched_keywords') or []
+        leadership = data.get('leadership_and_community') or []
+        achievements = data.get('achievements_and_competitions') or []
+        experience = data.get('work_and_internship_experience') or []
+
         candidates_formatted.append(f"""
 CANDIDATE #{idx+1} [ID: {analysis_id}]:
 - Name: {c_name} (Filename: {filename})
 - Summary: {data.get('candidate_summary', '')}
 - Why Best Fit: {data.get('why_best_fit', '')}
-- Top Skills: {', '.join(data.get('top_skills_identified', []))}
-- Leadership: {', '.join(data.get('leadership_and_community', []))}
-- Achievements: {', '.join(data.get('achievements_and_competitions', []))}
-- Experience: {', '.join(data.get('work_and_internship_experience', []))}
+- Top Skills: {', '.join(top_skills) if isinstance(top_skills, list) else str(top_skills)}
+- Leadership: {', '.join(leadership) if isinstance(leadership, list) else str(leadership)}
+- Achievements: {', '.join(achievements) if isinstance(achievements, list) else str(achievements)}
+- Experience: {', '.join(experience) if isinstance(experience, list) else str(experience)}
+- Full Resume Content: {full_resume[:3000]}
 """)
 
     candidates_blob = "\n".join(candidates_formatted)

@@ -114,6 +114,7 @@ def save_career_analysis(
         "filename": filename or "resume.pdf",
         "timestamp": int(time.time()),
         "resume_snippet": resume_text[:300] if resume_text else "",
+        "resume_text": resume_text or "",
         "data": analysis_data
     }
 

@@ -39,7 +39,7 @@ async def search_talent_pool_endpoint(
         raise HTTPException(status_code=400, detail="Search query cannot be empty.")
 
     uid = user.get("uid", "anonymous")
-    candidate_records = get_user_career_analyses(uid) if uid != "anonymous" else []
+    candidate_records = get_user_career_analyses(uid)
 
     if not candidate_records:
         return {

@@ -61,6 +61,29 @@ async def optimize_resume_endpoint(
     try:
         result_json_str, usage = run_ats_optimizer_agent(target_resume_text, j_title, j_desc)
         result_data = json.loads(result_json_str)
+
+        # Save candidate profile to Talent Pool database for Vector RAG search
+        try:
+            from db import save_career_analysis
+            uid = user.get("uid", "anonymous")
+            c_name = filename.split(".")[0] if "." in filename else filename
+            if c_name == "Uploaded Resume" or not c_name:
+                c_name = "ATS Candidate Profile"
+
+            # Enrich result_data with summary field so RAG search runs cleanly
+            if "candidate_summary" not in result_data:
+                result_data["candidate_summary"] = f"Candidate screened for {j_title} with ATS Score {result_data.get('ats_score', 0)}%"
+
+            save_career_analysis(
+                user_uid=uid,
+                filename=filename,
+                resume_text=target_resume_text,
+                analysis_data=result_data,
+                candidate_name=c_name
+            )
+        except Exception as db_err:
+            print(f"Failed to auto-save ATS candidate to database: {db_err}")
+
         return {
             "status": "success",
             "filename": filename,
