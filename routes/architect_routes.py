@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agents.interview_architect import run_interview_generator_agent
 from groq_client import query_groq_helper
-from db import get_interview_guide, update_interview_guide
+from db import get_interview_guide, update_interview_guide, get_user_interview_guides
 
 router = APIRouter(tags=["Interview Architect"])
 
@@ -217,15 +217,10 @@ Format output strictly as JSON with no markdown wrappers.
 def get_history(user: dict = Depends(get_optional_current_user)):
     """Returns list of all saved generated interview guides."""
     try:
-        from firebase_admin import firestore
-        db = firestore.client()
         uid = user.get("uid", "anonymous")
-        docs = db.collection("guides").where("uid", "==", uid).stream()
-        history = [doc.to_dict() for doc in docs]
-        history.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
-        return history
+        return get_user_interview_guides(uid)
     except Exception as e:
-        print(f"Firestore query notice: {e}")
+        print(f"Error fetching guides history: {e}")
         return []
 
 

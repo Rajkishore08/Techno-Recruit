@@ -208,3 +208,29 @@ def update_interview_guide(guide_id: str, updated_fields: Dict[str, Any]) -> boo
         pass
         
     return success
+
+
+def get_user_interview_guides(user_uid: str) -> List[Dict[str, Any]]:
+    """Retrieves all past interview guide sessions for a given user UID, with local JSON fallback."""
+    results = []
+    # 1. Try Cloud Firestore first
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        if user_uid and user_uid != "anonymous":
+            docs = db.collection("guides").where("uid", "==", user_uid).stream()
+        else:
+            docs = db.collection("guides").limit(50).stream()
+        results = [doc.to_dict() for doc in docs]
+    except Exception as e:
+        print(f"Firestore guides history read notice: {e}")
+
+    # 2. Fallback/Merge local persistence
+    local_guides = _read_local_json(LOCAL_GUIDES_DB)
+    seen_ids = {g.get("guide_id") for g in results if g.get("guide_id")}
+    for lg in local_guides:
+        if lg.get("guide_id") not in seen_ids:
+            results.append(lg)
+
+    results.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+    return results
