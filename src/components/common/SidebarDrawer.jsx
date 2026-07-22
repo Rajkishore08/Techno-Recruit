@@ -67,7 +67,7 @@ export default function SidebarDrawer() {
           {/* Header */}
           <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '24px' }}>
             <div className="logo" onClick={() => handleNavClick('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img src="/logo.png" alt="Techno Recruit" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(59, 130, 246, 0.4)' }} />
+              <img src="/logo.png?v=2" alt="Techno Recruit" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(59, 130, 246, 0.4)' }} />
               <div>
                 <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#fff', letterSpacing: '-0.3px' }}>Techno Recruit</h2>
                 <span style={{ fontSize: '10px', color: 'var(--color-primary-light)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>AI Platform v2.0</span>
