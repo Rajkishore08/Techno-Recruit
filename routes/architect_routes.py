@@ -61,7 +61,7 @@ class EvaluateRequest(BaseModel):
 
 
 @router.post("/api/generate")
-def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_user)):
+def generate_questions(req: InterviewRequest, user: dict = Depends(get_optional_current_user)):
     """
     Triggers the autonomous agent loop and streams the Multi-Agent loop
     traces in real-time back to the client using Server-Sent Events (SSE).
@@ -80,7 +80,7 @@ def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_u
         "categories": req.categories,
         "count": req.count,
         "resume_text": req.resume_text or "",
-        "uid": user["uid"]
+        "uid": user.get("uid", "anonymous")
     }
 
     def sse_event_source():
@@ -100,7 +100,7 @@ def generate_questions(req: InterviewRequest, user: dict = Depends(get_current_u
 
 
 @router.post("/api/tweak")
-def tweak_question(req: TweakRequest, user: dict = Depends(get_current_user)):
+def tweak_question(req: TweakRequest, user: dict = Depends(get_optional_current_user)):
     """Regenerates a single question in-place, tweaking difficulty or custom feedback."""
     try:
         from firebase_admin import firestore
@@ -114,7 +114,7 @@ def tweak_question(req: TweakRequest, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail=f"Guide {req.guide_id} not found.")
 
     guide = doc.to_dict()
-    if guide.get("uid") != user["uid"]:
+    if guide.get("uid") != user.get("uid", "anonymous"):
         raise HTTPException(status_code=403, detail="Not authorized to edit this guide.")
 
     questions = guide.get("questions", [])
@@ -168,7 +168,7 @@ Format the output strictly as a JSON object with no markdown codeblocks or expla
 
 
 @router.post("/api/evaluate")
-def evaluate_candidate_answer(req: EvaluateRequest, user: dict = Depends(get_current_user)):
+def evaluate_candidate_answer(req: EvaluateRequest, user: dict = Depends(get_optional_current_user)):
     """Grades candidate response to a specific question using structured scorecard rubric."""
     try:
         from firebase_admin import firestore
@@ -182,7 +182,7 @@ def evaluate_candidate_answer(req: EvaluateRequest, user: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail=f"Guide {req.guide_id} not found.")
 
     guide = doc.to_dict()
-    if guide.get("uid") != user["uid"]:
+    if guide.get("uid") != user.get("uid", "anonymous"):
         raise HTTPException(status_code=403, detail="Not authorized to access this guide.")
 
     questions = guide.get("questions", [])
@@ -245,12 +245,12 @@ def get_history(user: dict = Depends(get_optional_current_user)):
 
 
 @router.get("/api/history/{guide_id}")
-def get_history_by_id(guide_id: str, user: dict = Depends(get_current_user)):
+def get_history_by_id(guide_id: str, user: dict = Depends(get_optional_current_user)):
     """Retrieves a specific interview guide from the database."""
     try:
         from firebase_admin import firestore
         db = firestore.client()
-        uid = user["uid"]
+        uid = user.get("uid", "anonymous")
         doc_ref = db.collection("guides").document(guide_id)
         doc = doc_ref.get()
         if not doc.exists:
