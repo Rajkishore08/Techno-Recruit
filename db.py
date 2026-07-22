@@ -3,7 +3,7 @@ import sys
 import time
 import uuid
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 LOCAL_CAREER_DB = "career_analyses_db.json"
 LOCAL_GUIDES_DB = "interview_guides_db.json"
@@ -158,3 +158,53 @@ def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
 
     results.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
     return results
+
+
+def get_interview_guide(guide_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieves a saved interview guide by ID, checking Firestore first and falling back to local JSON."""
+    # 1. Try Cloud Firestore
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        doc = db.collection("guides").document(guide_id).get()
+        if doc.exists:
+            return doc.to_dict()
+    except Exception:
+        pass
+        
+    # 2. Local Fallback
+    local_guides = _read_local_json(LOCAL_GUIDES_DB)
+    for g in local_guides:
+        if g.get("guide_id") == guide_id:
+            return g
+    return None
+
+
+def update_interview_guide(guide_id: str, updated_fields: Dict[str, Any]) -> bool:
+    """Updates a saved interview guide by ID across Firestore and local JSON."""
+    success = False
+    # 1. Firestore Update
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        db.collection("guides").document(guide_id).update(updated_fields)
+        success = True
+    except Exception:
+        pass
+        
+    # 2. Local Update
+    try:
+        local_guides = _read_local_json(LOCAL_GUIDES_DB)
+        updated = False
+        for g in local_guides:
+            if g.get("guide_id") == guide_id:
+                g.update(updated_fields)
+                updated = True
+                break
+        if updated:
+            _write_local_json(LOCAL_GUIDES_DB, local_guides)
+            success = True
+    except Exception:
+        pass
+        
+    return success

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   BrainCircuit, Sparkles, CheckSquare, Loader2, Award, FileText, CheckCircle2, 
   ChevronRight, HelpCircle, UserCheck, AlertTriangle, Wrench, ClipboardCheck, 
@@ -52,6 +52,14 @@ export default function InterviewArchitect() {
   const [tweakAction, setTweakAction] = useState('Rewrite Question');
   const [tweakFeedback, setTweakFeedback] = useState('');
   const [tweakingStatus, setTweakingStatus] = useState(false);
+
+  const guideResultRef = useRef(null);
+
+  useEffect(() => {
+    if (generatedGuide && guideResultRef.current) {
+      guideResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [generatedGuide]);
 
   const toggleCategory = (cat) => {
     if (selectedCategories.includes(cat)) {
@@ -448,7 +456,7 @@ export default function InterviewArchitect() {
 
         {/* Generated Guide View */}
         {generatedGuide && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          <div ref={guideResultRef} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
             
             {/* Header Panel with Export Actions */}
             <div className="card" style={{ 
