@@ -5,19 +5,23 @@ from groq_client import query_groq_helper
 
 
 def sanitize_bullet_list(items: Any) -> Any:
-    """Strips leading bullet characters like '*', '*', '-', '•' from string lists while preserving bold formatting."""
+    """Strips leading bullet characters like '*', '*', '-', '•' and flattens internal newlines/sub-bullets into single articulate bullet sentences."""
     if not isinstance(items, list):
         return items
     cleaned = []
     for item in items:
         if isinstance(item, str):
-            s = item.strip()
+            # Replace internal linebreaks and sub-bullets with spaces/commas
+            s = item.replace('\r', ' ')
+            s = re.sub(r'\n+\s*[\-\•\*\>]?\s*', ', ', s)
+            s = re.sub(r'\s+', ' ', s).strip()
             # Clean leading bullet markers repeatedly
             while True:
                 prev = s
-                s = re.sub(r'^[\-\•]\s*', '', s)
+                s = re.sub(r'^[\-\•\*\>]\s*', '', s)
                 s = re.sub(r'^\*\s*\*\s+', '', s)
                 s = re.sub(r'^\*\s+(?!\*)', '', s)
+                s = re.sub(r'^,\s*', '', s)
                 if s == prev:
                     break
             cleaned.append(s)
@@ -114,6 +118,10 @@ Return ONLY valid JSON.
         if "suggested_roles" in data:
             data["suggested_roles"] = enforce_logical_seniority_scores(data["suggested_roles"])
             for role in data["suggested_roles"]:
+                if "role_title" in role and isinstance(role["role_title"], str):
+                    role["role_title"] = role["role_title"].replace('*', '').strip()
+                if "domain" in role and isinstance(role["domain"], str):
+                    role["domain"] = role["domain"].replace('*', '').strip()
                 role["key_strengths"] = sanitize_bullet_list(role.get("key_strengths", []))
                 role["skill_gaps"] = sanitize_bullet_list(role.get("skill_gaps", []))
                 

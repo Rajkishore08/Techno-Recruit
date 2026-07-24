@@ -27,13 +27,19 @@ function renderFormattedBoldText(text) {
   if (!text) return null;
   let str = String(text).trim();
 
+  // 0. Clean internal linebreaks and sub-bullets into smooth single-line text
+  str = str.replace(/\r/g, ' ');
+  str = str.replace(/\n+\s*[\-\•\*\>]?\s*/g, ', ');
+  str = str.replace(/\s+/g, ' ');
+
   // 1. Clean raw bullet markers repeatedly at start of text (* * , * , - , • )
   let prev;
   do {
     prev = str;
-    str = str.replace(/^[\-\•]\s*/, '');
+    str = str.replace(/^[\-\•\*\>]\s*/, '');
     str = str.replace(/^\*\s*\*\s+/, '');
     str = str.replace(/^\*\s+(?!\*)/, '');
+    str = str.replace(/^,\s*/, '');
   } while (str !== prev);
 
   // 2. Fix unmatched single-star prefix paired with double-star suffix (*text** -> **text**)
@@ -434,11 +440,17 @@ export default function CareerNavigator() {
                   )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <h4 style={{ color: 'var(--color-primary-light)', fontSize: '16px', fontWeight: 700, margin: 0 }}>{role.role_title}</h4>
-                    <span className="domain-pill" style={{ background: 'rgba(99,102,241,0.2)', color: 'var(--color-primary-light)', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>{role.domain}</span>
+                    <h4 style={{ color: 'var(--color-primary-light)', fontSize: '16px', fontWeight: 700, margin: 0 }}>
+                      {String(role.role_title || '').replace(/\*/g, '').trim()}
+                    </h4>
+                    <span className="domain-pill" style={{ background: 'rgba(99,102,241,0.2)', color: 'var(--color-primary-light)', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                      {String(role.domain || '').replace(/\*/g, '').trim()}
+                    </span>
                   </div>
 
-                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>{role.match_summary}</p>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', marginBottom: '14px', lineHeight: 1.5 }}>
+                    {renderFormattedBoldText(role.match_summary)}
+                  </p>
 
                   <div className="level-scores-box" style={{ background: 'rgba(15,23,42,0.6)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
@@ -486,7 +498,7 @@ export default function CareerNavigator() {
                   {/* Recommended Next Steps */}
                   {role.recommended_next_steps && (
                     <div style={{ marginTop: 'auto', paddingTop: '10px', borderTop: '1px dashed var(--border-color)', fontSize: '12px', color: 'var(--color-primary-light)' }}>
-                      <strong>Next Step:</strong> {role.recommended_next_steps}
+                      <strong>Next Step:</strong> {renderFormattedBoldText(role.recommended_next_steps)}
                     </div>
                   )}
                 </div>
