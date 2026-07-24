@@ -59,23 +59,6 @@ export default function Dashboard() {
       />
 
       <div className="content-body">
-        {/* Dashboard Welcome Banner */}
-        <section className="card dashboard-hero-card" style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9))', border: '1px solid var(--color-primary-light)', padding: '24px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <span className="badge-active" style={{ marginBottom: '8px', width: 'fit-content' }}><span className="dot"></span> Talent Acquisition Command Center</span>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '6px' }}>Welcome to Techno Recruit</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', maxWidth: '680px', lineHeight: 1.5 }}>
-                Screen candidates with autonomous multi-agent intelligence, extract leadership and competitive highlights, track score improvements across resume revisions, run ATS keyword gap audits, and architect rubric-graded interview guides.
-              </p>
-            </div>
-            <Link to="/navigator" className="btn-primary" style={{ padding: '12px 20px', fontSize: '14px', textDecoration: 'none' }}>
-              <Sparkles size={16} />
-              <span>Screen New Candidate</span>
-            </Link>
-          </div>
-        </section>
-
         {/* Key Metrics Grid */}
         <div className="dashboard-metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '28px' }}>
           <div className="card metric-tile" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -211,6 +194,25 @@ export default function Dashboard() {
               </div>
             </Link>
 
+            <Link to="/architect" className="card launchpad-card" style={{ textDecoration: 'none' }}>
+              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                  <BrainCircuit size={22} />
+                </div>
+                <div>
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Interview Architect</h4>
+                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>GUIDE BUILDER</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                Input job specifications to generate structured technical & behavioral interview guides with model scorecards.
+              </p>
+              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                <span>Build Interview Guide</span>
+                <ArrowRight size={16} />
+              </div>
+            </Link>
+
             <Link to="/ats-optimizer" className="card launchpad-card" style={{ textDecoration: 'none' }}>
               <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                 <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }}>
@@ -236,7 +238,7 @@ export default function Dashboard() {
                   <SearchCode size={22} />
                 </div>
                 <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>AI Talent Search</h4>
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#38bdf8' }}>AI Talent Search</h4>
                   <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>VECTOR RAG SEARCH</span>
                 </div>
               </div>
@@ -245,25 +247,6 @@ export default function Dashboard() {
               </p>
               <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
                 <span>Search Talent Pool</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
-
-            <Link to="/architect" className="card launchpad-card" style={{ textDecoration: 'none' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(168, 85, 247, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
-                  <BrainCircuit size={22} />
-                </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Interview Architect</h4>
-                  <span style={{ fontSize: '11px', color: '#c084fc', fontWeight: 600 }}>GUIDE GENERATOR</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Input job specifications to generate 6-question structured interview guides with model scorecards.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                <span>Build Interview Guide</span>
                 <ArrowRight size={16} />
               </div>
             </Link>

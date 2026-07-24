@@ -14,6 +14,7 @@ if [ ! -f .env ]; then
     echo "GROQ_API_KEY=" > .env
 fi
 
-# Start the uvicorn development server
-echo "📡 Launching backend server on http://localhost:8001 (0.0.0.0:8001)..."
-python3 -m uvicorn app:app --host 0.0.0.0 --port 8001 --reload
+# Launch full-stack application (FastAPI backend + Vite React frontend)
+echo "📡 Launching Techno Recruit (Backend: http://localhost:8001 | Frontend: http://localhost:3000)..."
+npm run dev
+

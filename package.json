@@ -4,7 +4,9 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n \"backend,frontend\" -c \"magenta,cyan\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "python3 -m uvicorn app:app --host 0.0.0.0 --port 8001 --reload",
+    "dev:frontend": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -19,6 +21,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^10.0.3",
     "vite": "^5.0.8"
   }
 }

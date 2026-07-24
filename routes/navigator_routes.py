@@ -148,30 +148,47 @@ Analyze the following candidate resume text:
 
 Evaluate the candidate's suitability for this specific job role: "{req.role_title}".
 
-Calculate match suitability scores (0 to 100%) for three seniority levels:
-- "beginner_score": How suitable for a Junior/Entry-level position (0-100).
-- "intermediate_score": How suitable for a Mid-level position (0-100).
-- "experienced_score": How suitable for a Senior/Lead position (0-100).
+CRITICAL LOGICAL SCORING RULE:
+A candidate's Junior/Beginner match score MUST ALWAYS be higher than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
 
 Format output strictly as a JSON object with keys:
 - "role_title": "{req.role_title}"
 - "domain": String (technology domain)
 - "match_summary": 1-2 sentence explanation of candidate suitability
-- "beginner_score": Integer (0-100)
+- "beginner_score": Integer (MUST BE >= intermediate_score, 0-100)
 - "intermediate_score": Integer (0-100)
 - "experienced_score": Integer (0-100)
-- "key_strengths": List of 3-4 bullet strings (use **bold markdown** for key skills)
-- "skill_gaps": List of 2-3 bullet strings
+- "key_strengths": List of 3-4 bullet strings (use **bold markdown** for key skills, no leading '* ' or '- ')
+- "skill_gaps": List of 2-3 bullet strings (no leading '* ' or '- ')
 - "recommended_next_steps": String
 
 Return ONLY valid JSON.
 """
     try:
         from groq_client import query_groq_helper
+        from agents.career_navigator import sanitize_bullet_list
         res_str, usage = query_groq_helper(prompt, json_mode=True)
-        return json.loads(res_str)
+        data = json.loads(res_str)
+        
+        b = int(data.get("beginner_score", 0))
+        i = int(data.get("intermediate_score", 0))
+        e = int(data.get("experienced_score", 0))
+        
+        if i >= 80:
+            target_b = max(b, i + 5, 95)
+        else:
+            target_b = max(b, i)
+            
+        data["beginner_score"] = min(100, target_b)
+        data["intermediate_score"] = i
+        data["experienced_score"] = e
+        data["key_strengths"] = sanitize_bullet_list(data.get("key_strengths", []))
+        data["skill_gaps"] = sanitize_bullet_list(data.get("skill_gaps", []))
+        
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to analyze custom role: {str(e)}")
+
 
 
 @router.get("/api/candidate-sessions")

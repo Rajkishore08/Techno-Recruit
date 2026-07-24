@@ -3,7 +3,7 @@ const getApiBase = () => {
     return import.meta.env.VITE_API_BASE_URL;
   }
   if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return "http://localhost:8080";
+    return "http://localhost:8001";
   }
   return window.API_BASE_URL || "https://techno-recruit.onrender.com";
 };

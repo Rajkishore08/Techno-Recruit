@@ -1558,7 +1558,16 @@ function initApp() {
 
         function parseBold(text) {
             if (!text) return "";
-            let str = String(text);
+            let str = String(text).trim();
+
+            // Strip leading bullet markers repeatedly (* * , * , - , • )
+            let prev;
+            do {
+                prev = str;
+                str = str.replace(/^[\-\•]\s*/, '');
+                str = str.replace(/^\*\s*\*\s+/, '');
+                str = str.replace(/^\*\s+(?!\*)/, '');
+            } while (str !== prev);
             
             // 1. Replace explicit markdown **bold**
             str = str.replace(/\*\*(.*?)\*\*/g, '<strong class="highlight-strong">$1</strong>');
@@ -1567,7 +1576,7 @@ function initApp() {
             str = str.replace(/\b(Winner of the|Winner of|Winner at|Winner|Runner-up in the|Runner-up at|Runner-up|Runner Up|1st Place|First Place|Top 3|Secured|Won)\b/gi, '<span class="highlight-gold">$1</span>');
 
             // 3. Highlight key job roles / leadership titles
-            str = str.replace(/\b(Full Stack Developer Intern|Full Stack Developer|Frontend Developer|Backend Developer|Product Designer|UI\/UX Designer|Campus Lead|Associate Director|Secretary|Design Lead|Digital Illustrator|Software Engineer|Data Scientist|DevOps Engineer|Project Lead|Co-founded)\b/gi, '<span class="highlight-cyan">$1</span>');
+            str = str.replace(/\b(Full Stack Developer Intern|Full Stack Developer|Frontend Developer|Backend Developer|Flutter Developer|DevOps Engineer|Product Designer|UI\/UX Designer|Campus Lead|Associate Director|Secretary|Design Lead|Digital Illustrator|Software Engineer|Data Scientist|Project Lead|Co-founded)\b/gi, '<span class="highlight-cyan">$1</span>');
 
             // 4. Highlight key organization / institution names
             str = str.replace(/\b(Google Developer Group On Campus - CIT|Google Developer Group|Google Developer Groups|Student Developers Cell - CIT|Student Developers Cell|Xthlete|TIA IT|NIT Surathkal|NITK|Amrita Vishwa Vidyapeetham|Create Digital Solutions|Snippet Script|CIT)\b/gi, '<span class="highlight-purple">$1</span>');

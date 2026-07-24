@@ -7,24 +7,34 @@ import { useHistory } from '../context/HistoryContext';
 import { suggestRoles, analyzeCustomRole, parseResume } from '../services/api';
 
 const PREDEFINED_TECH_ROLES = [
-  { title: "Full Stack Engineer", domain: "Software Engineering", desc: "Build frontend & backend web applications end-to-end" },
-  { title: "Frontend Engineer", domain: "Software Engineering", desc: "React, Vue, TypeScript, UI/UX implementation & performance" },
-  { title: "Backend Engineer", domain: "Software Engineering", desc: "Node.js, Python, Java, Microservices, REST & GraphQL APIs" },
-  { title: "DevOps & Cloud Engineer", domain: "Infrastructure & Cloud", desc: "AWS, Docker, Kubernetes, CI/CD pipelines & Infrastructure as Code" },
+  { title: "Flutter Developer", domain: "Mobile Engineering", desc: "Cross-platform mobile apps, Dart, Flutter SDK, Provider / Bloc, Native plugins" },
+  { title: "DevOps & Cloud Engineer", domain: "Infrastructure & Cloud", desc: "AWS, Docker, Kubernetes, CI/CD pipelines, Terraform & Infrastructure as Code" },
+  { title: "Product Designer & UI/UX Specialist", domain: "Design & Product", desc: "Figma Prototyping, Wireframes, User Research, Design Systems & Usability" },
+  { title: "Full Stack Engineer", domain: "Software Engineering", desc: "Build frontend & backend web applications end-to-end with modern frameworks" },
+  { title: "Frontend Engineer (React / Next.js)", domain: "Software Engineering", desc: "React, Next.js, TypeScript, UI/UX implementation & web performance" },
+  { title: "Backend Engineer (Node.js / Python / Java)", domain: "Software Engineering", desc: "Node.js, Express, Python, Microservices, REST & GraphQL APIs" },
   { title: "Data Engineer", domain: "Data & AI", desc: "ETL pipelines, PySpark, BigQuery, Snowflake, SQL Data Warehousing" },
   { title: "AI / Machine Learning Engineer", domain: "Data & AI", desc: "PyTorch, TensorFlow, LLMs, Computer Vision & NLP Models" },
   { title: "Product Manager", domain: "Product & Strategy", desc: "Roadmaps, Agile/Scrum, User Research, Feature Prioritization" },
-  { title: "UI/UX Designer & Product Designer", domain: "Design", desc: "Figma Prototyping, Wireframes, User Testing, Design Systems" },
-  { title: "Mobile Application Developer", domain: "Mobile Engineering", desc: "React Native, Flutter, Swift (iOS), Kotlin (Android)" },
-  { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" }
+  { title: "Mobile App Developer (iOS / Android)", domain: "Mobile Engineering", desc: "React Native, Swift (iOS), Kotlin (Android), Native Mobile APIs" },
+  { title: "QA & Test Automation Engineer", domain: "Quality Assurance", desc: "Selenium, Cypress, Playwright, Automated E2E testing pipelines" },
+  { title: "Cybersecurity Analyst & Engineer", domain: "Security", desc: "Penetration testing, Network security, SIEM, Threat analysis" },
+  { title: "Site Reliability Engineer (SRE)", domain: "Infrastructure", desc: "High availability, Incident management, Observability & Prometheus" },
+  { title: "Cloud Architect (AWS / GCP / Azure)", domain: "Cloud Computing", desc: "Multi-cloud architecture, Serverless, IAM security, Enterprise Scalability" }
 ];
 
 function renderFormattedBoldText(text) {
   if (!text) return null;
   let str = String(text).trim();
 
-  // 1. Strip raw bullet markers at text start (- , • )
-  str = str.replace(/^[\-\•]\s*/, '');
+  // 1. Clean raw bullet markers repeatedly at start of text (* * , * , - , • )
+  let prev;
+  do {
+    prev = str;
+    str = str.replace(/^[\-\•]\s*/, '');
+    str = str.replace(/^\*\s*\*\s+/, '');
+    str = str.replace(/^\*\s+(?!\*)/, '');
+  } while (str !== prev);
 
   // 2. Fix unmatched single-star prefix paired with double-star suffix (*text** -> **text**)
   if (str.startsWith('*') && !str.startsWith('**') && str.endsWith('**')) {
@@ -122,24 +132,26 @@ export default function CareerNavigator() {
     }
     setError(null);
     setLoading(true);
-    setProgressPercent(10);
+    setProgressPercent(1);
     setProgressMsg("Extracting candidate background & parsed links...");
 
+    // Smooth continuous percent-by-percent tick from 1% to 98%
     const timer = setInterval(() => {
       setProgressPercent(prev => {
-        if (prev < 30) {
+        if (prev >= 98) return 98;
+        const next = prev + 1;
+        if (next < 25) {
+          setProgressMsg("Extracting candidate background & parsed links...");
+        } else if (next < 55) {
           setProgressMsg("Evaluating leadership, hackathons & internships...");
-          return prev + 15;
-        } else if (prev < 65) {
+        } else if (next < 80) {
           setProgressMsg("Calculating Junior, Mid-Level & Senior match scores...");
-          return prev + 12;
-        } else if (prev < 90) {
+        } else {
           setProgressMsg("Generating dynamic career recommendations & skill gap insights...");
-          return prev + 5;
         }
-        return prev;
+        return next;
       });
-    }, 400);
+    }, 120);
 
     try {
       const formData = new FormData();
@@ -174,6 +186,7 @@ export default function CareerNavigator() {
       setLoading(false);
     }
   };
+
 
   const handleCustomRoleAnalyze = async (roleTitle) => {
     const titleToUse = roleTitle || customRoleInput;
