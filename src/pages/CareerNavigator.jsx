@@ -54,11 +54,45 @@ function renderFormattedBoldText(text) {
     str = str.replace(/^\*\s*/, '');
   }
 
-  // 3. Parse remaining bold tokens (**text**) into <strong> tags
+  // 3. Parse remaining bold tokens (**text**) into <strong> tags with vibrant badge styling
   const parts = str.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      return <strong key={idx} style={{ color: 'var(--color-primary-light)', fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+      const cleanText = part.slice(2, -2);
+      return (
+        <strong 
+          key={idx} 
+          style={{ 
+            color: '#38bdf8', 
+            background: 'rgba(56, 189, 248, 0.15)', 
+            border: '1px solid rgba(56, 189, 248, 0.3)', 
+            padding: '2px 7px', 
+            borderRadius: '5px', 
+            fontWeight: 800,
+            fontSize: '95%',
+            display: 'inline-block',
+            margin: '0 2px'
+          }}
+        >
+          {cleanText}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
+function renderPdfBoldText(text) {
+  if (!text) return null;
+  let str = String(text).trim().replace(/\*+$/g, '').trim();
+  const parts = str.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return (
+        <strong key={idx} style={{ color: '#0284c7', fontWeight: 800 }}>
+          {part.slice(2, -2)}
+        </strong>
+      );
     }
     return part;
   });
@@ -774,7 +808,7 @@ export default function CareerNavigator() {
                 </div>
               )}
               {/* Printable PDF Report Document (Hidden on screen, rendered on window.print()) */}
-              <div className="printable-pdf-report">
+              <div className="printable-pdf-report" style={{ display: 'none' }}>
                 {/* PDF Document Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0284c7', paddingBottom: '16px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -822,7 +856,7 @@ export default function CareerNavigator() {
                       </h3>
                       <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
                         {results.leadership_and_community.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                          <li key={idx} style={{ marginBottom: '4px' }}>{renderPdfBoldText(item)}</li>
                         ))}
                       </ul>
                     </div>
@@ -835,7 +869,7 @@ export default function CareerNavigator() {
                       </h3>
                       <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
                         {results.achievements_and_competitions.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                          <li key={idx} style={{ marginBottom: '4px' }}>{renderPdfBoldText(item)}</li>
                         ))}
                       </ul>
                     </div>
@@ -848,7 +882,7 @@ export default function CareerNavigator() {
                       </h3>
                       <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
                         {results.work_and_internship_experience.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                          <li key={idx} style={{ marginBottom: '4px' }}>{renderPdfBoldText(item)}</li>
                         ))}
                       </ul>
                     </div>
@@ -861,7 +895,7 @@ export default function CareerNavigator() {
                       </h3>
                       <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
                         {results.dynamic_recommendations.map((item, idx) => (
-                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                          <li key={idx} style={{ marginBottom: '4px' }}>{renderPdfBoldText(item)}</li>
                         ))}
                       </ul>
                     </div>

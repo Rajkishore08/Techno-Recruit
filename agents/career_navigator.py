@@ -77,13 +77,14 @@ Perform a deep, multi-dimensional evaluation of candidate background, technical 
 
 CRITICAL FORMATTING & LOGICAL SCORING INSTRUCTIONS:
 1. Provide EXACTLY 2 to 4 high-impact, complete bullet sentences per section ("leadership_and_community", "achievements_and_competitions", "work_and_internship_experience", "dynamic_recommendations").
-2. EVERY bullet point MUST start with a **Bold Organization / Role / Award Title**: followed by a full 1-2 sentence description.
-   Example: "**Campus Lead (Google Developer Group - CIT)**: Founded the GDG CIT chapter, hosted 10+ technical events & hackathons, and mentored 200+ student developers."
-   Example: "**Winner (IBM Quantum Challenge 2023)**: Awarded 1st place by IBM Quantum for exceptional algorithm implementation and quantum computing innovation."
-   Example: "**Full Stack Developer Intern (Xthlete)**: Enhanced full-stack web features using React.js, Node.js, and MongoDB for real-time analytics."
-3. NEVER split a single bullet item into multiple short fragmented sub-bullets. NEVER leave stray asterisks (like "ReactJS**" or "**title").
-4. LOGICAL MATCH SCORE HIERARCHY RULE: A candidate's Junior/Beginner match score MUST ALWAYS be greater than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
-5. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer"). Avoid returning only generic titles like "Software Engineer" when specific roles apply!
+2. EVERY bullet point MUST start with a **Bold Organization / Position / Hackathon & Award Title**: followed by a full 1-2 sentence description.
+3. EMPHASIZE KEY HIGHLIGHTS IN BOLD: Always enclose Hackathon Position Titles (e.g. **Winner (IBM Quantum Challenge 2023)**, **Runner Up (CryptoShield 2K24)**), Leadership Positions (e.g. **Campus Lead**, **Co-Founder & Associate Director**), Project/Company Names (e.g. **Techno-Recruit**, **Techno Badge**, **Xthlete**), and Key Technologies (e.g. **ReactJS**, **NodeJS**, **Python**, **Flutter**) in double asterisks `**...**` so they render as high-visibility highlighted badges.
+   Example: "**Campus Lead (Google Developer Group - CIT)**: Founded the **GDG CIT** chapter, hosted **10+ technical events & hackathons**, and mentored 200+ student developers."
+   Example: "**Winner (IBM Quantum Challenge 2023)**: Awarded 1st place by **IBM Quantum** for exceptional algorithm implementation and quantum computing innovation."
+   Example: "**Full Stack Developer Intern (Xthlete)**: Enhanced full-stack web features using **React.js**, **Node.js**, and **MongoDB** for real-time analytics."
+4. NEVER split a single bullet item into multiple short fragmented sub-bullets. NEVER leave stray asterisks (like "ReactJS**" or "**title").
+5. LOGICAL MATCH SCORE HIERARCHY RULE: A candidate's Junior/Beginner match score MUST ALWAYS be greater than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
+6. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer"). Avoid returning only generic titles like "Software Engineer" when specific roles apply!
 
 Extract and compile detailed bullet lists with **bold markdown formatting** for:
 1. "candidate_name": Extract candidate's full name from resume header.

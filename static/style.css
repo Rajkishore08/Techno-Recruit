@@ -2593,6 +2593,11 @@ img.avatar,
     margin-top: 3px;
 }
 
+/* Hide PDF document template from frontend screen */
+.printable-pdf-report {
+    display: none !important;
+}
+
 /* =====================================================================
    PDF Print Layout Styles
    ===================================================================== */
