@@ -35,15 +35,29 @@ function ProtectedLayout({ children }) {
         </main>
         <footer style={{
           textAlign: 'center',
-          padding: '24px 0',
-          borderTop: '1px solid var(--border-color)',
-          background: 'rgba(11, 17, 32, 0.4)',
-          color: 'var(--text-muted)',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.05em'
+          padding: '24px 20px',
+          borderTop: '1px solid rgba(59, 130, 246, 0.2)',
+          background: 'rgba(15, 23, 42, 0.85)',
+          backdropFilter: 'blur(16px)',
+          color: 'var(--text-secondary)',
+          fontSize: '13px',
+          fontWeight: 500,
+          marginTop: 'auto'
         }}>
-          Developed by <span style={{ color: 'var(--color-accent)' }}>Raj Kishore S</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <span style={{ fontWeight: 700, color: '#fff' }}>
+                © {new Date().getFullYear()} Techno Recruit
+              </span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span style={{ color: 'var(--text-secondary)' }}>All Rights Reserved</span>
+              <span style={{ color: 'var(--text-muted)' }}>•</span>
+              <span style={{ color: '#38bdf8', fontWeight: 700 }}>A Product of TS Innovations</span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              Engineered & Developed by <span style={{ color: 'var(--color-accent, #38bdf8)', fontWeight: 700 }}>Raj Kishore S</span>
+            </div>
+          </div>
         </footer>
       </div>
       <FloatingHistoryBtn />

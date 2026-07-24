@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp, Users, AlertTriangle, Check, Target } from 'lucide-react';
+import { Compass, Sparkles, User, UploadCloud, FileText, ArrowRight, ShieldCheck, Loader2, Link as LinkIcon, Award, Briefcase, PlusCircle, CheckCircle2, TrendingUp, Users, AlertTriangle, Check, Target, Download, Printer } from 'lucide-react';
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
 import { useAuth } from '../context/AuthContext';
@@ -41,6 +41,9 @@ function renderFormattedBoldText(text) {
     str = str.replace(/^\*\s+(?!\*)/, '');
     str = str.replace(/^,\s*/, '');
   } while (str !== prev);
+
+  // Clean trailing asterisks or unclosed markdown
+  str = str.replace(/\*+$/g, '').trim();
 
   // 2. Fix unmatched single-star prefix paired with double-star suffix (*text** -> **text**)
   if (str.startsWith('*') && !str.startsWith('**') && str.endsWith('**')) {
@@ -239,6 +242,96 @@ export default function CareerNavigator() {
     }
   };
 
+  const handleExportPDF = () => {
+    window.print();
+  };
+
+  const handleExportTXT = () => {
+    if (!results) return;
+    const name = results.candidate_name || candidateName || "Candidate";
+    let txt = `=================================================================\n`;
+    txt += `TECHNO RECRUIT — CAREER NAVIGATOR REPORT\n`;
+    txt += `A Product of TS Innovations | Developed by Raj Kishore S\n`;
+    txt += `Generated on: ${new Date().toLocaleString()}\n`;
+    txt += `=================================================================\n\n`;
+    
+    txt += `CANDIDATE NAME: ${name}\n\n`;
+    
+    if (results.candidate_summary) {
+      txt += `OVERVIEW & SUMMARY:\n${results.candidate_summary}\n\n`;
+    }
+    
+    if (results.why_best_fit) {
+      txt += `WHY THIS CANDIDATE IS THE BEST FIT:\n${results.why_best_fit.replace(/\*\*/g, '')}\n\n`;
+    }
+
+    if (results.leadership_and_community?.length) {
+      txt += `LEADERSHIP & COMMUNITY INITIATIVES:\n`;
+      results.leadership_and_community.forEach(item => {
+        txt += `• ${String(item).replace(/\*\*/g, '')}\n`;
+      });
+      txt += `\n`;
+    }
+
+    if (results.achievements_and_competitions?.length) {
+      txt += `COMPETITIVE ACHIEVEMENTS & HACKATHONS:\n`;
+      results.achievements_and_competitions.forEach(item => {
+        txt += `• ${String(item).replace(/\*\*/g, '')}\n`;
+      });
+      txt += `\n`;
+    }
+
+    if (results.work_and_internship_experience?.length) {
+      txt += `INTERNSHIPS & WORK EXPERIENCE:\n`;
+      results.work_and_internship_experience.forEach(item => {
+        txt += `• ${String(item).replace(/\*\*/g, '')}\n`;
+      });
+      txt += `\n`;
+    }
+
+    if (results.dynamic_recommendations?.length) {
+      txt += `DYNAMIC CAREER RECOMMENDATIONS & SKILL GAP IMPROVEMENTS:\n`;
+      results.dynamic_recommendations.forEach(item => {
+        txt += `• ${String(item).replace(/\*\*/g, '')}\n`;
+      });
+      txt += `\n`;
+    }
+
+    if (results.suggested_roles?.length) {
+      txt += `RECOMMENDED MATCHING ROLES:\n`;
+      results.suggested_roles.forEach((role, i) => {
+        txt += `${i + 1}. ${String(role.role_title).replace(/\*/g, '')} [${role.domain || 'Tech'}]\n`;
+        txt += `   - Junior Match: ${role.beginner_score}%\n`;
+        txt += `   - Mid-Level Match: ${role.intermediate_score}%\n`;
+        txt += `   - Senior Match: ${role.experienced_score}%\n`;
+        txt += `   - Summary: ${String(role.match_summary || '').replace(/\*\*/g, '')}\n`;
+        if (role.key_strengths?.length) {
+          txt += `   - Strengths: ${role.key_strengths.map(s => String(s).replace(/\*\*/g, '')).join(', ')}\n`;
+        }
+        if (role.skill_gaps?.length) {
+          txt += `   - Gaps: ${role.skill_gaps.map(g => String(g).replace(/\*\*/g, '')).join(', ')}\n`;
+        }
+        if (role.recommended_next_steps) {
+          txt += `   - Next Step: ${String(role.recommended_next_steps).replace(/\*\*/g, '')}\n`;
+        }
+        txt += `\n`;
+      });
+    }
+
+    txt += `=================================================================\n`;
+    txt += `© ${new Date().getFullYear()} Techno Recruit. All Rights Reserved.\n`;
+    txt += `A Product of TS Innovations | Developed by Raj Kishore S\n`;
+    
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${name.replace(/\s+/g, '_')}_Career_Insights.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="content-container">
       <Header 
@@ -248,7 +341,7 @@ export default function CareerNavigator() {
 
       <div className="content-body">
         {/* Upload Form Card */}
-        <div className="card" style={{ padding: '24px', marginBottom: '24px' }}>
+        <div className="card no-print" style={{ padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-light)', textTransform: 'uppercase', marginBottom: '16px' }}>
             <User size={16} /> Candidate Profile Input
           </div>
@@ -259,14 +352,17 @@ export default function CareerNavigator() {
               type="text" 
               value={candidateName} 
               onChange={e => setCandidateName(e.target.value)} 
-              placeholder={placeholderName} 
-              style={{ width: '100%', minHeight: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff' }} 
+              placeholder="e.g. John Doe" 
+              style={{ width: '100%', height: '40px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 12px', color: '#fff', fontSize: '13px' }} 
             />
           </div>
 
-          <Dropzone onFileSelected={handleFileSelect} selectedFile={selectedFile} />
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Upload Candidate Resume (PDF/DOCX/TXT):</label>
+            <Dropzone onFileDrop={handleDrop} selectedFile={selectedFile} />
+          </div>
 
-          <div style={{ textAlign: 'center', margin: '14px 0', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>— OR PASTE RESUME TEXT —</div>
+          <div style={{ textAlign: 'center', margin: '12px 0', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>OR PASTE RESUME TEXT BELOW</div>
 
           <textarea 
             value={rawResumeText} 
@@ -313,12 +409,31 @@ export default function CareerNavigator() {
           <div className="navigator-results" ref={resultsRef}>
             {/* Candidate Header Summary */}
             <div className="card" style={{ padding: '24px', marginBottom: '20px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95))' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                   <span className="badge-active" style={{ marginBottom: '8px', width: 'fit-content' }}><span className="dot"></span> CAREER NAVIGATOR REPORT</span>
                   <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                     👤 {results.candidate_name || candidateName || "Candidate Profile"}
                   </h2>
+                </div>
+
+                <div className="no-print" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={handleExportPDF} 
+                    className="btn-secondary" 
+                    style={{ fontSize: '13px', padding: '8px 16px', fontWeight: 700, borderColor: 'var(--color-primary-light)', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Printer size={15} />
+                    <span>Export PDF Report</span>
+                  </button>
+                  <button 
+                    onClick={handleExportTXT} 
+                    className="btn-secondary" 
+                    style={{ fontSize: '13px', padding: '8px 16px', fontWeight: 700, borderColor: 'var(--color-success)', color: 'var(--color-success)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Download size={15} />
+                    <span>Export TXT Insights</span>
+                  </button>
                 </div>
               </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', marginTop: '10px', lineHeight: 1.6 }}>{results.candidate_summary}</p>

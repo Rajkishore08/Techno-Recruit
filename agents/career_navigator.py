@@ -5,7 +5,7 @@ from groq_client import query_groq_helper
 
 
 def sanitize_bullet_list(items: Any) -> Any:
-    """Strips leading bullet characters like '*', '*', '-', '•' and flattens internal newlines/sub-bullets into single articulate bullet sentences."""
+    """Strips leading/trailing bullet characters and flattens internal newlines/sub-bullets into single articulate bullet sentences."""
     if not isinstance(items, list):
         return items
     cleaned = []
@@ -15,6 +15,8 @@ def sanitize_bullet_list(items: Any) -> Any:
             s = item.replace('\r', ' ')
             s = re.sub(r'\n+\s*[\-\•\*\>]?\s*', ', ', s)
             s = re.sub(r'\s+', ' ', s).strip()
+            # Clean trailing asterisks or unclosed markdown
+            s = re.sub(r'\*+$', '', s).strip()
             # Clean leading bullet markers repeatedly
             while True:
                 prev = s
@@ -74,18 +76,23 @@ Analyze the following candidate resume text in exhaustive detail:
 Perform a deep, multi-dimensional evaluation of candidate background, technical skills, leadership initiatives, competitive achievements, work experience, and all extracted hyperlinks.
 
 CRITICAL FORMATTING & LOGICAL SCORING INSTRUCTIONS:
-1. Do NOT start bullet strings with asterisks ('*'), hyphens ('-'), or bullet symbols ('•'). Provide clean sentences with **bold markdown** for key titles, companies, awards, and tools.
-2. LOGICAL MATCH SCORE HIERARCHY RULE: A candidate's Junior/Beginner match score MUST ALWAYS be greater than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
-3. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer"). Avoid returning only generic titles like "Software Engineer" when specific roles apply!
+1. Provide EXACTLY 2 to 4 high-impact, complete bullet sentences per section ("leadership_and_community", "achievements_and_competitions", "work_and_internship_experience", "dynamic_recommendations").
+2. EVERY bullet point MUST start with a **Bold Organization / Role / Award Title**: followed by a full 1-2 sentence description.
+   Example: "**Campus Lead (Google Developer Group - CIT)**: Founded the GDG CIT chapter, hosted 10+ technical events & hackathons, and mentored 200+ student developers."
+   Example: "**Winner (IBM Quantum Challenge 2023)**: Awarded 1st place by IBM Quantum for exceptional algorithm implementation and quantum computing innovation."
+   Example: "**Full Stack Developer Intern (Xthlete)**: Enhanced full-stack web features using React.js, Node.js, and MongoDB for real-time analytics."
+3. NEVER split a single bullet item into multiple short fragmented sub-bullets. NEVER leave stray asterisks (like "ReactJS**" or "**title").
+4. LOGICAL MATCH SCORE HIERARCHY RULE: A candidate's Junior/Beginner match score MUST ALWAYS be greater than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
+5. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer"). Avoid returning only generic titles like "Software Engineer" when specific roles apply!
 
 Extract and compile detailed bullet lists with **bold markdown formatting** for:
 1. "candidate_name": Extract candidate's full name from resume header.
 2. "why_best_fit": A compelling 2-3 sentence argument highlighting **why candidate is the BEST FIT for hiring teams**.
 3. "profile_and_project_links": List of objects extracted from URLs, GitHub, LinkedIn, portfolio, or project links [{{"title": "...", "url": "..."}}].
-4. "leadership_and_community": List 2-4 detailed bullet strings (use **bold markdown** for orgs/titles). Do NOT include leading '* ' or '- '.
-5. "achievements_and_competitions": List 2-4 detailed bullet strings (use **bold markdown** for awards/events). Do NOT include leading '* ' or '- '.
-6. "work_and_internship_experience": List 2-4 detailed bullet strings (use **bold markdown** for companies/roles). Do NOT include leading '* ' or '- '.
-7. "dynamic_recommendations": List 3-5 specific bullet strings to help candidate boost match scores.
+4. "leadership_and_community": List 2-4 detailed bullet strings starting with **Bold Title**: Description.
+5. "achievements_and_competitions": List 2-4 detailed bullet strings starting with **Bold Award**: Description.
+6. "work_and_internship_experience": List 2-4 detailed bullet strings starting with **Bold Role**: Description.
+7. "dynamic_recommendations": List 3-5 specific bullet strings starting with **Bold Area**: Description.
 
 Recommend 3 to 5 matching job roles for this candidate.
 For EACH suggested role, calculate match suitability scores (0 to 100%) for three seniority levels:

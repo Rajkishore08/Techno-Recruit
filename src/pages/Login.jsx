@@ -138,9 +138,12 @@ export default function Login() {
           <span>Authenticate & Access Command Center</span>
         </button>
 
-        <p style={{ fontSize: '11px', color: 'var(--text-disabled)', marginTop: '20px', lineHeight: 1.4 }}>
-          By authenticating, you agree to connect your corporate workspace to Techno Recruit.
-        </p>
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+          <div>© {new Date().getFullYear()} Techno Recruit • All Rights Reserved</div>
+          <div style={{ marginTop: '4px' }}>
+            A Product of <strong style={{ color: '#38bdf8' }}>TS Innovations</strong> • Developed by <strong style={{ color: '#fff' }}>Raj Kishore S</strong>
+          </div>
+        </div>
       </div>
     </div>
   );
