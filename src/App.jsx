@@ -10,6 +10,7 @@ import AtsOptimizer from './pages/AtsOptimizer';
 import TalentSearch from './pages/TalentSearch';
 import InterviewArchitect from './pages/InterviewArchitect';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 
 function ProtectedLayout({ children }) {
   const { currentUser, loading } = useAuth();
@@ -76,7 +77,7 @@ export default function App() {
           <Route path="/ats-optimizer" element={<ProtectedLayout><AtsOptimizer /></ProtectedLayout>} />
           <Route path="/talent-search" element={<ProtectedLayout><TalentSearch /></ProtectedLayout>} />
           <Route path="/architect" element={<ProtectedLayout><InterviewArchitect /></ProtectedLayout>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
         </Routes>
       </HistoryProvider>
     </AuthProvider>

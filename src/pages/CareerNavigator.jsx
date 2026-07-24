@@ -359,7 +359,7 @@ export default function CareerNavigator() {
 
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Upload Candidate Resume (PDF/DOCX/TXT):</label>
-            <Dropzone onFileDrop={handleDrop} selectedFile={selectedFile} />
+            <Dropzone onFileSelected={handleFileSelect} selectedFile={selectedFile} />
           </div>
 
           <div style={{ textAlign: 'center', margin: '12px 0', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>OR PASTE RESUME TEXT BELOW</div>
