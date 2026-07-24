@@ -36,10 +36,9 @@ export default function Login() {
       inset: 0,
       display: 'flex', 
       alignItems: 'center', 
-      justify: 'center', 
-      background: 'var(--bg-base)',
-      backgroundImage: 'var(--gradient-hero)',
-      padding: '20px',
+      justifyContent: 'center', 
+      background: 'radial-gradient(ellipse at 50% 10%, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0.98) 55%, #090d16 100%)',
+      padding: '24px',
       boxSizing: 'border-box',
       zIndex: 99999,
       overflowY: 'auto'
@@ -49,11 +48,11 @@ export default function Login() {
         width: '100%', 
         textAlign: 'center', 
         padding: '40px 32px',
-        background: 'rgba(17, 24, 39, 0.85)',
-        backdropFilter: 'blur(18px)',
-        border: '1px solid rgba(59, 130, 246, 0.25)',
-        boxShadow: 'var(--shadow-card)',
-        borderRadius: 'var(--radius-lg)',
+        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95))',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(99, 102, 241, 0.25)',
+        boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15)',
+        borderRadius: '20px',
         margin: 'auto'
       }}>
         {/* Brand Logo & Name */}
@@ -66,23 +65,23 @@ export default function Login() {
               height: '80px', 
               borderRadius: '50%', 
               objectFit: 'cover', 
-              border: '2px solid var(--color-accent)', 
-              boxShadow: '0 0 20px rgba(56, 189, 248, 0.3)',
+              border: '2px solid var(--color-accent, #38bdf8)', 
+              boxShadow: '0 0 25px rgba(56, 189, 248, 0.45)',
               marginBottom: '16px'
             }} 
           />
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '28px', fontWeight: 800, color: '#fff', margin: '0 0 4px 0', letterSpacing: '-0.5px' }}>
             Techno Recruit
           </h1>
-          <span style={{ fontSize: '12px', color: 'var(--color-accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <span style={{ fontSize: '12px', color: 'var(--color-accent, #38bdf8)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
             AI Talent Intelligence Platform
           </span>
         </div>
 
         {/* Clean Left-Aligned Features (Wide format) */}
-        <div style={{ textAlign: 'left', marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-            <div style={{ background: 'rgba(56, 189, 248, 0.15)', color: 'var(--color-accent)', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
+        <div style={{ textAlign: 'left', marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+            <div style={{ background: 'rgba(56, 189, 248, 0.15)', color: 'var(--color-accent, #38bdf8)', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
               <Compass size={18} />
             </div>
             <div>
@@ -91,7 +90,7 @@ export default function Login() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
             <div style={{ background: 'rgba(34, 197, 94, 0.15)', color: 'var(--color-success)', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
               <ShieldCheck size={18} />
             </div>
@@ -101,8 +100,8 @@ export default function Login() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-            <div style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--color-neon)', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+            <div style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#38bdf8', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
               <Database size={18} />
             </div>
             <div>
@@ -111,7 +110,7 @@ export default function Login() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
             <div style={{ background: 'rgba(250, 204, 21, 0.15)', color: 'var(--color-warning)', padding: '8px', borderRadius: '8px', flexShrink: 0 }}>
               <Target size={18} />
             </div>
