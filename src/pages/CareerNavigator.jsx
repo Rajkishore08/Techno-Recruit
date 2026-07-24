@@ -731,6 +731,151 @@ export default function CareerNavigator() {
                   )}
                 </div>
               )}
+              {/* Printable PDF Report Document (Hidden on screen, rendered on window.print()) */}
+              <div className="printable-pdf-report">
+                {/* PDF Document Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0284c7', paddingBottom: '16px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <img src="/logo.png" alt="Techno Recruit" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <div>
+                      <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Techno Recruit</h1>
+                      <p style={{ fontSize: '12px', color: '#0284c7', fontWeight: 700, margin: 0 }}>AI Candidate Intelligence & Career Navigator Report</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: '11px', color: '#64748b' }}>
+                    <div style={{ fontWeight: 700, color: '#0f172a' }}>A Product of TS Innovations</div>
+                    <div>Developed by Raj Kishore S</div>
+                    <div>Date: {new Date().toLocaleDateString()}</div>
+                  </div>
+                </div>
+
+                {/* Candidate Details Summary Box */}
+                <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
+                    Candidate Profile: {results.candidate_name || candidateName || "Candidate Profile"}
+                  </h2>
+                  {results.candidate_summary && (
+                    <p style={{ fontSize: '13px', color: '#334155', lineHeight: 1.5, margin: 0 }}>{results.candidate_summary}</p>
+                  )}
+                </div>
+
+                {/* Why Best Fit Section */}
+                {results.why_best_fit && (
+                  <div style={{ border: '1px solid #10b981', background: '#f0fdf4', borderRadius: '8px', padding: '16px', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#15803d', margin: '0 0 6px 0' }}>
+                      ★ Why This Candidate Is The Best Fit
+                    </h3>
+                    <p style={{ fontSize: '13px', color: '#166534', lineHeight: 1.5, margin: 0 }}>
+                      {results.why_best_fit.replace(/\*\*/g, '')}
+                    </p>
+                  </div>
+                )}
+
+                {/* Key Highlights Section */}
+                <div style={{ marginBottom: '20px' }}>
+                  {results.leadership_and_community?.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#7c3aed', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+                        Leadership & Community Initiatives
+                      </h3>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
+                        {results.leadership_and_community.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {results.achievements_and_competitions?.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#d97706', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+                        Competitive Achievements & Hackathons
+                      </h3>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
+                        {results.achievements_and_competitions.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {results.work_and_internship_experience?.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#059669', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+                        Internships & Work Experience
+                      </h3>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
+                        {results.work_and_internship_experience.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {results.dynamic_recommendations?.length > 0 && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#0284c7', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+                        Dynamic Career Recommendations & Skill Gap Improvements
+                      </h3>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '12.5px', color: '#334155', lineHeight: 1.6 }}>
+                        {results.dynamic_recommendations.map((item, idx) => (
+                          <li key={idx} style={{ marginBottom: '4px' }}>{String(item).replace(/\*\*/g, '')}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recommended Matching Roles Section */}
+                {results.suggested_roles?.length > 0 && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', borderBottom: '2px solid #cbd5e1', paddingBottom: '6px', marginBottom: '12px' }}>
+                      Recommended Matching Roles Breakdown
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {results.suggested_roles.map((role, idx) => (
+                        <div key={idx} style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px 16px', background: '#fff' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 800, color: '#0284c7' }}>
+                              {idx + 1}. {String(role.role_title).replace(/\*/g, '')}
+                            </span>
+                            <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569', background: '#f1f5f9', padding: '2px 8px', borderRadius: '4px' }}>
+                              {role.domain || 'Technology'}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '20px', fontSize: '12px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+                            <span>Junior Match: <strong style={{ color: '#059669' }}>{role.beginner_score}%</strong></span>
+                            <span>Mid-Level Match: <strong style={{ color: '#0284c7' }}>{role.intermediate_score}%</strong></span>
+                            <span>Senior Match: <strong style={{ color: '#d97706' }}>{role.experienced_score}%</strong></span>
+                          </div>
+
+                          <p style={{ fontSize: '12px', color: '#475569', margin: '0 0 6px 0', lineHeight: 1.4 }}>
+                            {String(role.match_summary || '').replace(/\*\*/g, '')}
+                          </p>
+
+                          {role.key_strengths?.length > 0 && (
+                            <div style={{ fontSize: '11.5px', color: '#166534', marginBottom: '4px' }}>
+                              <strong>Strengths:</strong> {role.key_strengths.map(s => String(s).replace(/\*\*/g, '')).join(', ')}
+                            </div>
+                          )}
+                          {role.skill_gaps?.length > 0 && (
+                            <div style={{ fontSize: '11.5px', color: '#9a3412' }}>
+                              <strong>Gaps to Improve:</strong> {role.skill_gaps.map(g => String(g).replace(/\*\*/g, '')).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PDF Document Footer */}
+                <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', textAlign: 'center', fontSize: '11px', color: '#64748b' }}>
+                  <div>© {new Date().getFullYear()} Techno Recruit • All Rights Reserved</div>
+                  <div style={{ marginTop: '2px' }}>A Product of <strong>TS Innovations</strong> • Developed by <strong>Raj Kishore S</strong></div>
+                </div>
+              </div>
             </div>
           </div>
         )}
