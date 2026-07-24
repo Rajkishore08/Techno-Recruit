@@ -2597,29 +2597,33 @@ img.avatar,
    PDF Print Layout Styles
    ===================================================================== */
 @media print {
-    body, html {
+    body, html, #root, .app-layout, .main-content, .content-container {
         background: #ffffff !important;
         color: #0f172a !important;
         font-family: system-ui, -apple-system, sans-serif !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow: visible !important;
+        min-height: auto !important;
     }
 
-    /* Hide entire main interactive application layout */
-    .app-layout,
+    /* Hide non-printable UI components only */
     .top-header,
     .sidebar-drawer,
-    .content-container,
+    .app-tabs,
     .no-print,
+    .navigator-input-card,
+    .floating-history-btn,
     button,
     footer,
-    .floating-history-btn {
+    header {
         display: none !important;
     }
 
     /* Display only the dedicated printable PDF document container */
     .printable-pdf-report {
         display: block !important;
+        visibility: visible !important;
         width: 100% !important;
         max-width: 100% !important;
         padding: 20px !important;

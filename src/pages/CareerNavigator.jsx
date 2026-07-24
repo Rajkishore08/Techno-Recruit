@@ -243,7 +243,49 @@ export default function CareerNavigator() {
   };
 
   const handleExportPDF = () => {
-    window.print();
+    if (!results) {
+      window.print();
+      return;
+    }
+    const printEl = document.querySelector('.printable-pdf-report');
+    if (!printEl) {
+      window.print();
+      return;
+    }
+
+    const printWin = window.open('', '_blank', 'width=900,height=800');
+    if (printWin) {
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Techno Recruit — ${results.candidate_name || candidateName || 'Candidate'} Report</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; color: #0f172a; background: #fff; margin: 0; }
+              img { max-width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+              h1, h2, h3, h4 { color: #0f172a; margin-top: 0; }
+              ul { padding-left: 20px; }
+              li { margin-bottom: 4px; }
+              @media print {
+                body { padding: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${printEl.innerHTML}
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWin.document.close();
+    } else {
+      window.print();
+    }
   };
 
   const handleExportTXT = () => {
