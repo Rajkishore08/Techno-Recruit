@@ -78,6 +78,15 @@ export async function searchTalentPool(query, idToken = null) {
   return parseJsonResponse(resp, "Talent search query failed.");
 }
 
+export async function compareCandidates(analysisIds, targetRole = "", idToken = null) {
+  const resp = await fetchWithAuth("/api/compare-candidates", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ analysis_ids: analysisIds, target_role: targetRole })
+  }, idToken);
+  return parseJsonResponse(resp, "Candidate Battle-Card evaluation failed.");
+}
+
 export async function optimizeResume(formData, idToken = null) {
   const resp = await fetchWithAuth("/api/optimize-resume", { method: "POST", body: formData }, idToken);
   return parseJsonResponse(resp, "ATS Resume optimization failed.");

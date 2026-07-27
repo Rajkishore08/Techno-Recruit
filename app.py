@@ -51,13 +51,15 @@ from routes import (
     navigator_router,
     search_router,
     ats_router,
-    architect_router
+    architect_router,
+    voice_router
 )
 
 app.include_router(navigator_router)
 app.include_router(search_router)
 app.include_router(ats_router)
 app.include_router(architect_router)
+app.include_router(voice_router)
 
 
 @app.get("/favicon.ico")

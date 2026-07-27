@@ -18,6 +18,8 @@ from .career_navigator import (
 )
 from .talent_search import run_talent_search_agent
 from .ats_optimizer import run_ats_optimizer_agent
+from .candidate_battlecard import run_candidate_battlecard_agent
+from .voice_interviewer import run_voice_interviewer_agent, run_voice_scorecard_agent
 
 __all__ = [
     "run_jd_parser_agent",
@@ -31,4 +33,7 @@ __all__ = [
     "run_resume_jd_matcher_agent",
     "run_talent_search_agent",
     "run_ats_optimizer_agent",
+    "run_candidate_battlecard_agent",
+    "run_voice_interviewer_agent",
+    "run_voice_scorecard_agent",
 ]

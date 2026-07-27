@@ -1,8 +1,6 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   BrainCircuit, X, Compass, History as HistoryIcon, FileText, FolderOpen, 
-  LayoutDashboard, ShieldCheck, Database, Target, ChevronRight, UserCheck, Sparkles 
+  LayoutDashboard, ShieldCheck, Database, Target, ChevronRight, UserCheck, Sparkles, Swords, Mic 
 } from 'lucide-react';
 import { useHistory } from '../../context/HistoryContext';
 import { useAuth } from '../../context/AuthContext';
@@ -33,7 +31,9 @@ export default function SidebarDrawer() {
   const navLinks = [
     { path: '/', label: 'Overview Dashboard', icon: LayoutDashboard },
     { path: '/navigator', label: 'AI Career Navigator', icon: Compass, badge: 'AI Agent' },
+    { path: '/voice-interview', label: 'AI Voice Interviewer', icon: Mic, badge: 'SPEECH' },
     { path: '/ats-optimizer', label: 'ATS Resume Optimizer', icon: ShieldCheck, badge: 'Match' },
+    { path: '/battlecard', label: 'AI Candidate Battle-Card', icon: Swords, badge: 'NEW' },
     { path: '/talent-search', label: 'Talent Search (Vector DB)', icon: Database, badge: 'RAG' },
     { path: '/architect', label: 'Interview Architect', icon: Target, badge: 'Prep' }
   ];

@@ -9,6 +9,8 @@ import CareerNavigator from './pages/CareerNavigator';
 import AtsOptimizer from './pages/AtsOptimizer';
 import TalentSearch from './pages/TalentSearch';
 import InterviewArchitect from './pages/InterviewArchitect';
+import CandidateBattlecard from './pages/CandidateBattlecard';
+import VoiceInterviewer from './pages/VoiceInterviewer';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 
@@ -76,6 +78,8 @@ export default function App() {
           <Route path="/navigator" element={<ProtectedLayout><CareerNavigator /></ProtectedLayout>} />
           <Route path="/ats-optimizer" element={<ProtectedLayout><AtsOptimizer /></ProtectedLayout>} />
           <Route path="/talent-search" element={<ProtectedLayout><TalentSearch /></ProtectedLayout>} />
+          <Route path="/battlecard" element={<ProtectedLayout><CandidateBattlecard /></ProtectedLayout>} />
+          <Route path="/voice-interview" element={<ProtectedLayout><VoiceInterviewer /></ProtectedLayout>} />
           <Route path="/architect" element={<ProtectedLayout><InterviewArchitect /></ProtectedLayout>} />
           <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
         </Routes>

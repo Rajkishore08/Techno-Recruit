@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, FileText, Target, Award, Sparkles, Compass, SearchCode, BrainCircuit, ArrowRight, FileCheck2, ChevronRight, UserCheck } from 'lucide-react';
+import { Users, FileText, Target, Award, Sparkles, Compass, SearchCode, BrainCircuit, ArrowRight, FileCheck2, ChevronRight, UserCheck, Swords, Mic } from 'lucide-react';
 import Header from '../components/common/Header';
 import { useHistory } from '../context/HistoryContext';
 
@@ -228,6 +228,44 @@ export default function Dashboard() {
               </p>
               <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
                 <span>Optimize Resume</span>
+                <ArrowRight size={16} />
+              </div>
+            </Link>
+
+            <Link to="/voice-interview" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(2, 132, 199, 0.4)', background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(15, 23, 42, 0.9))' }}>
+              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                  <Mic size={22} />
+                </div>
+                <div>
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>AI Voice Interviewer</h4>
+                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>LIVE SPOKEN SIMULATION</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                Conduct live speech-to-text technical mock interviews with speech synthesis & real-time depth scoring.
+              </p>
+              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#0284c7', color: '#38bdf8' }}>
+                <span>Start Voice Interview</span>
+                <ArrowRight size={16} />
+              </div>
+            </Link>
+
+            <Link to="/battlecard" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(245, 158, 11, 0.4)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.9))' }}>
+              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
+                  <Swords size={22} />
+                </div>
+                <div>
+                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>Candidate Battle-Card</h4>
+                  <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600 }}>HEAD-TO-HEAD MATRIX</span>
+                </div>
+              </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                Compare top candidates side-by-side with dimensional rating scores, risk trade-offs, and AI winner verdict.
+              </p>
+              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#f59e0b', color: '#f59e0b' }}>
+                <span>Run Battle-Card</span>
                 <ArrowRight size={16} />
               </div>
             </Link>

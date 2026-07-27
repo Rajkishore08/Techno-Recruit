@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Compass, FileCheck2, SearchCode, BrainCircuit, LogIn, LogOut, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Compass, FileCheck2, SearchCode, BrainCircuit, LogIn, LogOut, HelpCircle, Swords, Mic } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Header({ title, subtitle, onStartTour }) {
@@ -89,6 +89,11 @@ export default function Header({ title, subtitle, onStartTour }) {
           <span>Career Navigator</span>
           <span class="tab-badge">AI ROLE MATCHER</span>
         </NavLink>
+        <NavLink to="/voice-interview" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
+          <Mic size={16} />
+          <span>AI Voice Interviewer</span>
+          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#0284c7)' }}>LIVE SPEECH</span>
+        </NavLink>
         <NavLink to="/architect" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <BrainCircuit size={16} />
           <span>Interview Architect</span>
@@ -98,6 +103,11 @@ export default function Header({ title, subtitle, onStartTour }) {
           <FileCheck2 size={16} />
           <span>ATS Optimizer</span>
           <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#6366f1)' }}>ATS CHECK</span>
+        </NavLink>
+        <NavLink to="/battlecard" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
+          <Swords size={16} />
+          <span>Candidate Battle-Card</span>
+          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)' }}>NEW MATRIX</span>
         </NavLink>
         <NavLink to="/talent-search" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <SearchCode size={16} />
