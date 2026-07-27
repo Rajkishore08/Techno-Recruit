@@ -8,15 +8,37 @@ import { optimizeResume, parseResume } from '../services/api';
 export default function AtsOptimizer() {
   const { currentIdToken } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedJdFile, setSelectedJdFile] = useState(null);
   const [rawResumeText, setRawResumeText] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [jobDesc, setJobDesc] = useState('');
+  const [parsingJd, setParsingJd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
+  };
+
+  const handleJdFileSelect = async (file) => {
+    setSelectedJdFile(file);
+    setParsingJd(true);
+    try {
+      const parsed = await parseResume(file, currentIdToken);
+      if (parsed && parsed.resume_text) {
+        setJobDesc(parsed.resume_text);
+        if (!jobTitle) {
+          const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9\s]/g, " ");
+          setJobTitle(cleanName);
+        }
+        showToast(`✓ Target Job Description document parsed (${parsed.resume_text.split(/\s+/).length} words extracted)!`);
+      }
+    } catch (e) {
+      showToast(`Error parsing JD document: ${e.message}`);
+    } finally {
+      setParsingJd(false);
+    }
   };
 
   const handleOptimize = async () => {
@@ -115,8 +137,17 @@ export default function AtsOptimizer() {
           {/* Job Opening Input Card */}
           <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-success)', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Briefcase size={16} /> Target Job Opening
+              <Briefcase size={16} /> Target Job Opening Document / Text
             </div>
+
+            <Dropzone 
+              onFileSelected={handleJdFileSelect} 
+              selectedFile={selectedJdFile}
+              title="Drop Target Job Description (PDF, DOCX, TXT) here or click to browse"
+              subtitle="Auto-extracts role requirements, skills, and qualifications"
+            />
+
+            <div style={{ textAlign: 'center', margin: '10px 0', color: 'var(--text-muted)', fontSize: '12px', fontWeight: 600 }}>— OR PASTE / EDIT TEXT —</div>
 
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Target Job Title:</label>
@@ -130,12 +161,15 @@ export default function AtsOptimizer() {
             </div>
 
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Target Job Description & Requirements:</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Target Job Description & Requirements:</label>
+                {parsingJd && <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>Extracting JD document text...</span>}
+              </div>
               <textarea 
                 value={jobDesc}
                 onChange={e => setJobDesc(e.target.value)}
-                placeholder="Paste full Job Description, required skills, tools, frameworks, and qualifications here..."
-                style={{ flex: 1, minHeight: '160px', width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
+                placeholder="Job description text will automatically populate here upon file upload, or paste text directly..."
+                style={{ flex: 1, minHeight: '120px', width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
               />
             </div>
           </div>

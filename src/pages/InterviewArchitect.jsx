@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   BrainCircuit, Sparkles, CheckSquare, Loader2, Award, FileText, CheckCircle2, 
   ChevronRight, HelpCircle, UserCheck, AlertTriangle, Wrench, ClipboardCheck, 
-  Database, CheckCircle, Copy, Download, Printer, CornerDownRight, Play, RefreshCw
+  Database, CheckCircle, Copy, Download, Printer, CornerDownRight, Play, RefreshCw, Briefcase
 } from 'lucide-react';
 import Header from '../components/common/Header';
+import Dropzone from '../components/common/Dropzone';
 import { useAuth } from '../context/AuthContext';
-import { fetchWithAuth } from '../services/api';
+import { fetchWithAuth, parseResume } from '../services/api';
 
 const CATEGORIES = [
   "Technical Skills",
@@ -36,11 +37,49 @@ export default function InterviewArchitect() {
   const [selectedCategories, setSelectedCategories] = useState(["Technical Skills", "System Architecture"]);
   const [questionCount, setQuestionCount] = useState(6);
   const [resumeText, setResumeText] = useState('');
+  const [selectedJdFile, setSelectedJdFile] = useState(null);
+  const [selectedResumeFile, setSelectedResumeFile] = useState(null);
+  const [parsingJd, setParsingJd] = useState(false);
+  const [parsingResume, setParsingResume] = useState(false);
 
   const [generating, setGenerating] = useState(false);
   const [sseTraces, setSseTraces] = useState([]);
   const [generatedGuide, setGeneratedGuide] = useState(null);
   const [error, setError] = useState(null);
+
+  const handleJdFileSelect = async (file) => {
+    setSelectedJdFile(file);
+    setParsingJd(true);
+    try {
+      const parsed = await parseResume(file, currentIdToken);
+      if (parsed && parsed.resume_text) {
+        setJobDesc(parsed.resume_text);
+        if (!jobTitle) {
+          const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9\s]/g, " ");
+          setJobTitle(cleanName);
+        }
+      }
+    } catch (e) {
+      setError(`Error parsing JD file: ${e.message}`);
+    } finally {
+      setParsingJd(false);
+    }
+  };
+
+  const handleResumeFileSelect = async (file) => {
+    setSelectedResumeFile(file);
+    setParsingResume(true);
+    try {
+      const parsed = await parseResume(file, currentIdToken);
+      if (parsed && parsed.resume_text) {
+        setResumeText(parsed.resume_text);
+      }
+    } catch (e) {
+      setError(`Error parsing Resume file: ${e.message}`);
+    } finally {
+      setParsingResume(false);
+    }
+  };
 
   // Playground & Tweak States
   const [activePlaygroundQId, setActivePlaygroundQId] = useState(null);
@@ -292,23 +331,52 @@ export default function InterviewArchitect() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+            {/* JD Dropzone & Textarea */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Target Job Description:</label>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Briefcase size={16} /> Upload Job Description Document
+              </div>
+              <Dropzone 
+                onFileSelected={handleJdFileSelect}
+                selectedFile={selectedJdFile}
+                title="Drop JD (PDF, DOCX, TXT) here or click to browse"
+                subtitle="Auto-extracts role text and populates job title"
+              />
+              <div style={{ textAlign: 'center', margin: '8px 0', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>— OR PASTE / EDIT JD TEXT —</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Target Job Description:</label>
+                {parsingJd && <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>Extracting JD document text...</span>}
+              </div>
               <textarea 
                 value={jobDesc}
                 onChange={e => setJobDesc(e.target.value)}
-                placeholder="Paste job description requirements, key skills, and tools here..."
-                style={{ width: '100%', height: '100px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
+                placeholder="Job description text will automatically populate here upon uploading a PDF/DOCX/TXT file, or paste text directly..."
+                style={{ width: '100%', height: '110px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
               />
             </div>
+
+            {/* Candidate Resume Dropzone & Textarea */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Candidate Resume (Optional Match):</label>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary-light)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <UserCheck size={16} /> Candidate Resume (Optional Match)
+              </div>
+              <Dropzone 
+                onFileSelected={handleResumeFileSelect}
+                selectedFile={selectedResumeFile}
+                title="Drop Resume (PDF, DOCX, TXT) here or click to browse"
+                subtitle="Evaluates fit against JD & tailors guide questions"
+              />
+              <div style={{ textAlign: 'center', margin: '8px 0', color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600 }}>— OR PASTE / EDIT RESUME TEXT —</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Candidate Resume Text:</label>
+                {parsingResume && <span style={{ fontSize: '11px', color: 'var(--color-primary-light)', fontWeight: 700 }}>Extracting resume text...</span>}
+              </div>
               <textarea 
                 value={resumeText}
                 onChange={e => setResumeText(e.target.value)}
-                placeholder="Paste candidate resume to automatically evaluate fit and build custom questions..."
-                style={{ width: '100%', height: '100px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
+                placeholder="Paste candidate resume or upload a resume file to automatically evaluate fit and build tailored questions..."
+                style={{ width: '100%', height: '110px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '12px', color: '#fff', fontSize: '13px', fontFamily: 'inherit' }}
               />
             </div>
           </div>

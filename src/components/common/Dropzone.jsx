@@ -1,7 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { UploadCloud, FileCheck } from 'lucide-react';
 
-export default function Dropzone({ onFileSelected, selectedFile, accept = ".pdf,.docx,.txt" }) {
+export default function Dropzone({ 
+  onFileSelected, 
+  selectedFile, 
+  accept = ".pdf,.docx,.txt",
+  title = "Drop candidate resume here or click to browse",
+  subtitle = "Supports PDF, DOCX, TXT (Max 5MB)"
+}) {
   const fileInputRef = useRef(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -38,14 +44,14 @@ export default function Dropzone({ onFileSelected, selectedFile, accept = ".pdf,
         {!selectedFile ? (
           <>
             <UploadCloud className="dropzone-icon" size={32} />
-            <p className="dropzone-title" style={{ fontSize: '14px', fontWeight: 600 }}>Drop candidate resume here or click to browse</p>
-            <p className="dropzone-subtitle" style={{ fontSize: '12px' }}>Supports PDF, DOCX, TXT (Max 5MB)</p>
+            <p className="dropzone-title" style={{ fontSize: '14px', fontWeight: 600 }}>{title}</p>
+            <p className="dropzone-subtitle" style={{ fontSize: '12px' }}>{subtitle}</p>
           </>
         ) : (
           <>
             <FileCheck className="dropzone-icon" size={32} style={{ color: 'var(--color-success)' }} />
             <p className="dropzone-title" style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{selectedFile.name}</p>
-            <p className="dropzone-subtitle" style={{ fontSize: '12px', color: 'var(--color-success)' }}>Resume file ready for AI evaluation</p>
+            <p className="dropzone-subtitle" style={{ fontSize: '12px', color: 'var(--color-success)' }}>Document ready & parsed</p>
           </>
         )}
       </div>
