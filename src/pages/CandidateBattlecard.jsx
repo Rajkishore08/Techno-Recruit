@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Swords, Trophy, Check, AlertTriangle, BarChart3, Target, X, Sparkles, Loader2, UserCheck, ShieldCheck } from 'lucide-react';
 import Header from '../components/common/Header';
 import { useAuth } from '../context/AuthContext';
+import { useHistory } from '../context/HistoryContext';
 import { fetchCareerHistory, compareCandidates } from '../services/api';
 
 const FALLBACK_CANDIDATES = [
@@ -39,8 +40,9 @@ const FALLBACK_CANDIDATES = [
 
 export default function CandidateBattlecard() {
   const { currentIdToken } = useAuth();
-  const [candidates, setCandidates] = useState(FALLBACK_CANDIDATES);
-  const [loadingPool, setLoadingPool] = useState(false);
+  const { careerHistory, refreshHistory } = useHistory();
+  const [candidates, setCandidates] = useState([]);
+  const [loadingPool, setLoadingPool] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
   const [targetRole, setTargetRole] = useState('');
   const [evaluating, setEvaluating] = useState(false);
@@ -48,19 +50,17 @@ export default function CandidateBattlecard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadCandidatePool();
+    refreshHistory();
   }, [currentIdToken]);
 
-  const loadCandidatePool = async () => {
-    try {
-      const history = await fetchCareerHistory(currentIdToken);
-      if (history && history.length > 0) {
-        setCandidates(history);
-      }
-    } catch (e) {
-      console.error(e);
+  useEffect(() => {
+    if (careerHistory && careerHistory.length > 0) {
+      setCandidates(careerHistory);
+    } else {
+      setCandidates(FALLBACK_CANDIDATES);
     }
-  };
+    setLoadingPool(false);
+  }, [careerHistory]);
 
   const toggleCandidateSelect = (analysisId) => {
     if (selectedIds.includes(analysisId)) {
