@@ -32,11 +32,11 @@ function renderFormattedBoldText(text) {
   str = str.replace(/\n+\s*[\-\•\*\>]?\s*/g, ', ');
   str = str.replace(/\s+/g, ' ');
 
-  // 1. Clean raw bullet markers repeatedly at start of text (* * , * , - , • )
+  // 1. Clean leading colons or bullet markers repeatedly at start of text (: , * , - , • )
   let prev;
   do {
     prev = str;
-    str = str.replace(/^[\-\•\*\>]\s*/, '');
+    str = str.replace(/^[:\-\•\*\>]\s*/, '');
     str = str.replace(/^\*\s*\*\s+/, '');
     str = str.replace(/^\*\s+(?!\*)/, '');
     str = str.replace(/^,\s*/, '');
@@ -54,47 +54,41 @@ function renderFormattedBoldText(text) {
     str = str.replace(/^\*\s*/, '');
   }
 
-  // 3. Parse remaining bold tokens (**text**) into <strong> tags with vibrant badge styling
+  // 3. Parse bold tokens (**text**) into clean <strong> tags without background boxes/highlights
   const parts = str.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      const cleanText = part.slice(2, -2);
+      const cleanText = part.slice(2, -2).replace(/\*+/g, '').trim();
       return (
         <strong 
           key={idx} 
           style={{ 
-            color: '#38bdf8', 
-            background: 'rgba(56, 189, 248, 0.15)', 
-            border: '1px solid rgba(56, 189, 248, 0.3)', 
-            padding: '2px 7px', 
-            borderRadius: '5px', 
-            fontWeight: 800,
-            fontSize: '95%',
-            display: 'inline-block',
-            margin: '0 2px'
+            color: '#fff', 
+            fontWeight: 800
           }}
         >
           {cleanText}
         </strong>
       );
     }
-    return part;
+    // Clean any stray asterisks from non-bold parts
+    return part.replace(/\*+/g, '');
   });
 }
 
 function renderPdfBoldText(text) {
   if (!text) return null;
-  let str = String(text).trim().replace(/\*+$/g, '').trim();
+  let str = String(text).trim().replace(/^[:\-\•\*\>]\s*/, '').replace(/\*+$/g, '').trim();
   const parts = str.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
       return (
-        <strong key={idx} style={{ color: '#0284c7', fontWeight: 800 }}>
-          {part.slice(2, -2)}
+        <strong key={idx} style={{ color: '#0f172a', fontWeight: 800 }}>
+          {part.slice(2, -2).replace(/\*+/g, '').trim()}
         </strong>
       );
     }
-    return part;
+    return part.replace(/\*+/g, '');
   });
 }
 

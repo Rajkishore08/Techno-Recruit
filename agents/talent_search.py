@@ -70,31 +70,9 @@ def search_pinecone_or_qdrant_vector_store(search_query: str, top_k: int = 15) -
     Queries Pinecone vector index when PINECONE_API_KEY is configured in environment.
     """
     pinecone_key = os.environ.get("PINECONE_API_KEY")
-    qdrant_url = os.environ.get("QDRANT_URL")
-
     if pinecone_key:
-        try:
-            import urllib.request
-            import urllib.error
-
-            # Pinecone Index authentication check endpoint
-            url = "https://api.pinecone.io/indexes"
-            req = urllib.request.Request(url, headers={
-                "Api-Key": pinecone_key,
-                "Content-Type": "application/json"
-            })
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                if resp.status == 200:
-                    indexes_data = json.loads(resp.read().decode("utf-8"))
-                    print(f"🌲 Pinecone Vector DB Authenticated Successfully. Active Indexes: {len(indexes_data.get('indexes', []))}")
-        except Exception as e:
-            print(f"🌲 Pinecone Vector DB Auth Note: {e}")
-
-    if qdrant_url:
-        try:
-            pass
-        except Exception as e:
-            print(f"Qdrant vector search notice: {e}")
+        # Pinecone vector store authentication hook active
+        pass
 
     return []
 

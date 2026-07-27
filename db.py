@@ -143,25 +143,24 @@ def save_career_analysis(
 
 def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
     """Retrieves all past career analysis sessions for a given user UID."""
-    results = []
-    # Try Cloud Firestore first
+    results = _read_local_json(LOCAL_CAREER_DB)
+    seen_ids = {r.get("analysis_id") for r in results if r.get("analysis_id")}
+
+    # Try Cloud Firestore to fetch any additional cloud records
     try:
         from firebase_admin import firestore
         db = firestore.client()
         if user_uid and user_uid != "anonymous":
-            docs = db.collection("career_analyses").where("uid", "==", user_uid).stream()
+            docs = db.collection("career_analyses").where("uid", "==", user_uid).limit(50).stream()
         else:
             docs = db.collection("career_analyses").limit(50).stream()
-        results = [doc.to_dict() for doc in docs]
+        for doc in docs:
+            d = doc.to_dict()
+            if d.get("analysis_id") not in seen_ids:
+                results.append(d)
+                seen_ids.add(d.get("analysis_id"))
     except Exception as e:
         print(f"Firestore career history read notice: {e}")
-
-    # Fallback/Merge local persistence
-    local_records = _read_local_json(LOCAL_CAREER_DB)
-    seen_ids = {r.get("analysis_id") for r in results if r.get("analysis_id")}
-    for lr in local_records:
-        if lr.get("analysis_id") not in seen_ids:
-            results.append(lr)
 
     results.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
     return results
