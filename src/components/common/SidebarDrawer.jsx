@@ -30,15 +30,65 @@ export default function SidebarDrawer() {
     navigate("/architect");
   };
 
-  const navLinks = [
-    { path: '/', label: 'Overview Dashboard', icon: LayoutDashboard },
-    { path: '/navigator', label: 'AI Career Navigator', icon: Compass, badge: 'AI Agent' },
-    { path: '/voice-interview', label: 'AI Voice Interviewer', icon: Mic, badge: 'SPEECH' },
+  const candidateNavLinks = [
+    { path: '/navigator', label: 'AI Career Navigator', icon: Compass, badge: 'Role Match' },
     { path: '/ats-optimizer', label: 'ATS Resume Optimizer', icon: ShieldCheck, badge: 'Match' },
-    { path: '/battlecard', label: 'AI Candidate Battle-Card', icon: Swords, badge: 'NEW' },
+    { path: '/voice-interview', label: 'AI Voice Interviewer', icon: Mic, badge: 'Speech' }
+  ];
+
+  const recruiterNavLinks = [
+    { path: '/battlecard', label: 'AI Candidate Battle-Card', icon: Swords, badge: 'Matrix' },
     { path: '/talent-search', label: 'Talent Search (Vector DB)', icon: Database, badge: 'RAG' },
     { path: '/architect', label: 'Interview Architect', icon: Target, badge: 'Prep' }
   ];
+
+  const renderNavButton = (item) => {
+    const Icon = item.icon;
+    const isActive = location.pathname === item.path;
+
+    return (
+      <button
+        key={item.path}
+        onClick={() => handleNavClick(item.path)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'space-between',
+          width: '100%',
+          padding: '10px 14px',
+          borderRadius: '8px',
+          border: isActive ? '1px solid var(--color-primary-light)' : '1px solid transparent',
+          background: isActive ? 'linear-gradient(90deg, rgba(99,102,241,0.25), rgba(99,102,241,0.08))' : 'transparent',
+          color: isActive ? '#fff' : 'var(--text-secondary)',
+          fontWeight: isActive ? 700 : 500,
+          fontSize: '13px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          textAlign: 'left'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Icon size={16} style={{ color: isActive ? 'var(--color-primary-light)' : 'var(--text-muted)' }} />
+          <span>{item.label}</span>
+        </div>
+
+        {item.badge && (
+          <span 
+            style={{ 
+              fontSize: '10px', 
+              fontWeight: 700, 
+              padding: '2px 6px', 
+              borderRadius: '4px', 
+              background: isActive ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)', 
+              color: isActive ? '#fff' : 'var(--text-muted)' 
+            }}
+          >
+            {item.badge}
+          </span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <>
@@ -67,7 +117,7 @@ export default function SidebarDrawer() {
       >
         <div>
           {/* Header */}
-          <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '24px' }}>
+          <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
             <div className="logo" onClick={() => handleNavClick('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <img src="/logo.png?v=2" alt="Techno Recruit" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(59, 130, 246, 0.4)' }} />
               <div>
@@ -97,59 +147,27 @@ export default function SidebarDrawer() {
           </div>
 
           {/* Quick Navigation Section */}
-          <div className="sidebar-section" style={{ marginBottom: '24px' }}>
-            <div className="section-title" style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Sparkles size={14} style={{ color: 'var(--color-primary-light)' }} /> Navigation Routes
+          <div className="sidebar-section" style={{ marginBottom: '20px' }}>
+            {renderNavButton({ path: '/', label: 'Overview Dashboard', icon: LayoutDashboard })}
+
+            {/* Candidate Suite */}
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', paddingLeft: '4px' }}>
+                👤 Candidate Suite
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {candidateNavLinks.map(renderNavButton)}
+              </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {navLinks.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => handleNavClick(item.path)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justify: 'space-between',
-                      width: '100%',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      border: isActive ? '1px solid var(--color-primary-light)' : '1px solid transparent',
-                      background: isActive ? 'linear-gradient(90deg, rgba(99,102,241,0.25), rgba(99,102,241,0.08))' : 'transparent',
-                      color: isActive ? '#fff' : 'var(--text-secondary)',
-                      fontWeight: isActive ? 700 : 500,
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Icon size={16} style={{ color: isActive ? 'var(--color-primary-light)' : 'var(--text-muted)' }} />
-                      <span>{item.label}</span>
-                    </div>
-
-                    {item.badge && (
-                      <span 
-                        style={{ 
-                          fontSize: '10px', 
-                          fontWeight: 700, 
-                          padding: '2px 6px', 
-                          borderRadius: '4px', 
-                          background: isActive ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)', 
-                          color: isActive ? '#fff' : 'var(--text-muted)' 
-                        }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Recruiter Suite */}
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 800, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '8px', paddingLeft: '4px' }}>
+                👔 Recruiter Suite
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                {recruiterNavLinks.map(renderNavButton)}
+              </div>
             </div>
           </div>
 

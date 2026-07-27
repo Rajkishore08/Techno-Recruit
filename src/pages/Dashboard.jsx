@@ -170,124 +170,132 @@ export default function Dashboard() {
 
         {/* Launchpad Cards */}
         <section className="dashboard-launchpad">
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, marginBottom: '16px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={18} style={{ color: 'var(--color-primary-light)' }} /> Platform AI Launchpad
-          </h3>
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 800, color: '#38bdf8', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              👤 Candidate & Applicant Suite
+            </h3>
+            <div className="launchpad-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              <Link to="/navigator" className="card launchpad-card" style={{ textDecoration: 'none' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary-light)' }}>
+                    <Compass size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Career Navigator</h4>
+                    <span style={{ fontSize: '11px', color: 'var(--color-primary-light)', fontWeight: 600 }}>AI ROLE MATCHER</span>
+                  </div>
+                </div>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Upload candidate resumes (PDF/DOCX) to get tiered role suitability scores and extract Leadership, Hackathons, & Internships.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <span>Screen Resume Now</span>
+                  <ArrowRight size={16} />
+                </div>
+              </Link>
 
-          <div className="launchpad-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
-            <Link to="/navigator" className="card launchpad-card" style={{ textDecoration: 'none' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary-light)' }}>
-                  <Compass size={22} />
+              <Link to="/ats-optimizer" className="card launchpad-card" style={{ textDecoration: 'none' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }}>
+                    <FileCheck2 size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>ATS Resume Enhancer</h4>
+                    <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 600 }}>1-CLICK TAILOR & OPTIMIZE</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Career Navigator</h4>
-                  <span style={{ fontSize: '11px', color: 'var(--color-primary-light)', fontWeight: 600 }}>AI ROLE MATCHER</span>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Audit resume compatibility against target JD, identify missing keywords, and download a tailored ATS resume.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <span>Optimize Resume</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Upload candidate resumes (PDF/DOCX) to get tiered role suitability scores and extract Leadership, Hackathons, & Internships.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                <span>Screen Resume Now</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
+              </Link>
 
-            <Link to="/architect" className="card launchpad-card" style={{ textDecoration: 'none' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
-                  <BrainCircuit size={22} />
+              <Link to="/voice-interview" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(2, 132, 199, 0.4)', background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(15, 23, 42, 0.9))' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                    <Mic size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>AI Voice Interviewer</h4>
+                    <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>LIVE SPOKEN SIMULATION</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Interview Architect</h4>
-                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>GUIDE BUILDER</span>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Conduct live speech-to-text technical mock interviews with speech synthesis & real-time depth scoring.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#0284c7', color: '#38bdf8' }}>
+                  <span>Start Voice Interview</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Input job specifications to generate structured technical & behavioral interview guides with model scorecards.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                <span>Build Interview Guide</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
+              </Link>
+            </div>
+          </div>
 
-            <Link to="/ats-optimizer" className="card launchpad-card" style={{ textDecoration: 'none' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }}>
-                  <FileCheck2 size={22} />
+          <div style={{ marginTop: '32px' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 800, color: '#c084fc', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              👔 Recruiter & Enterprise Hiring Suite
+            </h3>
+            <div className="launchpad-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              <Link to="/battlecard" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(245, 158, 11, 0.4)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.9))' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
+                    <Swords size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>Candidate Battle-Card</h4>
+                    <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600 }}>HEAD-TO-HEAD MATRIX</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>ATS Resume Enhancer</h4>
-                  <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 600 }}>1-CLICK TAILOR & OPTIMIZE</span>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Compare top candidates side-by-side with dimensional rating scores, risk trade-offs, and AI winner verdict.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#f59e0b', color: '#f59e0b' }}>
+                  <span>Run Battle-Card</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Audit resume compatibility against target JD, identify missing keywords, and download a tailored ATS resume.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                <span>Optimize Resume</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
+              </Link>
 
-            <Link to="/voice-interview" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(2, 132, 199, 0.4)', background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08), rgba(15, 23, 42, 0.9))' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(2, 132, 199, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
-                  <Mic size={22} />
+              <Link to="/talent-search" className="card launchpad-card" style={{ textDecoration: 'none' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                    <SearchCode size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#38bdf8' }}>AI Talent Search</h4>
+                    <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>VECTOR RAG SEARCH</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>AI Voice Interviewer</h4>
-                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>LIVE SPOKEN SIMULATION</span>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Query candidate pool in plain English to retrieve AI-ranked matches with relevance fit reasoning.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <span>Search Talent Pool</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Conduct live speech-to-text technical mock interviews with speech synthesis & real-time depth scoring.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#0284c7', color: '#38bdf8' }}>
-                <span>Start Voice Interview</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
+              </Link>
 
-            <Link to="/battlecard" className="card launchpad-card" style={{ textDecoration: 'none', border: '1px solid rgba(245, 158, 11, 0.4)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.9))' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b' }}>
-                  <Swords size={22} />
+              <Link to="/architect" className="card launchpad-card" style={{ textDecoration: 'none' }}>
+                <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+                    <BrainCircuit size={22} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Interview Architect</h4>
+                    <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>GUIDE BUILDER</span>
+                  </div>
                 </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#fff' }}>Candidate Battle-Card</h4>
-                  <span style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 600 }}>HEAD-TO-HEAD MATRIX</span>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
+                  Input job specifications to generate structured technical & behavioral interview guides with model scorecards.
+                </p>
+                <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                  <span>Build Interview Guide</span>
+                  <ArrowRight size={16} />
                 </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Compare top candidates side-by-side with dimensional rating scores, risk trade-offs, and AI winner verdict.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center', borderColor: '#f59e0b', color: '#f59e0b' }}>
-                <span>Run Battle-Card</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
-
-            <Link to="/talent-search" className="card launchpad-card" style={{ textDecoration: 'none' }}>
-              <div className="launchpad-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
-                  <SearchCode size={22} />
-                </div>
-                <div>
-                  <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, color: '#38bdf8' }}>AI Talent Search</h4>
-                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>VECTOR RAG SEARCH</span>
-                </div>
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4, marginBottom: '14px' }}>
-                Query candidate pool in plain English to retrieve AI-ranked matches with relevance fit reasoning.
-              </p>
-              <div className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
-                <span>Search Talent Pool</span>
-                <ArrowRight size={16} />
-              </div>
-            </Link>
+              </Link>
+            </div>
           </div>
         </section>
       </div>
