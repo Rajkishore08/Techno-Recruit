@@ -208,7 +208,20 @@ Format output strictly as JSON with no markdown wrappers.
 """
     try:
         res_str, usage = query_groq_helper(prompt, json_mode=True)
-        return json.loads(res_str)
+        eval_json = json.loads(res_str)
+
+        # Record memory to Mem0
+        try:
+            from mem0_service import record_interview_evaluation_memory
+            q_text = target_q.get('question', '')
+            s_val = int(eval_json.get("score", 3))
+            str_list = eval_json.get("strengths", [])
+            gap_list = eval_json.get("weaknesses", [])
+            record_interview_evaluation_memory(question=q_text, candidate_answer=req.candidate_answer, score=s_val, strengths=str_list, gaps=gap_list)
+        except Exception as me:
+            print(f"[Mem0] Notice while recording interview memory: {me}")
+
+        return eval_json
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to evaluate candidate response: {str(e)}")
 

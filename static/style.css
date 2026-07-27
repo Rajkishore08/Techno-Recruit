@@ -7,10 +7,11 @@
     --bg-surface: #0b1120;
     --bg-card: #111827;
     --bg-card-secondary: #1e293b;
+    --bg-surface-elevated: #1e293b;
     
     /* Borders */
-    --border-color: #334155;
-    --border-hover: #2563eb;
+    --border-color: rgba(59, 130, 246, 0.25);
+    --border-hover: #38bdf8;
     
     /* Primary Brand Colors */
     --color-primary: #1d4ed8;
@@ -21,8 +22,14 @@
     
     /* Legacy alias mappings for components */
     --color-primary-light: #38bdf8;
-    --color-primary-glow: rgba(59, 130, 246, 0.18);
-    --color-secondary-glow: rgba(56, 189, 248, 0.18);
+    --color-primary-glow: rgba(59, 130, 246, 0.25);
+    --color-secondary-glow: rgba(56, 189, 248, 0.2);
+    
+    /* Persona Suite Categorization Colors */
+    --candidate-accent: #38bdf8;
+    --candidate-glow: rgba(56, 189, 248, 0.2);
+    --recruiter-accent: #c084fc;
+    --recruiter-glow: rgba(168, 85, 247, 0.2);
     
     /* Status Colors */
     --color-success: #22c55e;
@@ -49,17 +56,18 @@
     --gradient-hero: radial-gradient(circle, #2563eb 0%, #1d4ed8 35%, #020617 100%);
     
     /* Shadows */
-    --shadow-card: 0 10px 35px rgba(37, 99, 235, 0.18);
+    --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.6), 0 0 20px rgba(59, 130, 246, 0.15);
     --shadow-button: 0 0 30px rgba(59, 130, 246, 0.45);
     --shadow-active: 0 0 60px rgba(56, 189, 248, 0.55);
     
     /* Radii */
     --radius-sm: 12px;     /* Inputs / tags */
     --radius-md: 14px;     /* Buttons */
-    --radius-lg: 20px;     /* Cards */
+    --radius-lg: 16px;     /* Cards */
     
     --font-heading: 'Plus Jakarta Sans', 'Outfit', 'Inter', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
     --transition-smooth: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     --transition-fast: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }

@@ -64,9 +64,22 @@ def enforce_logical_seniority_scores(suggested_roles: Any) -> Any:
     return suggested_roles
 
 
+from mem0_service import search_mem0_memory, record_candidate_screening_memory
+
+
 def run_resume_role_suggester_agent(resume_text: str) -> tuple:
     """Career Navigator Agent: analyzes candidate resume and recommends optimal career roles with tiered match scores, extracted hyperlinks, best fit reasoning, and bold highlights."""
+    # Retrieve past Mem0 context if available
+    mem0_context = ""
+    try:
+        mem_results = search_mem0_memory(query=resume_text[:200], limit=3)
+        if mem_results:
+            mem0_context = "\n--- MEM0 HISTORICAL CANDIDATE INTELLIGENCE & RECRUITER PREFERENCES ---\n" + "\n".join([f"• {m}" for m in mem_results]) + "\n--- END MEM0 INTELLIGENCE ---\n"
+    except Exception as e:
+        print(f"[Mem0] Notice during search: {e}")
+
     prompt = f"""You are an expert Executive Career Navigator & Senior Talent Analytics Agent.
+{mem0_context}
 Analyze the following candidate resume text in exhaustive detail:
 
 --- BEGIN RESUME ---
@@ -133,6 +146,15 @@ Return ONLY valid JSON.
                 role["key_strengths"] = sanitize_bullet_list(role.get("key_strengths", []))
                 role["skill_gaps"] = sanitize_bullet_list(role.get("skill_gaps", []))
                 
+        # Record memory to Mem0 asynchronously/safely
+        c_name = data.get("candidate_name", "Candidate")
+        c_summary = data.get("candidate_summary", "") or data.get("why_best_fit", "")
+        roles = [r.get("role_title", "") for r in data.get("suggested_roles", []) if r.get("role_title")]
+        try:
+            record_candidate_screening_memory(candidate_name=c_name, resume_summary=c_summary, top_roles=roles)
+        except Exception as me:
+            print(f"[Mem0] Notice while recording candidate memory: {me}")
+
         json_str = json.dumps(data)
     except Exception:
         pass

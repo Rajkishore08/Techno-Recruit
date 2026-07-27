@@ -159,11 +159,21 @@ CANDIDATE #{idx+1} [ID: {analysis_id}]:
 
     candidates_blob = "\n".join(candidates_formatted)
 
+    # Search Mem0 entity graph for query context
+    mem0_context = ""
+    try:
+        from mem0_service import search_mem0_memory
+        mem_results = search_mem0_memory(query=search_query, limit=5)
+        if mem_results:
+            mem0_context = "\n--- MEM0 HISTORICAL MEMORY & ENTITY GRAPH MATCHES ---\n" + "\n".join([f"• {m}" for m in mem_results]) + "\n--- END MEM0 HISTORICAL MEMORY ---\n"
+    except Exception as e:
+        print(f"[Mem0] Talent search notice: {e}")
+
     prompt = f"""You are a Senior Talent Acquisition Vector RAG Search & Re-ranking Agent.
 Evaluate the following candidate database against the recruiter's search query:
 
 RECRUITER SEARCH QUERY: "{search_query}"
-
+{mem0_context}
 --- CANDIDATE TALENT POOL ---
 {candidates_blob}
 --- END CANDIDATE POOL ---

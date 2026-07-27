@@ -107,6 +107,17 @@ def get_firebase_config():
     }
 
 
+@app.get("/api/memories")
+def get_mem0_memories():
+    """Returns stored Mem0 candidate entity facts and recruiter memory graph items."""
+    try:
+        from mem0_service import get_all_mem0_memories
+        memories = get_all_mem0_memories()
+        return {"status": "success", "memories": memories, "count": len(memories)}
+    except Exception as e:
+        return {"status": "error", "message": str(e), "memories": []}
+
+
 # Mount static files directory at root
 app.mount("/", StaticFiles(directory=SERVE_DIR, html=True), name="static")
 
