@@ -1,3 +1,5 @@
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   BrainCircuit, X, Compass, History as HistoryIcon, FileText, FolderOpen, 
   LayoutDashboard, ShieldCheck, Database, Target, ChevronRight, UserCheck, Sparkles, Swords, Mic 
