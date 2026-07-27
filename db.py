@@ -269,6 +269,14 @@ def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"Firestore career history read notice: {e}")
 
+    # Separate real user-uploaded records from default seed profiles
+    seed_ids = {"career_rajkishore_default", "career_alex_chen", "career_devin_vance"}
+    real_records = [r for r in results if r.get("analysis_id") not in seed_ids]
+
+    if real_records:
+        real_records.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+        return real_records
+
     results.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
     return results
 
