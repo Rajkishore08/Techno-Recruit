@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   BrainCircuit, Sparkles, CheckSquare, Loader2, Award, FileText, CheckCircle2, 
   ChevronRight, HelpCircle, UserCheck, AlertTriangle, Wrench, ClipboardCheck, 
-  Database, CheckCircle, Copy, Download, Printer, CornerDownRight, Play, RefreshCw, Briefcase
+  Database, CheckCircle, Copy, Download, Printer, CornerDownRight, Play, RefreshCw, Briefcase, Mic, MicOff
 } from 'lucide-react';
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
@@ -46,6 +46,64 @@ export default function InterviewArchitect() {
   const [sseTraces, setSseTraces] = useState([]);
   const [generatedGuide, setGeneratedGuide] = useState(null);
   const [error, setError] = useState(null);
+
+  // Voice Input Speech-to-Text States
+  const [isListeningQId, setIsListeningQId] = useState(null);
+  const recognitionRef = useRef(null);
+
+  const toggleVoiceInput = (qId) => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Google Chrome, Safari, or Edge.");
+      return;
+    }
+
+    if (isListeningQId === qId) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListeningQId(null);
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript + ' ';
+          }
+          const text = transcript.trim();
+          setCandidateAnswers(prev => ({
+            ...prev,
+            [qId]: text
+          }));
+        };
+
+        recognition.onerror = (e) => {
+          console.warn("Speech recognition notice:", e.error);
+          setIsListeningQId(null);
+        };
+
+        recognition.onend = () => {
+          setIsListeningQId(null);
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+        setIsListeningQId(qId);
+      } catch (e) {
+        console.error("Speech recognition start failed:", e);
+        setIsListeningQId(null);
+      }
+    }
+  };
 
   const handleJdFileSelect = async (file) => {
     setSelectedJdFile(file);
@@ -811,12 +869,55 @@ export default function InterviewArchitect() {
                         </h5>
                         
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '6px' }}>Candidate Answer Input:</label>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <label style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                              Candidate Spoken / Text Answer Input:
+                            </label>
+                            <button 
+                              type="button"
+                              onClick={() => toggleVoiceInput(q.id)}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '4px 12px',
+                                borderRadius: '9999px',
+                                fontSize: '11.5px',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                background: isListeningQId === q.id ? 'rgba(239, 68, 68, 0.25)' : 'rgba(99, 102, 241, 0.18)',
+                                color: isListeningQId === q.id ? '#ef4444' : 'var(--color-primary-light)',
+                                border: isListeningQId === q.id ? '1px solid #ef4444' : '1px solid rgba(99, 102, 241, 0.4)',
+                                boxShadow: isListeningQId === q.id ? '0 0 12px rgba(239, 68, 68, 0.5)' : 'none',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              {isListeningQId === q.id ? (
+                                <>
+                                  <MicOff size={13} className="spin" />
+                                  <span>🎙️ Listening... (Click to Stop)</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Mic size={13} />
+                                  <span>🎤 Voice to Text Input</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          {isListeningQId === q.id && (
+                            <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+                              Recording microphone audio... Speak candidate answer clearly into microphone.
+                            </div>
+                          )}
+
                           <textarea 
                             value={candidateAnswers[q.id] || ''}
                             onChange={e => setCandidateAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
-                            placeholder="Type or paste the mock candidate response to evaluate here..."
-                            style={{ width: '100%', height: '80px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '10px', color: '#fff', fontSize: '12.5px', fontFamily: 'inherit' }}
+                            placeholder="Speak into microphone using the button above or type the candidate answer here..."
+                            style={{ width: '100%', height: '90px', background: 'rgba(15,23,42,0.8)', border: isListeningQId === q.id ? '1px solid #ef4444' : '1px solid var(--border-color)', borderRadius: '6px', padding: '10px', color: '#fff', fontSize: '12.5px', fontFamily: 'inherit' }}
                           />
                         </div>
 
