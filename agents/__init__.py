@@ -16,7 +16,7 @@ from .career_navigator import (
     run_resume_role_suggester_agent,
     run_resume_jd_matcher_agent
 )
-from .talent_search import run_talent_search_agent
+from .talent_search import run_talent_search_agent, upsert_candidate_to_vector_db
 from .ats_optimizer import run_ats_optimizer_agent
 from .candidate_battlecard import run_candidate_battlecard_agent
 from .voice_interviewer import run_voice_interviewer_agent, run_voice_scorecard_agent
@@ -32,6 +32,7 @@ __all__ = [
     "run_resume_role_suggester_agent",
     "run_resume_jd_matcher_agent",
     "run_talent_search_agent",
+    "upsert_candidate_to_vector_db",
     "run_ats_optimizer_agent",
     "run_candidate_battlecard_agent",
     "run_voice_interviewer_agent",

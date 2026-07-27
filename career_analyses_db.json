@@ -1,0 +1,22 @@
+[
+  {
+    "analysis_id": "career_a7f86692",
+    "parent_analysis_id": null,
+    "uid": "test_uid",
+    "candidate_name": "Raj Kishore S",
+    "version": 1,
+    "filename": "resume.pdf",
+    "timestamp": 1785131569,
+    "resume_snippet": "Sample full text resume content",
+    "resume_text": "Sample full text resume content",
+    "data": {
+      "candidate_name": "Raj Kishore S",
+      "candidate_summary": "Full stack AI engineer",
+      "top_skills_identified": [
+        "React",
+        "Python",
+        "Vector DB"
+      ]
+    }
+  }
+]

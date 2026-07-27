@@ -131,6 +131,13 @@ def save_career_analysis(
     except Exception as e:
         print(f"Firestore career analysis save notice: {e}")
 
+    # 3. Automatic Vector DB Indexing (Pinecone + TF-IDF Vector Space)
+    try:
+        from agents.talent_search import upsert_candidate_to_vector_db
+        upsert_candidate_to_vector_db(record)
+    except Exception as ve:
+        print(f"Vector DB indexing notice: {ve}")
+
     return record
 
 
