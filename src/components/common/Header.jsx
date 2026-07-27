@@ -79,7 +79,7 @@ export default function Header({ title, subtitle, onStartTour }) {
         </div>
       </div>
 
-      <nav class="app-tabs">
+      <nav className="app-tabs">
         <NavLink to="/" end className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <LayoutDashboard size={16} />
           <span>Dashboard</span>
@@ -87,35 +87,35 @@ export default function Header({ title, subtitle, onStartTour }) {
         <NavLink to="/navigator" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <Compass size={16} />
           <span>Career Navigator</span>
-          <span class="tab-badge">AI ROLE MATCHER</span>
+          <span className="tab-badge">AI ROLE MATCHER</span>
         </NavLink>
         <NavLink to="/voice-interview" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <Mic size={16} />
           <span>AI Voice Interviewer</span>
-          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#0284c7)' }}>LIVE SPEECH</span>
+          <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#0284c7)' }}>LIVE SPEECH</span>
         </NavLink>
         <NavLink to="/architect" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <BrainCircuit size={16} />
           <span>Interview Architect</span>
-          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#0284c7,#3b82f6)' }}>GUIDE BUILDER</span>
+          <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#0284c7,#3b82f6)' }}>GUIDE BUILDER</span>
         </NavLink>
         <NavLink to="/ats-optimizer" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <FileCheck2 size={16} />
           <span>ATS Optimizer</span>
-          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#6366f1)' }}>ATS CHECK</span>
+          <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#6366f1)' }}>ATS CHECK</span>
         </NavLink>
         <NavLink to="/battlecard" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <Swords size={16} />
           <span>Candidate Battle-Card</span>
-          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)' }}>NEW MATRIX</span>
+          <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)' }}>NEW MATRIX</span>
         </NavLink>
         <NavLink to="/talent-search" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
           <SearchCode size={16} />
           <span>Talent Search</span>
-          <span class="tab-badge" style={{ background: 'linear-gradient(135deg,#38bdf8,#6366f1)' }}>VECTOR RAG</span>
+          <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#38bdf8,#6366f1)' }}>VECTOR RAG</span>
         </NavLink>
         {onStartTour && (
-          <button type="button" class="tab-btn btn-tour-trigger" onClick={onStartTour} style={{ marginLeft: 'auto', background: 'rgba(99,102,241,0.15)', color: 'var(--color-primary-light)' }}>
+          <button type="button" className="tab-btn btn-tour-trigger" onClick={onStartTour} style={{ marginLeft: 'auto', background: 'rgba(99,102,241,0.15)', color: 'var(--color-primary-light)' }}>
             <HelpCircle size={16} />
             <span>Platform Guide</span>
           </button>

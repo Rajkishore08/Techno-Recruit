@@ -337,21 +337,25 @@ body {
 .app-tabs {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(15, 23, 42, 0.7);
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    background: rgba(15, 23, 42, 0.85);
     padding: 8px 12px;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px);
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .tab-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
+    gap: 6px;
+    padding: 8px 12px;
     border-radius: var(--radius-sm);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
     color: var(--text-secondary);
     text-decoration: none;
@@ -359,18 +363,31 @@ body {
     border: 1px solid transparent;
     transition: var(--transition-smooth);
     cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .tab-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .tab-btn.active {
     color: #ffffff;
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(99, 102, 241, 0.25);
     border-color: var(--color-primary-light);
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.tab-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    letter-spacing: 0.4px;
+    line-height: 1.2;
+    flex-shrink: 0;
 }
 
 .badge-active {

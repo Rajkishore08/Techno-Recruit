@@ -3,7 +3,9 @@ import { History as HistoryIcon } from 'lucide-react';
 import { useHistory } from '../../context/HistoryContext';
 
 export default function FloatingHistoryBtn() {
-  const { toggleSidebar } = useHistory();
+  const { toggleSidebar, sidebarOpen } = useHistory();
+
+  if (sidebarOpen) return null;
 
   return (
     <button className="floating-history-btn" onClick={toggleSidebar} title="View Saved Sessions">
