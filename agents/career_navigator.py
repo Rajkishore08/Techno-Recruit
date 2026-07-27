@@ -64,7 +64,19 @@ def enforce_logical_seniority_scores(suggested_roles: Any) -> Any:
     return suggested_roles
 
 
-from mem0_service import search_mem0_memory, record_candidate_screening_memory
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+
+try:
+    from mem0_service import search_mem0_memory, record_candidate_screening_memory
+except Exception as _e:
+    print(f"[Mem0] Notice: mem0_service import fallback: {_e}")
+    def search_mem0_memory(*args, **kwargs): return []
+    def record_candidate_screening_memory(*args, **kwargs): return None
 
 
 def run_resume_role_suggester_agent(resume_text: str) -> tuple:
