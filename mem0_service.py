@@ -3,7 +3,7 @@ import requests
 import threading
 from typing import List, Dict, Any, Optional
 
-MEM0_API_KEY = os.getenv("MEM0_API_KEY", "m0-kcQb7mM1rodDFuyKOZVFOMoPw1JV1DcEyrPdDSHR")
+MEM0_API_KEY = os.getenv("MEM0_API_KEY", "")
 MEM0_BASE_URL = "https://api.mem0.ai/v1"
 
 def _async_post_memory(messages: List[Dict[str, str]], user_id: str, agent_id: str):
