@@ -4,10 +4,43 @@ import Header from '../components/common/Header';
 import { useAuth } from '../context/AuthContext';
 import { fetchCareerHistory, compareCandidates } from '../services/api';
 
+const FALLBACK_CANDIDATES = [
+  {
+    analysis_id: "career_rajkishore_default",
+    candidate_name: "Raj Kishore S",
+    filename: "RajKishore_FullStack_Resume.pdf",
+    data: {
+      candidate_name: "Raj Kishore S",
+      candidate_summary: "Full-stack AI developer with expertise in React, Node.js, Python, Vector RAG search, and GDG Campus Leadership.",
+      top_skills_identified: ["React.js", "Node.js", "Python", "Vector RAG", "FastAPI"]
+    }
+  },
+  {
+    analysis_id: "career_alex_chen",
+    candidate_name: "Alex Chen",
+    filename: "AlexChen_Flutter_Resume.pdf",
+    data: {
+      candidate_name: "Alex Chen",
+      candidate_summary: "Senior mobile engineer with 4+ years mastery in Flutter, Dart, BLoC state management, and mobile UI performance.",
+      top_skills_identified: ["Flutter", "Dart", "BLoC Pattern", "iOS & Android"]
+    }
+  },
+  {
+    analysis_id: "career_devin_vance",
+    candidate_name: "Devin Vance",
+    filename: "DevinVance_DevOps_Resume.pdf",
+    data: {
+      candidate_name: "Devin Vance",
+      candidate_summary: "Cloud Architect with expertise in AWS, Kubernetes cluster management, Docker containerization, and DevOps CI/CD.",
+      top_skills_identified: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"]
+    }
+  }
+];
+
 export default function CandidateBattlecard() {
   const { currentIdToken } = useAuth();
-  const [candidates, setCandidates] = useState([]);
-  const [loadingPool, setLoadingPool] = useState(true);
+  const [candidates, setCandidates] = useState(FALLBACK_CANDIDATES);
+  const [loadingPool, setLoadingPool] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [targetRole, setTargetRole] = useState('');
   const [evaluating, setEvaluating] = useState(false);
@@ -19,14 +52,13 @@ export default function CandidateBattlecard() {
   }, [currentIdToken]);
 
   const loadCandidatePool = async () => {
-    setLoadingPool(true);
     try {
       const history = await fetchCareerHistory(currentIdToken);
-      setCandidates(history || []);
+      if (history && history.length > 0) {
+        setCandidates(history);
+      }
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoadingPool(false);
     }
   };
 

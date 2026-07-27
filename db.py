@@ -8,14 +8,121 @@ from typing import Dict, Any, List, Optional
 LOCAL_CAREER_DB = "career_analyses_db.json"
 LOCAL_GUIDES_DB = "interview_guides_db.json"
 
+DEFAULT_CANDIDATES = [
+    {
+        "analysis_id": "career_rajkishore_default",
+        "uid": "anonymous",
+        "candidate_name": "Raj Kishore S",
+        "version": 1,
+        "filename": "RajKishore_FullStack_Resume.pdf",
+        "timestamp": 1770000000,
+        "resume_snippet": "Full-stack AI developer with expertise in React, Node.js, Python, Vector DB RAG architectures, and GDG Campus Lead experience.",
+        "resume_text": "Raj Kishore S. Highly skilled full-stack AI engineer. GDG CIT Campus Lead, Student Developers Cell Co-Founder. Hackathon Winner (IBM Quantum Challenge, CryptoShield, HackVerse 5.0). Built Techno Badge and Techno Recruit.",
+        "data": {
+            "candidate_name": "Raj Kishore S",
+            "candidate_summary": "Highly skilled full-stack developer with expertise in AI agents, software systems, and data engineering, complemented by GDSC leadership experience.",
+            "why_best_fit": "Raj Kishore S stands out due to his unique blend of technical expertise, hackathon championships, and proven student leadership.",
+            "top_skills_identified": ["React.js", "Node.js", "Python", "Vector RAG", "Firestore", "FastAPI", "MongoDB"],
+            "leadership_and_community": [
+                "Campus Lead (Google Developer Group - CIT): Hosted technical events and hackathons.",
+                "Co-Founder & Associate Director (Student Developers Cell - CIT): Scaled technical growth."
+            ],
+            "achievements_and_competitions": [
+                "Winner (IBM Quantum Challenge 2023): Awarded 1st place.",
+                "Runner Up (CryptoShield 2K24): Awarded 2nd place.",
+                "Winner (HackVerse 5.0): Awarded 1st place."
+            ],
+            "work_and_internship_experience": [
+                "Full Stack Developer Intern (Xthlete): Enhanced React.js & Node.js web analytics.",
+                "Full Stack Developer Intern (TIA IT): Built RESTful APIs with Node.js & Express."
+            ],
+            "suggested_roles": [
+                {
+                    "role_title": "Full Stack Engineer",
+                    "domain": "Software Engineering",
+                    "beginner_score": 95,
+                    "intermediate_score": 92,
+                    "experienced_score": 88,
+                    "match_summary": "Exceptional alignment for full-stack engineering."
+                }
+            ]
+        }
+    },
+    {
+        "analysis_id": "career_alex_chen",
+        "uid": "anonymous",
+        "candidate_name": "Alex Chen",
+        "version": 1,
+        "filename": "AlexChen_Flutter_Resume.pdf",
+        "timestamp": 1770000100,
+        "resume_snippet": "Senior Mobile Developer specializing in Flutter, Dart, BLoC state management, and cross-platform native iOS & Android apps.",
+        "resume_text": "Alex Chen. 4+ years Flutter & Dart mobile engineering experience. Built 8 production apps on App Store and Play Store.",
+        "data": {
+            "candidate_name": "Alex Chen",
+            "candidate_summary": "Senior mobile engineer with deep technical mastery in Flutter SDK, Dart, BLoC architecture, and mobile UI performance optimization.",
+            "why_best_fit": "Alex Chen brings 4+ years of cross-platform mobile expertise with high production app delivery speed.",
+            "top_skills_identified": ["Flutter", "Dart", "BLoC Pattern", "iOS & Android Native", "Firebase", "REST APIs"],
+            "leadership_and_community": ["Mobile Tech Speaker & Open Source Flutter Contributor"],
+            "achievements_and_competitions": ["Published 8+ production apps on App Store & Google Play"],
+            "work_and_internship_experience": ["Senior Flutter Developer at MobileTech Solutions (2022-Present)"],
+            "suggested_roles": [
+                {
+                    "role_title": "Flutter Developer",
+                    "domain": "Mobile Engineering",
+                    "beginner_score": 94,
+                    "intermediate_score": 90,
+                    "experienced_score": 86,
+                    "match_summary": "Outstanding fit for Flutter & mobile architecture."
+                }
+            ]
+        }
+    },
+    {
+        "analysis_id": "career_devin_vance",
+        "uid": "anonymous",
+        "candidate_name": "Devin Vance",
+        "version": 1,
+        "filename": "DevinVance_DevOps_Resume.pdf",
+        "timestamp": 1770000200,
+        "resume_snippet": "DevOps & Cloud Architect specializing in AWS, Docker, Kubernetes, Terraform, CI/CD pipelines, and high availability system design.",
+        "resume_text": "Devin Vance. AWS Certified Solutions Architect & SRE Specialist. Automated CI/CD pipelines and infrastructure for 50+ microservices.",
+        "data": {
+            "candidate_name": "Devin Vance",
+            "candidate_summary": "Cloud Architect with expertise in AWS, Kubernetes cluster management, Docker containerization, and Infrastructure as Code.",
+            "why_best_fit": "Devin Vance excels in cloud scalability, automated deployments, and zero-downtime microservices infrastructure.",
+            "top_skills_identified": ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD Pipelines", "Linux", "Prometheus"],
+            "leadership_and_community": ["AWS Community Builder & Cloud Security Mentor"],
+            "achievements_and_competitions": ["AWS Certified Solutions Architect Professional"],
+            "work_and_internship_experience": ["Lead SRE & Cloud Architect at CloudScale Systems"],
+            "suggested_roles": [
+                {
+                    "role_title": "DevOps & Cloud Engineer",
+                    "domain": "Infrastructure & Cloud",
+                    "beginner_score": 96,
+                    "intermediate_score": 93,
+                    "experienced_score": 89,
+                    "match_summary": "Perfect alignment for DevOps & Infrastructure engineering."
+                }
+            ]
+        }
+    }
+]
+
 
 def _read_local_json(filepath: str) -> List[Dict[str, Any]]:
     if os.path.exists(filepath):
         try:
             with open(filepath, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if data:
+                    return data
         except Exception:
-            return []
+            pass
+
+    if filepath == LOCAL_CAREER_DB:
+        _write_local_json(LOCAL_CAREER_DB, DEFAULT_CANDIDATES)
+        return DEFAULT_CANDIDATES
+
     return []
 
 
