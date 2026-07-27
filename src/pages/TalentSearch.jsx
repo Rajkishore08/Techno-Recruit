@@ -24,10 +24,6 @@ export default function TalentSearch() {
   const [battleResult, setBattleResult] = useState(null);
   const [targetRoleInput, setTargetRoleInput] = useState('');
 
-  React.useEffect(() => {
-    handleSearch("Full stack developers and mobile engineers");
-  }, [currentIdToken]);
-
   const handleSearch = async (queryToUse) => {
     const q = queryToUse || searchQuery;
     if (!q.trim()) return;

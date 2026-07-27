@@ -5,39 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { useHistory } from '../context/HistoryContext';
 import { fetchCareerHistory, compareCandidates } from '../services/api';
 
-const FALLBACK_CANDIDATES = [
-  {
-    analysis_id: "career_rajkishore_default",
-    candidate_name: "Raj Kishore S",
-    filename: "RajKishore_FullStack_Resume.pdf",
-    data: {
-      candidate_name: "Raj Kishore S",
-      candidate_summary: "Full-stack AI developer with expertise in React, Node.js, Python, Vector RAG search, and GDG Campus Leadership.",
-      top_skills_identified: ["React.js", "Node.js", "Python", "Vector RAG", "FastAPI"]
-    }
-  },
-  {
-    analysis_id: "career_alex_chen",
-    candidate_name: "Alex Chen",
-    filename: "AlexChen_Flutter_Resume.pdf",
-    data: {
-      candidate_name: "Alex Chen",
-      candidate_summary: "Senior mobile engineer with 4+ years mastery in Flutter, Dart, BLoC state management, and mobile UI performance.",
-      top_skills_identified: ["Flutter", "Dart", "BLoC Pattern", "iOS & Android"]
-    }
-  },
-  {
-    analysis_id: "career_devin_vance",
-    candidate_name: "Devin Vance",
-    filename: "DevinVance_DevOps_Resume.pdf",
-    data: {
-      candidate_name: "Devin Vance",
-      candidate_summary: "Cloud Architect with expertise in AWS, Kubernetes cluster management, Docker containerization, and DevOps CI/CD.",
-      top_skills_identified: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"]
-    }
-  }
-];
-
 export default function CandidateBattlecard() {
   const { currentIdToken } = useAuth();
   const { careerHistory, refreshHistory } = useHistory();
@@ -54,11 +21,7 @@ export default function CandidateBattlecard() {
   }, [currentIdToken]);
 
   useEffect(() => {
-    if (careerHistory && careerHistory.length > 0) {
-      setCandidates(careerHistory);
-    } else {
-      setCandidates(FALLBACK_CANDIDATES);
-    }
+    setCandidates(careerHistory || []);
     setLoadingPool(false);
   }, [careerHistory]);
 
