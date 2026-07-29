@@ -79,63 +79,282 @@ export default function Header({ title, subtitle, onStartTour }) {
         </div>
       </div>
 
-      <nav className="app-tabs" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', padding: '10px 14px' }}>
-        <NavLink to="/" end className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-          <LayoutDashboard size={16} />
+      {/* Unified Executive Navigation Bar */}
+      <nav 
+        className="app-tabs-container" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px', 
+          padding: '8px 12px', 
+          background: 'rgba(15, 23, 42, 0.85)', 
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(59, 130, 246, 0.25)', 
+          borderRadius: '14px',
+          boxShadow: '0 8px 24px rgba(15, 23, 42, 0.5)',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {/* Dashboard Tab */}
+        <NavLink 
+          to="/" 
+          end 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(99, 102, 241, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(56, 189, 248, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <LayoutDashboard size={16} style={{ color: '#38bdf8' }} />
           <span>Dashboard</span>
         </NavLink>
 
-        <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+        {/* Divider */}
+        <div style={{ height: '22px', width: '1px', background: 'rgba(255, 255, 255, 0.12)', margin: '0 4px', flexShrink: 0 }} />
 
-        {/* Candidate Suite */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(56, 189, 248, 0.06)', border: '1px solid rgba(56, 189, 248, 0.2)', padding: '4px 8px', borderRadius: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '10px', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.6px', textTransform: 'uppercase', marginRight: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            👤 CANDIDATE
+        {/* Candidate Suite Divider Label */}
+        <span 
+          style={{ 
+            fontSize: '10px', 
+            fontWeight: 800, 
+            color: '#38bdf8', 
+            letterSpacing: '0.8px', 
+            textTransform: 'uppercase', 
+            background: 'rgba(56, 189, 248, 0.1)', 
+            border: '1px solid rgba(56, 189, 248, 0.25)', 
+            padding: '5px 10px', 
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            flexShrink: 0
+          }}
+        >
+          👤 CANDIDATE SUITE
+        </span>
+
+        <NavLink 
+          to="/navigator" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(99, 102, 241, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(56, 189, 248, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <Compass size={15} style={{ color: '#38bdf8' }} />
+          <span>Career Navigator</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#38bdf8,#0284c7)', color: '#fff', marginLeft: '2px' }}>
+            ROLE MATCH
           </span>
-          <NavLink to="/navigator" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <Compass size={15} />
-            <span>Career Navigator</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#38bdf8,#0284c7)' }}>ROLE MATCH</span>
-          </NavLink>
-          <NavLink to="/ats-optimizer" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <FileCheck2 size={15} />
-            <span>ATS Optimizer</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#6366f1)' }}>ATS CHECK</span>
-          </NavLink>
-          <NavLink to="/voice-interview" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <Mic size={15} />
-            <span>Voice Interviewer</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#10b981,#0284c7)' }}>LIVE SPEECH</span>
-          </NavLink>
-        </div>
+        </NavLink>
 
-        <div style={{ height: '24px', width: '1px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-
-        {/* Recruiter Suite */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(168, 85, 247, 0.06)', border: '1px solid rgba(168, 85, 247, 0.2)', padding: '4px 8px', borderRadius: '10px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '10px', fontWeight: 800, color: '#c084fc', letterSpacing: '0.6px', textTransform: 'uppercase', marginRight: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            👔 RECRUITER
+        <NavLink 
+          to="/ats-optimizer" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(99, 102, 241, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(16, 185, 129, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <FileCheck2 size={15} style={{ color: '#10b981' }} />
+          <span>ATS Optimizer</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#10b981,#6366f1)', color: '#fff', marginLeft: '2px' }}>
+            ATS CHECK
           </span>
-          <NavLink to="/battlecard" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <Swords size={15} />
-            <span>Candidate Battle-Card</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#f59e0b,#ef4444)' }}>MATRIX</span>
-          </NavLink>
-          <NavLink to="/talent-search" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <SearchCode size={15} />
-            <span>Talent Search</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#38bdf8,#6366f1)' }}>VECTOR RAG</span>
-          </NavLink>
-          <NavLink to="/architect" className={({ isActive }) => `tab-btn ${isActive ? 'active' : ''}`}>
-            <BrainCircuit size={15} />
-            <span>Interview Architect</span>
-            <span className="tab-badge" style={{ background: 'linear-gradient(135deg,#0284c7,#3b82f6)' }}>GUIDES</span>
-          </NavLink>
-        </div>
+        </NavLink>
+
+        <NavLink 
+          to="/voice-interview" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(56, 189, 248, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(56, 189, 248, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <Mic size={15} style={{ color: '#38bdf8' }} />
+          <span>Voice Interviewer</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#10b981,#0284c7)', color: '#fff', marginLeft: '2px' }}>
+            LIVE SPEECH
+          </span>
+        </NavLink>
+
+        {/* Divider */}
+        <div style={{ height: '22px', width: '1px', background: 'rgba(255, 255, 255, 0.12)', margin: '0 4px', flexShrink: 0 }} />
+
+        {/* Recruiter Suite Divider Label */}
+        <span 
+          style={{ 
+            fontSize: '10px', 
+            fontWeight: 800, 
+            color: '#c084fc', 
+            letterSpacing: '0.8px', 
+            textTransform: 'uppercase', 
+            background: 'rgba(168, 85, 247, 0.1)', 
+            border: '1px solid rgba(168, 85, 247, 0.25)', 
+            padding: '5px 10px', 
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            flexShrink: 0
+          }}
+        >
+          👔 RECRUITER SUITE
+        </span>
+
+        <NavLink 
+          to="/battlecard" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(239, 68, 68, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(245, 158, 11, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <Swords size={15} style={{ color: '#f59e0b' }} />
+          <span>Candidate Battle-Card</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#f59e0b,#ef4444)', color: '#fff', marginLeft: '2px' }}>
+            MATRIX
+          </span>
+        </NavLink>
+
+        <NavLink 
+          to="/talent-search" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(99, 102, 241, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(192, 132, 252, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <SearchCode size={15} style={{ color: '#c084fc' }} />
+          <span>Talent Search</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#38bdf8,#6366f1)', color: '#fff', marginLeft: '2px' }}>
+            VECTOR RAG
+          </span>
+        </NavLink>
+
+        <NavLink 
+          to="/architect" 
+          className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            fontSize: '13px',
+            fontWeight: isActive ? 700 : 600,
+            color: isActive ? '#ffffff' : 'var(--text-secondary)',
+            background: isActive ? 'linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(59, 130, 246, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+            border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: isActive ? '0 0 14px rgba(56, 189, 248, 0.3)' : 'none',
+            textDecoration: 'none',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0
+          })}
+        >
+          <BrainCircuit size={15} style={{ color: '#38bdf8' }} />
+          <span>Interview Architect</span>
+          <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#0284c7,#3b82f6)', color: '#fff', marginLeft: '2px' }}>
+            GUIDES
+          </span>
+        </NavLink>
 
         {onStartTour && (
-          <button type="button" className="tab-btn btn-tour-trigger" onClick={onStartTour} style={{ marginLeft: 'auto', background: 'rgba(99,102,241,0.15)', color: 'var(--color-primary-light)' }}>
-            <HelpCircle size={16} />
+          <button 
+            type="button" 
+            className="btn-tour-trigger" 
+            onClick={onStartTour} 
+            style={{ 
+              marginLeft: 'auto', 
+              background: 'rgba(99, 102, 241, 0.15)', 
+              color: 'var(--color-primary-light)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: '10px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              flexShrink: 0
+            }}
+          >
+            <HelpCircle size={15} />
             <span>Platform Guide</span>
           </button>
         )}
