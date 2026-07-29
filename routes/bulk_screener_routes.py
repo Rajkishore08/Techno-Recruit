@@ -44,6 +44,7 @@ def get_optional_current_user(authorization: Optional[str] = Header(None)):
 @router.post("/api/recruiter/bulk-screen")
 async def bulk_screen_candidates_endpoint(
     files: List[UploadFile] = File(...),
+    jd_file: Optional[UploadFile] = File(None),
     job_title: Optional[str] = Form(""),
     job_description: Optional[str] = Form(""),
     criteria_skills: Optional[str] = Form(""),
@@ -52,11 +53,23 @@ async def bulk_screen_candidates_endpoint(
     """
     Recruiter Bulk Candidate Screener Endpoint:
     Accepts multiple uploaded PDF/DOCX resume files OR a single .zip file containing candidate resumes.
-    Extracts candidate text, evaluates against job description & custom criteria, and produces
-    a ranked shortlist with explicit "Why He/She Fits" rationales.
+    Optionally accepts a Job Description PDF/DOCX file.
+    Extracts candidate & JD text, evaluates against criteria, and produces a ranked shortlist.
     """
     if not files:
         raise HTTPException(status_code=400, detail="Please upload at least one candidate resume file or a ZIP archive.")
+
+    # Process JD file if uploaded
+    combined_jd_text = (job_description or "").strip()
+    if jd_file and jd_file.filename:
+        try:
+            jd_bytes = await jd_file.read()
+            if jd_bytes:
+                extracted_jd = extract_resume_text(jd_bytes, jd_file.filename)
+                if extracted_jd:
+                    combined_jd_text = f"{combined_jd_text}\n\n[EXTRACTED FROM UPLOADED JD FILE '{jd_file.filename}']:\n{extracted_jd}".strip()
+        except Exception as e:
+            print(f"Notice extracting JD file '{jd_file.filename}': {e}")
 
     parsed_candidates = []
 
@@ -103,7 +116,7 @@ async def bulk_screen_candidates_endpoint(
         raw_result, usage = run_bulk_screener_agent(
             candidates_list=parsed_candidates,
             job_title=job_title or "",
-            job_description=job_description or "",
+            job_description=combined_jd_text,
             criteria_skills=criteria_skills or ""
         )
         result_data = json.loads(raw_result) if isinstance(raw_result, str) else raw_result

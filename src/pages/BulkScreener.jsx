@@ -9,6 +9,7 @@ export default function BulkScreener() {
   const { currentIdToken } = useAuth();
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [zipFile, setZipFile] = useState(null);
+  const [jdFile, setJdFile] = useState(null);
   const [jobTitle, setJobTitle] = useState('');
   const [jobDesc, setJobDesc] = useState('');
   const [criteriaSkills, setCriteriaSkills] = useState('');
@@ -72,6 +73,9 @@ export default function BulkScreener() {
       formData.append("job_title", jobTitle || "Target Role");
       formData.append("job_description", jobDesc);
       formData.append("criteria_skills", criteriaSkills);
+      if (jdFile) {
+        formData.append("jd_file", jdFile);
+      }
 
       const res = await bulkScreenCandidates(formData, currentIdToken);
       setScreeningResults(res.data);
@@ -203,13 +207,42 @@ export default function BulkScreener() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                Job Description (Optional)
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  Job Description (Text or PDF / DOCX Upload)
+                </label>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(56, 189, 248, 0.1)', padding: '3px 9px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+                  <UploadCloud size={13} /> Upload JD PDF / DOCX
+                  <input 
+                    type="file" 
+                    accept=".pdf,.docx,.txt"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setJdFile(e.target.files[0]);
+                        showToast(`Selected JD Document: ${e.target.files[0].name}`);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              {jdFile && (
+                <div style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FileText size={15} />
+                    <span>Loaded JD File: {jdFile.name}</span>
+                  </div>
+                  <button type="button" onClick={() => setJdFile(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
               <textarea 
                 className="input-field"
                 rows={2}
-                placeholder="Paste job description text or key responsibilities..."
+                placeholder="Paste job description text or upload a JD PDF/DOCX document above..."
                 value={jobDesc}
                 onChange={(e) => setJobDesc(e.target.value)}
                 style={{ width: '100%', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', color: '#fff', fontSize: '13px', resize: 'vertical' }}

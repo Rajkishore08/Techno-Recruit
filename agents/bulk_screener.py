@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Dict, Any, List
-from groq_client import query_groq_helper
+from groq_client import query_groq, query_groq_helper
 
 
 def clean_json_output(raw_str: str) -> dict:
@@ -118,7 +118,7 @@ Return ONLY a valid, raw JSON object (with NO markdown backticks or commentary) 
         {"role": "user", "content": prompt}
     ]
 
-    response_text, usage = query_groq_helper(messages, json_mode=True)
+    response_text, usage = query_groq(messages, json_mode=True)
     parsed_json = clean_json_output(response_text)
 
     # Fallback structure if JSON parse failed

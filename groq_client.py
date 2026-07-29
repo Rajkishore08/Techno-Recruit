@@ -73,6 +73,48 @@ def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False) -> tup
         raise RuntimeError(f"Failed to query Gemini API: {str(e)}")
 
 
+def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = False, model_name: str = None) -> tuple:
+    """
+    Queries NVIDIA NIM API (https://integrate.api.nvidia.com/v1/chat/completions)
+    using high-performance GPUs and Meta LLaMA 3.1 70B Instruct / 8B Instruct models.
+    """
+    api_key = os.environ.get("NVIDIA_API_KEY")
+    if not api_key:
+        raise ValueError("NVIDIA_API_KEY is not set in environment.")
+
+    url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "User-Agent": "TechnoRecruit-AI/2.0"
+    }
+
+    target_model = model_name or os.environ.get("NVIDIA_PRIMARY_MODEL", "meta/llama-3.1-70b-instruct")
+    payload = {
+        "model": target_model,
+        "messages": messages,
+        "temperature": 0.1
+    }
+
+    if json_mode:
+        payload["response_format"] = {"type": "json_object"}
+
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST"
+    )
+
+    with urllib.request.urlopen(req, timeout=22) as response:
+        res_body = response.read().decode("utf-8")
+        res_json = json.loads(res_body)
+        content = res_json["choices"][0]["message"].get("content", "")
+        usage = res_json.get("usage", {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+        print(f"🚀 Generated response using Primary NVIDIA NIM AI ({target_model})!")
+        return content, usage
+
+
 def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None) -> tuple:
     """Queries Groq API with specified model or default."""
     api_key = os.environ.get("GROQ_API_KEY")
@@ -117,25 +159,32 @@ def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, An
 
 def query_groq(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None) -> tuple:
     """
-    Multi-Tiered AI Chain:
-    1. Attempts Primary AI (Groq target model e.g. llama-3.3-70b-versatile for deep detailed analysis).
-    2. Fallback to Groq Fast Model (llama-3.1-8b-instant).
-    3. Failover to Secondary AI (Google Gemini 2.0 Flash API).
+    Multi-Tiered Enterprise AI Chain:
+    1. Primary Tier: NVIDIA NIM AI (meta/llama-3.1-70b-instruct).
+    2. NVIDIA Fast Tier: NVIDIA NIM AI (meta/llama-3.1-8b-instruct).
+    3. Groq Tier: Groq LLaMA 3.3 70B.
+    4. Gemini Tier: Google Gemini 2.0 Flash API.
     """
+    # 1. Attempt Primary NVIDIA NIM AI (meta/llama-3.1-70b-instruct)
     try:
-        return query_groq_internal(messages, tools=tools, json_mode=json_mode, model_name=model_name)
-    except Exception as groq_err:
-        print(f"⚠️ Groq ({model_name or 'primary'}) notice: {groq_err}. Trying Groq Fast Model fallback (llama-3.1-8b-instant)...")
+        return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-70b-instruct")
+    except Exception as nv_err:
+        print(f"⚠️ Primary NVIDIA NIM AI notice: {nv_err}. Trying NVIDIA Fast model (meta/llama-3.1-8b-instruct)...")
+        # 2. Attempt NVIDIA Fast (meta/llama-3.1-8b-instruct)
         try:
-            if model_name != "llama-3.1-8b-instant":
-                return query_groq_internal(messages, tools=tools, json_mode=json_mode, model_name="llama-3.1-8b-instant")
-            raise groq_err
-        except Exception as fast_err:
-            print(f"⚠️ Groq Fast Model notice: {fast_err}. Automatically failing over to Google Gemini 2.0 Flash API...")
+            return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-8b-instruct")
+        except Exception as nv_fast_err:
+            print(f"⚠️ NVIDIA Fast model notice: {nv_fast_err}. Falling back to Groq LLaMA 3.3 70B...")
+            # 3. Attempt Groq API
             try:
-                return query_gemini(messages, json_mode=json_mode)
-            except Exception as gemini_err:
-                raise RuntimeError(f"All AI Tiers exhausted. Primary ({groq_err}), Fast Fallback ({fast_err}), Gemini ({gemini_err}).")
+                return query_groq_internal(messages, tools=tools, json_mode=json_mode, model_name=model_name)
+            except Exception as groq_err:
+                print(f"⚠️ Groq notice: {groq_err}. Failing over to Google Gemini 2.0 Flash API...")
+                # 4. Attempt Google Gemini API
+                try:
+                    return query_gemini(messages, json_mode=json_mode)
+                except Exception as gemini_err:
+                    raise RuntimeError(f"All AI Tiers exhausted. NVIDIA 70B ({nv_err}), NVIDIA 8B ({nv_fast_err}), Groq ({groq_err}), Gemini ({gemini_err}).")
 
 
 def query_groq_helper(prompt: str, json_mode: bool = False, model_name: str = None) -> tuple:
