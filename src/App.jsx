@@ -11,6 +11,7 @@ import TalentSearch from './pages/TalentSearch';
 import InterviewArchitect from './pages/InterviewArchitect';
 import CandidateBattlecard from './pages/CandidateBattlecard';
 import VoiceInterviewer from './pages/VoiceInterviewer';
+import BulkScreener from './pages/BulkScreener';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 
