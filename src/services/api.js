@@ -104,3 +104,11 @@ export async function fetchGuideHistory(idToken = null) {
   if (!resp.ok) return [];
   return parseJsonResponse(resp, "Failed to fetch guide history.").catch(() => []);
 }
+
+export async function bulkScreenCandidates(formData, idToken = null) {
+  const resp = await fetchWithAuth("/api/recruiter/bulk-screen", {
+    method: "POST",
+    body: formData
+  }, idToken);
+  return parseJsonResponse(resp, "Bulk candidate screening and evaluation failed.");
+}

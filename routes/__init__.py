@@ -8,11 +8,13 @@ from .search_routes import router as search_router
 from .ats_routes import router as ats_router
 from .architect_routes import router as architect_router
 from .voice_routes import router as voice_router
+from .bulk_screener_routes import router as bulk_screener_router
 
 __all__ = [
     "navigator_router",
     "search_router",
     "ats_router",
     "architect_router",
-    "voice_router"
+    "voice_router",
+    "bulk_screener_router"
 ]

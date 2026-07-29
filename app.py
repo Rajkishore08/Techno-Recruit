@@ -70,7 +70,8 @@ from routes import (
     search_router,
     ats_router,
     architect_router,
-    voice_router
+    voice_router,
+    bulk_screener_router
 )
 
 app.include_router(navigator_router)
@@ -78,6 +79,7 @@ app.include_router(search_router)
 app.include_router(ats_router)
 app.include_router(architect_router)
 app.include_router(voice_router)
+app.include_router(bulk_screener_router)
 
 
 @app.get("/favicon.ico")

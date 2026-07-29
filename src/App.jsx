@@ -81,6 +81,7 @@ export default function App() {
           <Route path="/battlecard" element={<ProtectedLayout><CandidateBattlecard /></ProtectedLayout>} />
           <Route path="/voice-interview" element={<ProtectedLayout><VoiceInterviewer /></ProtectedLayout>} />
           <Route path="/architect" element={<ProtectedLayout><InterviewArchitect /></ProtectedLayout>} />
+          <Route path="/bulk-screener" element={<ProtectedLayout><BulkScreener /></ProtectedLayout>} />
           <Route path="*" element={<ProtectedLayout><NotFound /></ProtectedLayout>} />
         </Routes>
       </HistoryProvider>

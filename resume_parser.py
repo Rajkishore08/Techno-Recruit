@@ -1,5 +1,6 @@
 import io
 import os
+import zipfile
 import pypdf
 import docx
 
@@ -86,3 +87,43 @@ def extract_resume_text(file_bytes: bytes, filename: str) -> str:
         extracted = " ".join(words[:3000])
 
     return extracted
+
+
+def extract_resumes_from_zip(zip_bytes: bytes) -> list:
+    """
+    Unpacks a ZIP archive in memory and extracts candidate resume texts from all contained PDF/DOCX/TXT files.
+    Returns list of dicts: [{"filename": str, "text": str}]
+    """
+    if not zip_bytes:
+        raise ValueError("ZIP archive file is empty.")
+
+    extracted_files = []
+    try:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+            for info in zf.infolist():
+                # Skip directories and hidden / OS metadata files
+                if info.is_dir():
+                    continue
+                filename = os.path.basename(info.filename)
+                if not filename or filename.startswith(".") or filename.startswith("__MACOSX"):
+                    continue
+
+                ext = os.path.splitext(filename)[1].lower()
+                if ext in [".pdf", ".docx", ".doc", ".txt", ".md"]:
+                    try:
+                        file_content = zf.read(info)
+                        resume_text = extract_resume_text(file_content, filename)
+                        if resume_text:
+                            extracted_files.append({
+                                "filename": filename,
+                                "text": resume_text
+                            })
+                    except Exception as e:
+                        print(f"Skipping zip entry '{filename}' due to parse error: {e}")
+    except Exception as e:
+        raise ValueError(f"Invalid or corrupted ZIP archive: {str(e)}")
+
+    if not extracted_files:
+        raise ValueError("No valid PDF, DOCX, or TXT resume files were found inside the uploaded ZIP archive.")
+
+    return extracted_files

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Compass, FileCheck2, SearchCode, BrainCircuit, LogIn, LogOut, HelpCircle, Swords, Mic, User, Briefcase, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Compass, FileCheck2, SearchCode, BrainCircuit, LogIn, LogOut, HelpCircle, Swords, Mic, User, Briefcase, Sparkles, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Header({ title, subtitle, onStartTour }) {
@@ -13,7 +13,7 @@ export default function Header({ title, subtitle, onStartTour }) {
     if (saved && ['candidate', 'recruiter', 'all'].includes(saved)) {
       return saved;
     }
-    if (['/battlecard', '/talent-search', '/architect'].includes(location.pathname)) {
+    if (['/battlecard', '/talent-search', '/architect', '/bulk-screener'].includes(location.pathname)) {
       return 'recruiter';
     }
     return 'all';
@@ -25,7 +25,7 @@ export default function Header({ title, subtitle, onStartTour }) {
 
   // Auto-switch view if navigating directly to a route in a different suite
   useEffect(() => {
-    if (['/battlecard', '/talent-search', '/architect'].includes(location.pathname) && suiteMode === 'candidate') {
+    if (['/battlecard', '/talent-search', '/architect', '/bulk-screener'].includes(location.pathname) && suiteMode === 'candidate') {
       setSuiteMode('recruiter');
     } else if (['/navigator', '/ats-optimizer', '/voice-interview'].includes(location.pathname) && suiteMode === 'recruiter') {
       setSuiteMode('candidate');
@@ -502,6 +502,33 @@ export default function Header({ title, subtitle, onStartTour }) {
               <span>Interview Architect</span>
               <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#0284c7,#3b82f6)', color: '#fff', marginLeft: '2px' }}>
                 GUIDES
+              </span>
+            </NavLink>
+
+            <NavLink 
+              to="/bulk-screener" 
+              className={({ isActive }) => `nav-tab-item ${isActive ? 'active' : ''}`}
+              style={({ isActive }) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '10px',
+                fontSize: '13px',
+                fontWeight: isActive ? 700 : 600,
+                color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                background: isActive ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(56, 189, 248, 0.22))' : 'rgba(255, 255, 255, 0.03)',
+                border: isActive ? '1px solid #c084fc' : '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: isActive ? '0 0 14px rgba(192, 132, 252, 0.3)' : 'none',
+                textDecoration: 'none',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                flexShrink: 0
+              })}
+            >
+              <Users size={15} style={{ color: '#c084fc' }} />
+              <span>Bulk Screener</span>
+              <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: 'linear-gradient(135deg,#7e22ce,#0284c7)', color: '#fff', marginLeft: '2px' }}>
+                ZIP & BATCH
               </span>
             </NavLink>
           </>
