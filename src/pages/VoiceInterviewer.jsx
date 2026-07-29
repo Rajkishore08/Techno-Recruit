@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, Play, Square, Loader2, Sparkles, Trophy, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw, MessageSquare, ArrowRight, User } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Play, Square, Loader2, Sparkles, Trophy, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw, MessageSquare, ArrowRight, User, Settings, Radio } from 'lucide-react';
 import Header from '../components/common/Header';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,12 +11,27 @@ const PREDEFINED_ROLES = [
   "Product Manager & Strategy Lead"
 ];
 
+const VOICE_PERSONAS = [
+  { id: 'female', label: '👩‍💼 Professional Female', desc: 'Clear, articulate female AI interviewer' },
+  { id: 'male', label: '👨‍💼 Executive Male', desc: 'Confident, authoritative male AI interviewer' },
+  { id: 'british', label: '🇬🇧 British Accent', desc: 'Formal UK English AI interviewer' },
+  { id: 'system', label: '🤖 Browser Default', desc: 'Standard system text-to-speech voice' }
+];
+
 export default function VoiceInterviewer() {
   const { currentIdToken } = useAuth();
   const [jobTitle, setJobTitle] = useState('Senior Full Stack Engineer');
   const [experienceLevel, setExperienceLevel] = useState('Senior');
   const [activeSession, setActiveSession] = useState(false);
   
+  // Voice Persona & Speech Settings
+  const [selectedPersona, setSelectedPersona] = useState('female');
+  const [systemVoices, setSystemVoices] = useState([]);
+  const [selectedVoiceUri, setSelectedVoiceUri] = useState('');
+  const [voiceSpeed, setVoiceSpeed] = useState(1.0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+
   // Voice State: 'idle' | 'ai_speaking' | 'listening' | 'evaluating' | 'completed'
   const [voiceState, setVoiceState] = useState('idle');
   const [transcriptHistory, setTranscriptHistory] = useState([]);
@@ -26,8 +41,28 @@ export default function VoiceInterviewer() {
   const [error, setError] = useState(null);
 
   const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
 
-  // Initialize Speech Recognition on Mount if available
+  // Load available Web Speech API voices
+  useEffect(() => {
+    const updateVoices = () => {
+      if ('speechSynthesis' in window) {
+        const voices = window.speechSynthesis.getVoices();
+        setSystemVoices(voices);
+        if (voices.length > 0 && !selectedVoiceUri) {
+          const defaultEn = voices.find(v => v.lang.startsWith('en')) || voices[0];
+          setSelectedVoiceUri(defaultEn.voiceURI);
+        }
+      }
+    };
+
+    updateVoices();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
+    }
+  }, []);
+
+  // Initialize Speech Recognition on Mount
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -37,43 +72,124 @@ export default function VoiceInterviewer() {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event) => {
-        let interim = '';
-        let final = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            final += event.results[i][0].transcript;
+            finalTranscript += event.results[i][0].transcript + ' ';
           } else {
-            interim += event.results[i][0].transcript;
+            interimTranscript += event.results[i][0].transcript;
           }
         }
-        const combined = (final || interim).trim();
-        if (combined) {
-          setCurrentSpeechText(combined);
+
+        const combinedText = (finalTranscript + interimTranscript).trim();
+        if (combinedText) {
+          setCurrentSpeechText(combinedText);
         }
       };
 
       recognition.onerror = (e) => {
         console.warn("Speech recognition notice:", e.error);
+        if (e.error === 'not-allowed') {
+          setError("Microphone permission denied. Please allow microphone access in browser settings or type your responses below.");
+        }
+      };
+
+      recognition.onend = () => {
+        // Auto-restart listening if session is still listening
+        if (isListeningRef.current) {
+          try {
+            recognition.start();
+          } catch (e) {
+            console.warn("Recognition auto-restart notice");
+          }
+        }
       };
 
       recognitionRef.current = recognition;
+    } else {
+      console.warn("Web Speech Recognition API is not supported in this browser.");
     }
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+    };
   }, []);
 
+  // Find best matching SpeechSynthesis Voice based on selected persona
+  const getSelectedVoice = () => {
+    if (!systemVoices.length) return null;
+
+    if (selectedVoiceUri) {
+      const exact = systemVoices.find(v => v.voiceURI === selectedVoiceUri);
+      if (exact) return exact;
+    }
+
+    if (selectedPersona === 'female') {
+      const female = systemVoices.find(v => 
+        v.lang.startsWith('en') && (
+          v.name.toLowerCase().includes('female') || 
+          v.name.toLowerCase().includes('zira') || 
+          v.name.toLowerCase().includes('samantha') || 
+          v.name.toLowerCase().includes('victoria') ||
+          v.name.toLowerCase().includes('karen') ||
+          v.name.toLowerCase().includes('fiona')
+        )
+      );
+      if (female) return female;
+    } else if (selectedPersona === 'male') {
+      const male = systemVoices.find(v => 
+        v.lang.startsWith('en') && (
+          v.name.toLowerCase().includes('male') || 
+          v.name.toLowerCase().includes('david') || 
+          v.name.toLowerCase().includes('alex') || 
+          v.name.toLowerCase().includes('daniel') ||
+          v.name.toLowerCase().includes('george')
+        )
+      );
+      if (male) return male;
+    } else if (selectedPersona === 'british') {
+      const british = systemVoices.find(v => 
+        v.lang === 'en-GB' || v.name.toLowerCase().includes('uk') || v.name.toLowerCase().includes('british')
+      );
+      if (british) return british;
+    }
+
+    return systemVoices.find(v => v.lang.startsWith('en')) || systemVoices[0];
+  };
+
   const speakText = (text, onEndCallback) => {
-    if (!('speechSynthesis' in window)) {
+    if (!('speechSynthesis' in window) || isMuted) {
+      setVoiceState('listening');
+      startListening();
       if (onEndCallback) onEndCallback();
       return;
     }
+
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = voiceSpeed;
+    utterance.pitch = selectedPersona === 'female' ? 1.1 : selectedPersona === 'male' ? 0.9 : 1.0;
     
+    const voiceObj = getSelectedVoice();
+    if (voiceObj) {
+      utterance.voice = voiceObj;
+    }
+
     utterance.onend = () => {
+      setVoiceState('listening');
+      startListening();
       if (onEndCallback) onEndCallback();
     };
+
     utterance.onerror = () => {
+      setVoiceState('listening');
+      startListening();
       if (onEndCallback) onEndCallback();
     };
 
@@ -81,19 +197,46 @@ export default function VoiceInterviewer() {
     window.speechSynthesis.speak(utterance);
   };
 
+  const handlePreviewVoice = () => {
+    if (!('speechSynthesis' in window)) {
+      alert("Text-to-speech is not supported in your browser.");
+      return;
+    }
+
+    setIsPreviewing(true);
+    window.speechSynthesis.cancel();
+
+    const sampleText = `Hello! I am your AI Technical Interviewer for the ${jobTitle} role.`;
+    const utterance = new SpeechSynthesisUtterance(sampleText);
+    utterance.rate = voiceSpeed;
+    utterance.pitch = selectedPersona === 'female' ? 1.1 : selectedPersona === 'male' ? 0.9 : 1.0;
+
+    const voiceObj = getSelectedVoice();
+    if (voiceObj) {
+      utterance.voice = voiceObj;
+    }
+
+    utterance.onend = () => setIsPreviewing(false);
+    utterance.onerror = () => setIsPreviewing(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
   const startListening = () => {
     setCurrentSpeechText('');
     setVoiceState('listening');
+    isListeningRef.current = true;
     if (recognitionRef.current) {
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.warn("Recognition already started");
+        console.warn("Recognition already active");
       }
     }
   };
 
   const stopListening = () => {
+    isListeningRef.current = false;
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -114,21 +257,19 @@ export default function VoiceInterviewer() {
     setFinalScorecard(null);
     setCurrentSpeechText('');
 
-    const initialQ = `Hello! Welcome to your real-time AI technical interview for the ${jobTitle} position at ${experienceLevel} level. To begin, please introduce yourself and walk me through a major project you led.`;
+    const initialQ = `Hello! Welcome to your AI technical interview for the ${jobTitle} position at ${experienceLevel} level. To begin, please introduce yourself and walk me through a major project you built.`;
 
     const newHistory = [{ role: 'interviewer', content: initialQ }];
     setTranscriptHistory(newHistory);
 
-    speakText(initialQ, () => {
-      startListening();
-    });
+    speakText(initialQ);
   };
 
   const handleSubmitSpokenTurn = async () => {
     stopListening();
     const spoken = currentSpeechText.trim();
     if (!spoken) {
-      alert("Please speak or type your answer before submitting.");
+      alert("Please speak into your microphone or type your answer before submitting.");
       return;
     }
 
@@ -160,18 +301,17 @@ export default function VoiceInterviewer() {
       if (data.is_final || updatedHistory.length >= 8) {
         await handleFinishInterview(updatedHistory);
       } else {
-        const nextQ = data.next_question || "Thank you. Could you elaborate on how you handled error recovery and performance optimization in that scenario?";
+        const nextQ = data.next_question || "Thank you. Could you elaborate on how you handled performance optimization and error handling in that project?";
         const nextHistory = [...updatedHistory, { role: 'interviewer', content: nextQ }];
         setTranscriptHistory(nextHistory);
 
-        speakText(nextQ, () => {
-          startListening();
-        });
+        speakText(nextQ);
       }
     } catch (e) {
       console.error(e);
       setError(`Evaluation error: ${e.message}`);
       setVoiceState('listening');
+      startListening();
     }
   };
 
@@ -208,38 +348,127 @@ export default function VoiceInterviewer() {
   return (
     <div className="content-container">
       <Header 
-        title="AI Real-Time Voice Interviewer" 
-        subtitle="Conversational Voice Simulation, Real-Time Speech Recognition & Spoken Depth Assessor." 
+        title="AI Real-Time Voice Interviewer & Voice Persona Selector" 
+        subtitle="Conversational Voice Simulation, Multi-Persona Speech Synthesis, Real-Time Speech Recognition & Technical Shortlisting Engine." 
       />
 
       <div className="content-body">
-        {/* Setup Card */}
+        {/* Setup & Persona Card */}
         {!activeSession && (
-          <div className="card" style={{ padding: '28px', maxWidth: '720px', margin: '0 auto 28px auto', background: 'linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))', border: '1px solid var(--color-accent)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase', marginBottom: '16px' }}>
-              <Mic size={18} /> Real-Time Voice Interview Simulation Room
+          <div className="card" style={{ padding: '28px', maxWidth: '760px', margin: '0 auto 28px auto', background: 'linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95))', border: '1px solid var(--color-accent)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>
+                <Mic size={18} /> Real-Time AI Voice Interview Simulation
+              </div>
+
+              <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '9999px', background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid #10b981' }}>
+                🎙️ Speech-to-Text Active
+              </span>
             </div>
 
             <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 8px 0' }}>
               Conduct Spoken AI Technical Interview
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: 1.6, marginBottom: '20px' }}>
-              The AI Interviewer speaks questions out loud using speech synthesis, listens to your spoken responses via your microphone, scores your technical depth in real-time, and asks dynamic follow-up questions.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: 1.6, marginBottom: '24px' }}>
+              Select your preferred AI interviewer voice persona below. The AI speaks questions aloud, listens to your microphone response in real time, and scores technical accuracy.
             </p>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Target Job Role:</label>
-              <input 
-                type="text" 
-                value={jobTitle} 
-                onChange={e => setJobTitle(e.target.value)} 
-                placeholder="e.g. Senior Full Stack Engineer" 
-                style={{ width: '100%', height: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff', fontSize: '13.5px' }} 
-              />
+            {/* AI Voice Persona Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 700, color: '#fff', marginBottom: '10px' }}>
+                <Radio size={16} style={{ color: '#38bdf8' }} /> Select AI Interviewer Voice Persona:
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '14px' }}>
+                {VOICE_PERSONAS.map((persona) => {
+                  const isSelected = selectedPersona === persona.id;
+                  return (
+                    <div 
+                      key={persona.id}
+                      onClick={() => {
+                        setSelectedPersona(persona.id);
+                        setSelectedVoiceUri('');
+                      }}
+                      style={{
+                        padding: '14px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        background: isSelected ? 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(99,102,241,0.2))' : 'rgba(15,23,42,0.8)',
+                        border: isSelected ? '1.5px solid #38bdf8' : '1px solid var(--border-color)',
+                        boxShadow: isSelected ? '0 0 14px rgba(56,189,248,0.25)' : 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
+                        {persona.label}
+                      </div>
+                      <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                        {persona.desc}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Advanced System Voice Dropdown */}
+              {systemVoices.length > 0 && (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <select 
+                    value={selectedVoiceUri} 
+                    onChange={e => setSelectedVoiceUri(e.target.value)} 
+                    style={{ flex: 1, height: '38px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 12px', color: '#fff', fontSize: '12.5px' }}
+                  >
+                    <option value="">-- Installed System Voices ({systemVoices.length} available) --</option>
+                    {systemVoices.map((v, idx) => (
+                      <option key={idx} value={v.voiceURI}>
+                        {v.name} ({v.lang})
+                      </option>
+                    ))}
+                  </select>
+
+                  <button 
+                    type="button" 
+                    onClick={handlePreviewVoice} 
+                    disabled={isPreviewing}
+                    className="btn-secondary" 
+                    style={{ height: '38px', padding: '0 14px', fontSize: '12px', fontWeight: 700, gap: '6px' }}
+                  >
+                    {isPreviewing ? <Loader2 className="spin" size={14} /> : <Volume2 size={14} />}
+                    <span>Preview Voice</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Target Role & Seniority */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Target Job Role:</label>
+                <input 
+                  type="text" 
+                  value={jobTitle} 
+                  onChange={e => setJobTitle(e.target.value)} 
+                  placeholder="e.g. Senior Full Stack Engineer" 
+                  style={{ width: '100%', height: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff', fontSize: '13.5px' }} 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Seniority Level:</label>
+                <select 
+                  value={experienceLevel} 
+                  onChange={e => setExperienceLevel(e.target.value)} 
+                  style={{ width: '100%', height: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff', fontSize: '13.5px' }}
+                >
+                  <option value="Junior">Junior / Entry Level</option>
+                  <option value="Mid-Level">Mid-Level</option>
+                  <option value="Senior">Senior / Staff Lead</option>
+                </select>
+              </div>
             </div>
 
             {/* Role Pills */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
               {PREDEFINED_ROLES.map((r, idx) => (
                 <button key={idx} onClick={() => setJobTitle(r)} style={{ background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.25)', color: 'var(--color-accent)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>
                   {r}
@@ -247,20 +476,7 @@ export default function VoiceInterviewer() {
               ))}
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Seniority Level:</label>
-              <select 
-                value={experienceLevel} 
-                onChange={e => setExperienceLevel(e.target.value)} 
-                style={{ width: '100%', height: '42px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '0 14px', color: '#fff', fontSize: '13.5px' }}
-              >
-                <option value="Junior">Junior / Entry Level</option>
-                <option value="Mid-Level">Mid-Level</option>
-                <option value="Senior">Senior / Staff Lead</option>
-              </select>
-            </div>
-
-            {error && <div style={{ marginBottom: '16px', color: 'var(--color-error)', fontSize: '13px' }}>{error}</div>}
+            {error && <div style={{ marginBottom: '16px', color: '#ef4444', fontSize: '13px', background: 'rgba(239,68,68,0.1)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)' }}>{error}</div>}
 
             <button className="btn-primary" onClick={handleStartInterview} style={{ width: '100%', minHeight: '48px', justifyContent: 'center', fontSize: '15px', fontWeight: 800 }}>
               <Mic size={20} />
@@ -271,7 +487,7 @@ export default function VoiceInterviewer() {
 
         {/* Active Voice Interview Room */}
         {activeSession && !finalScorecard && (
-          <div className="card" style={{ padding: '28px', maxWidth: '800px', margin: '0 auto', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--color-primary-light)' }}>
+          <div className="card" style={{ padding: '28px', maxWidth: '820px', margin: '0 auto', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--color-primary-light)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <span className="badge-active" style={{ background: 'linear-gradient(135deg, #0284c7, #3b82f6)', marginBottom: '4px' }}>
@@ -282,9 +498,19 @@ export default function VoiceInterviewer() {
                 </h3>
               </div>
 
-              <button className="btn-secondary" onClick={() => handleFinishInterview()} style={{ fontSize: '12px', padding: '6px 14px', borderColor: '#ef4444', color: '#ef4444' }}>
-                <Square size={14} /> End & Generate Scorecard
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  onClick={() => setIsMuted(!isMuted)} 
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border-color)', color: isMuted ? '#ef4444' : '#fff', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  <span>{isMuted ? "AI Audio Muted" : "Mute AI"}</span>
+                </button>
+
+                <button className="btn-secondary" onClick={() => handleFinishInterview()} style={{ fontSize: '12px', padding: '6px 14px', borderColor: '#ef4444', color: '#ef4444' }}>
+                  <Square size={14} /> End & Generate Scorecard
+                </button>
+              </div>
             </div>
 
             {/* AI Avatar & Audio Visualizer Status */}
@@ -304,24 +530,40 @@ export default function VoiceInterviewer() {
 
               <div style={{ fontSize: '14px', fontWeight: 800, color: voiceState === 'ai_speaking' ? 'var(--color-accent)' : voiceState === 'listening' ? 'var(--color-success)' : 'var(--text-secondary)' }}>
                 {voiceState === 'ai_speaking' && "🤖 AI Interviewer Speaking..."}
-                {voiceState === 'listening' && "🎙️ Candidate Listening... Speak your answer now!"}
-                {voiceState === 'evaluating' && "⚡ Evaluating Spoken Technical Depth..."}
+                {voiceState === 'listening' && "🎙️ Candidate Microphone Active... Speak clearly into your mic!"}
+                {voiceState === 'evaluating' && "⚡ Evaluating Spoken Technical Depth & Answer Accuracy..."}
               </div>
             </div>
 
-            {/* Live Candidate Speech Input Box */}
+            {/* Live Candidate Speech Input Box & Text Editor */}
             {voiceState === 'listening' && (
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>Live Transcribed Answer (Edit if needed):</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    Live Microphone Speech Input (Auto-Transcribed / Editable):
+                  </label>
+                  <button 
+                    type="button" 
+                    onClick={() => setCurrentSpeechText('')} 
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer' }}
+                  >
+                    Clear Text
+                  </button>
+                </div>
+
                 <textarea 
                   value={currentSpeechText}
                   onChange={e => setCurrentSpeechText(e.target.value)}
-                  placeholder="Listening to microphone... Speak clearly into your mic or type response..."
-                  style={{ width: '100%', height: '90px', background: 'rgba(15,23,42,0.8)', border: '1px solid var(--color-success)', borderRadius: '8px', padding: '12px', color: '#fff', fontSize: '13.5px', fontFamily: 'inherit' }}
+                  placeholder="Listening to microphone... Speak your response clearly or edit text here..."
+                  style={{ width: '100%', height: '100px', background: 'rgba(15,23,42,0.85)', border: '1.5px solid var(--color-success)', borderRadius: '10px', padding: '12px 14px', color: '#fff', fontSize: '14px', fontFamily: 'inherit', lineHeight: 1.5 }}
                 />
 
-                <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                  <button className="btn-primary" onClick={handleSubmitSpokenTurn} style={{ fontSize: '13px', padding: '8px 20px', fontWeight: 700 }}>
+                <div style={{ marginTop: '12px', display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                    <Mic size={14} className="spin" /> Listening continuously... Speak or click submit.
+                  </div>
+
+                  <button className="btn-primary" onClick={handleSubmitSpokenTurn} style={{ fontSize: '13px', padding: '10px 22px', fontWeight: 800 }}>
                     <ArrowRight size={16} /> Submit Answer & Continue
                   </button>
                 </div>
@@ -329,9 +571,9 @@ export default function VoiceInterviewer() {
             )}
 
             {/* Live Interview Transcript Feed */}
-            <div style={{ marginTop: '20px' }}>
+            <div style={{ marginTop: '24px' }}>
               <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MessageSquare size={16} /> Live Conversation Transcript
+                <MessageSquare size={16} /> Live Interview Conversation Feed ({transcriptHistory.length} Turns)
               </h4>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '350px', overflowY: 'auto', paddingRight: '6px' }}>
@@ -339,18 +581,18 @@ export default function VoiceInterviewer() {
                   <div 
                     key={idx} 
                     style={{ 
-                      padding: '14px', 
-                      borderRadius: '10px', 
-                      background: t.role === 'interviewer' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(99, 102, 241, 0.15)',
-                      border: t.role === 'interviewer' ? '1px solid var(--border-color)' : '1px solid rgba(99,102,241,0.3)',
+                      padding: '14px 18px', 
+                      borderRadius: '12px', 
+                      background: t.role === 'interviewer' ? 'rgba(30, 41, 59, 0.85)' : 'rgba(16, 185, 129, 0.15)',
+                      border: t.role === 'interviewer' ? '1px solid var(--border-color)' : '1px solid rgba(16, 185, 129, 0.35)',
                       alignSelf: t.role === 'interviewer' ? 'flex-start' : 'flex-end',
-                      maxWidth: '90%'
+                      maxWidth: '88%'
                     }}
                   >
                     <div style={{ fontSize: '11px', fontWeight: 800, color: t.role === 'interviewer' ? 'var(--color-accent)' : '#10b981', marginBottom: '4px', textTransform: 'uppercase' }}>
-                      {t.role === 'interviewer' ? '🤖 AI Interviewer' : '👤 Candidate Spoken Response'}
+                      {t.role === 'interviewer' ? '🤖 AI Interviewer' : '👤 Candidate Spoken Answer'}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#fff', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: '13.5px', color: '#fff', lineHeight: 1.55 }}>
                       {t.content}
                     </div>
                   </div>
