@@ -13,20 +13,38 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize Firebase Admin SDK
 try:
     import firebase_admin
     from firebase_admin import credentials
     if not firebase_admin._apps:
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred, {
-            'projectId': os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit")
-        })
+        service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+        if service_account_json:
+            import json
+            try:
+                cert_dict = json.loads(service_account_json)
+                if "private_key" in cert_dict and isinstance(cert_dict["private_key"], str):
+                    cert_dict["private_key"] = cert_dict["private_key"].replace("\\n", "\n")
+                cred = credentials.Certificate(cert_dict)
+                firebase_admin.initialize_app(cred, {
+                    'projectId': os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit")
+                })
+                print("🔥 Firebase Admin SDK initialized with Service Account Certificate.")
+            except Exception as se_err:
+                print(f"Notice parsing FIREBASE_SERVICE_ACCOUNT: {se_err}")
+                cred = credentials.ApplicationDefault()
+                firebase_admin.initialize_app(cred, {
+                    'projectId': os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit")
+                })
+        else:
+            cred = credentials.ApplicationDefault()
+            firebase_admin.initialize_app(cred, {
+                'projectId': os.environ.get("FIREBASE_PROJECT_ID", "techno-recruit")
+            })
 except Exception as e:
     print(f"Firestore Client initialization notice: {e}")
-
-load_dotenv()
 
 BASE_DIR = Path(__file__).parent
 STATIC_DIR = BASE_DIR / "static"
@@ -107,12 +125,16 @@ def get_firebase_config():
     }
 
 
+from fastapi import Depends
+from routes.navigator_routes import get_optional_current_user
+
 @app.get("/api/memories")
-def get_mem0_memories():
+def get_mem0_memories(user: dict = Depends(get_optional_current_user)):
     """Returns stored Mem0 candidate entity facts and recruiter memory graph items."""
     try:
         from mem0_service import get_all_mem0_memories
-        memories = get_all_mem0_memories()
+        uid = user.get("uid", "techno_recruit_admin")
+        memories = get_all_mem0_memories(user_id=uid)
         return {"status": "success", "memories": memories, "count": len(memories)}
     except Exception as e:
         return {"status": "error", "message": str(e), "memories": []}

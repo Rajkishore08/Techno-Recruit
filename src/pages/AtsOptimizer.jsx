@@ -3,10 +3,12 @@ import { FileCheck2, Wand2, Loader2, CheckCircle2, AlertTriangle, Target, Copy, 
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
 import { useAuth } from '../context/AuthContext';
+import { useHistory } from '../context/HistoryContext';
 import { optimizeResume, parseResume } from '../services/api';
 
 export default function AtsOptimizer() {
   const { currentIdToken } = useAuth();
+  const { refreshHistory } = useHistory();
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedJdFile, setSelectedJdFile] = useState(null);
   const [rawResumeText, setRawResumeText] = useState('');
@@ -66,6 +68,9 @@ export default function AtsOptimizer() {
 
       const res = await optimizeResume(formData, currentIdToken);
       setResults(res.data);
+      if (typeof refreshHistory === 'function') {
+        refreshHistory();
+      }
       showToast("AI Resume Optimization & ATS Audit Complete!");
     } catch (e) {
       showToast(`Error: ${e.message}`);

@@ -7,6 +7,7 @@ import {
 import Header from '../components/common/Header';
 import Dropzone from '../components/common/Dropzone';
 import { useAuth } from '../context/AuthContext';
+import { useHistory } from '../context/HistoryContext';
 import { fetchWithAuth, parseResume } from '../services/api';
 
 const CATEGORIES = [
@@ -214,6 +215,9 @@ export default function InterviewArchitect() {
               const data = JSON.parse(line.slice(6));
               if (data.phase === "COMPLETED") {
                 setGeneratedGuide(data.data);
+                if (typeof refreshHistory === 'function') {
+                  refreshHistory();
+                }
               }
               // Add to sse traces
               setSseTraces(prev => [...prev, data]);

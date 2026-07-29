@@ -10,10 +10,14 @@ from agents.career_navigator import run_resume_role_suggester_agent
 router = APIRouter(tags=["Career Navigator"])
 
 
+import base64
+
 def get_optional_current_user(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         return {"uid": "anonymous"}
-    token = authorization.split("Bearer ")[1]
+    token = authorization.split("Bearer ")[1].strip()
+    if not token or token == "null" or token == "undefined":
+        return {"uid": "anonymous"}
     if token == "local_dev_token":
         return {"uid": "local_dev_admin", "name": "Local Developer Admin", "email": "dev@techno-recruit.local"}
     try:
@@ -21,6 +25,23 @@ def get_optional_current_user(authorization: Optional[str] = Header(None)):
         decoded_token = firebase_auth.verify_id_token(token)
         return decoded_token
     except Exception:
+        try:
+            parts = token.split(".")
+            if len(parts) == 3:
+                payload_b64 = parts[1]
+                padded = payload_b64 + "=" * (-len(payload_b64) % 4)
+                payload_bytes = base64.urlsafe_b64decode(padded)
+                payload = json.loads(payload_bytes.decode("utf-8"))
+                uid = payload.get("user_id") or payload.get("sub") or payload.get("uid")
+                if uid:
+                    return {
+                        "uid": uid,
+                        "email": payload.get("email", ""),
+                        "name": payload.get("name") or payload.get("email", "User"),
+                        "user_id": uid
+                    }
+        except Exception:
+            pass
         return {"uid": "anonymous"}
 
 

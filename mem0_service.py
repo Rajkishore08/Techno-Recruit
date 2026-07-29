@@ -67,7 +67,7 @@ def search_mem0_memory(query: str, user_id: str = "techno_recruit_admin", limit:
 
 def get_all_mem0_memories(user_id: str = "techno_recruit_admin") -> List[Dict[str, Any]]:
     """
-    Retrieves all stored Mem0 memories for a given user.
+    Retrieves all stored Mem0 memories for a given user, including shared memory fallback.
     """
     if not MEM0_API_KEY:
         return []
@@ -76,18 +76,29 @@ def get_all_mem0_memories(user_id: str = "techno_recruit_admin") -> List[Dict[st
         "Authorization": f"Token {MEM0_API_KEY}",
         "Content-Type": "application/json"
     }
-    try:
-        resp = requests.get(f"{MEM0_BASE_URL}/memories/?user_id={user_id}", headers=headers, timeout=3)
-        if resp.status_code == 200:
-            res = resp.json()
-            if isinstance(res, list):
-                return res
-            elif isinstance(res, dict) and "results" in res:
-                return res["results"]
-        return []
-    except Exception as e:
-        print(f"[Mem0] Error fetching memories: {e}")
-        return []
+    
+    all_memories = []
+    seen_ids = set()
+
+    def fetch_for_user(uid_val: str):
+        try:
+            resp = requests.get(f"{MEM0_BASE_URL}/memories/?user_id={uid_val}", headers=headers, timeout=3)
+            if resp.status_code == 200:
+                res = resp.json()
+                items = res if isinstance(res, list) else res.get("results", [])
+                for item in items:
+                    m_id = item.get("id") or item.get("memory")
+                    if m_id not in seen_ids:
+                        seen_ids.add(m_id)
+                        all_memories.append(item)
+        except Exception as e:
+            print(f"[Mem0] Error fetching memories for '{uid_val}': {e}")
+
+    fetch_for_user(user_id)
+    if user_id != "techno_recruit_admin":
+        fetch_for_user("techno_recruit_admin")
+
+    return all_memories
 
 def record_candidate_screening_memory(candidate_name: str, resume_summary: str, top_roles: List[str], user_id: str = "techno_recruit_admin"):
     """

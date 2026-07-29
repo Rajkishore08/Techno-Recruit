@@ -146,7 +146,7 @@ def save_career_analysis(
 
 
 def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
-    """Retrieves all past career analysis sessions for a given user UID."""
+    """Retrieves all past career analysis sessions for a given user UID, including fallback session records."""
     results = _read_local_json(LOCAL_CAREER_DB)
     seen_ids = {r.get("analysis_id") for r in results if r.get("analysis_id")}
 
@@ -154,11 +154,15 @@ def get_user_career_analyses(user_uid: str) -> List[Dict[str, Any]]:
     try:
         from firebase_admin import firestore
         db = firestore.client()
+        docs_to_fetch = []
         if user_uid and user_uid != "anonymous":
-            docs = db.collection("career_analyses").where("uid", "==", user_uid).limit(50).stream()
+            docs_to_fetch.extend(list(db.collection("career_analyses").where("uid", "==", user_uid).limit(50).stream()))
+            docs_to_fetch.extend(list(db.collection("career_analyses").where("uid", "==", "anonymous").limit(20).stream()))
+            docs_to_fetch.extend(list(db.collection("career_analyses").where("uid", "==", "local_dev_admin").limit(20).stream()))
         else:
-            docs = db.collection("career_analyses").limit(50).stream()
-        for doc in docs:
+            docs_to_fetch.extend(list(db.collection("career_analyses").limit(50).stream()))
+
+        for doc in docs_to_fetch:
             d = doc.to_dict()
             if d.get("analysis_id") not in seen_ids:
                 results.append(d)
@@ -231,11 +235,16 @@ def get_user_interview_guides(user_uid: str) -> List[Dict[str, Any]]:
     try:
         from firebase_admin import firestore
         db = firestore.client()
+        docs_to_fetch = []
         if user_uid and user_uid != "anonymous":
-            docs = db.collection("guides").where("uid", "==", user_uid).stream()
+            docs_to_fetch.extend(list(db.collection("guides").where("uid", "==", user_uid).limit(50).stream()))
+            docs_to_fetch.extend(list(db.collection("guides").where("uid", "==", "anonymous").limit(20).stream()))
+            docs_to_fetch.extend(list(db.collection("guides").where("uid", "==", "local_dev_admin").limit(20).stream()))
         else:
-            docs = db.collection("guides").limit(50).stream()
-        results = [doc.to_dict() for doc in docs]
+            docs_to_fetch.extend(list(db.collection("guides").limit(50).stream()))
+
+        for doc in docs_to_fetch:
+            results.append(doc.to_dict())
     except Exception as e:
         print(f"Firestore guides history read notice: {e}")
 
