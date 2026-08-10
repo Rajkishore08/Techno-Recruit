@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False) -> tuple:
+def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False, temperature: float = 0.1) -> tuple:
     """
     Queries Google Gemini API (gemini-2.0-flash / gemini-1.5-flash) as secondary failover LLM.
     Bypasses external SDK dependencies by sending direct REST requests to Google Generative Language API.
@@ -37,7 +37,7 @@ def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False) -> tup
             }
         ],
         "generationConfig": {
-            "temperature": 0.1
+            "temperature": temperature
         }
     }
     
@@ -73,7 +73,7 @@ def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False) -> tup
         raise RuntimeError(f"Failed to query Gemini API: {str(e)}")
 
 
-def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = False, model_name: str = None) -> tuple:
+def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = False, model_name: str = None, temperature: float = 0.1) -> tuple:
     """
     Queries NVIDIA NIM API (https://integrate.api.nvidia.com/v1/chat/completions)
     using high-performance GPUs and Meta LLaMA 3.1 70B Instruct / 8B Instruct models.
@@ -93,7 +93,7 @@ def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = Fals
     payload = {
         "model": target_model,
         "messages": messages,
-        "temperature": 0.1
+        "temperature": temperature
     }
 
     if json_mode:
@@ -115,7 +115,7 @@ def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = Fals
         return content, usage
 
 
-def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None) -> tuple:
+def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None, temperature: float = 0.1) -> tuple:
     """Queries Groq API with specified model or default."""
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
@@ -133,7 +133,7 @@ def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, An
     payload = {
         "model": target_model,
         "messages": messages,
-        "temperature": 0.1
+        "temperature": temperature
     }
     
     if json_mode:
@@ -157,9 +157,9 @@ def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, An
         return content, usage
 
 
-def query_groq(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None) -> tuple:
+def query_groq(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, json_mode: bool = False, model_name: str = None, temperature: float = 0.1) -> tuple:
     """
-    Multi-Tiered Enterprise AI Chain:
+    Multi-Tiered Enterprise AI Chain with Temperature Controls:
     1. Primary Tier: NVIDIA NIM AI (meta/llama-3.1-70b-instruct).
     2. NVIDIA Fast Tier: NVIDIA NIM AI (meta/llama-3.1-8b-instruct).
     3. Groq Tier: Groq LLaMA 3.3 70B.
@@ -167,27 +167,31 @@ def query_groq(messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = Non
     """
     # 1. Attempt Primary NVIDIA NIM AI (meta/llama-3.1-70b-instruct)
     try:
-        return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-70b-instruct")
+        return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-70b-instruct", temperature=temperature)
     except Exception as nv_err:
         print(f"⚠️ Primary NVIDIA NIM AI notice: {nv_err}. Trying NVIDIA Fast model (meta/llama-3.1-8b-instruct)...")
         # 2. Attempt NVIDIA Fast (meta/llama-3.1-8b-instruct)
         try:
-            return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-8b-instruct")
+            return query_nvidia_internal(messages, json_mode=json_mode, model_name="meta/llama-3.1-8b-instruct", temperature=temperature)
         except Exception as nv_fast_err:
             print(f"⚠️ NVIDIA Fast model notice: {nv_fast_err}. Falling back to Groq LLaMA 3.3 70B...")
             # 3. Attempt Groq API
             try:
-                return query_groq_internal(messages, tools=tools, json_mode=json_mode, model_name=model_name)
+                return query_groq_internal(messages, tools=tools, json_mode=json_mode, model_name=model_name, temperature=temperature)
             except Exception as groq_err:
                 print(f"⚠️ Groq notice: {groq_err}. Failing over to Google Gemini 2.0 Flash API...")
                 # 4. Attempt Google Gemini API
                 try:
-                    return query_gemini(messages, json_mode=json_mode)
+                    return query_gemini(messages, json_mode=json_mode, temperature=temperature)
                 except Exception as gemini_err:
                     raise RuntimeError(f"All AI Tiers exhausted. NVIDIA 70B ({nv_err}), NVIDIA 8B ({nv_fast_err}), Groq ({groq_err}), Gemini ({gemini_err}).")
 
 
-def query_groq_helper(prompt: str, json_mode: bool = False, model_name: str = None) -> tuple:
+def query_groq_helper(prompt: str, json_mode: bool = False, model_name: str = None, temperature: float = 0.1, system_prompt: str = None) -> tuple:
     """Helper to query multi-tiered AI engine for single prompt sub-tasks inside agents."""
-    messages = [{"role": "user", "content": prompt}]
-    return query_groq(messages, json_mode=json_mode, model_name=model_name)
+    sys_content = system_prompt or "You are Techno Recruit AI, an enterprise talent intelligence agent that outputs objective, strictly fact-grounded JSON evaluations."
+    messages = [
+        {"role": "system", "content": sys_content},
+        {"role": "user", "content": prompt}
+    ]
+    return query_groq(messages, json_mode=json_mode, model_name=model_name, temperature=temperature)

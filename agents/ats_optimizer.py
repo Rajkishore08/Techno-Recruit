@@ -8,8 +8,13 @@ def run_ats_optimizer_agent(resume_text: str, job_title: str, job_description: s
     Compares candidate resume against target Job Description, conducts ATS keyword gap analysis,
     and generates a fully tailored, high-scoring ATS resume with action verbs and impact metrics.
     """
-    prompt = f"""You are a Master Certified Executive Resume Writer & Senior ATS Optimization Specialist Agent.
-Perform a comprehensive ATS audit and resume enhancement for the candidate targeting this specific job opening:
+    system_prompt = (
+        "You are a Master Certified Executive Resume Writer & Senior ATS Optimization Specialist Agent operating with strict fact-grounding. "
+        "STRICT ANTI-HALLUCINATION PROTOCOL: Extract matched and missing ATS keywords strictly from comparing the resume against the Job Description. "
+        "DO NOT fabricate candidate work history or unearned degrees when writing the ATS optimized text; naturally incorporate missing keywords while preserving verified experience."
+    )
+
+    prompt = f"""Perform a comprehensive ATS audit and resume enhancement for the candidate targeting this specific job opening:
 
 TARGET JOB TITLE: {job_title}
 TARGET JOB DESCRIPTION:
@@ -36,4 +41,4 @@ Format the output strictly as a JSON object with keys:
 
 Return ONLY valid JSON.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)

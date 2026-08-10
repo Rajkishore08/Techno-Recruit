@@ -90,9 +90,13 @@ def run_resume_role_suggester_agent(resume_text: str) -> tuple:
     except Exception as e:
         print(f"[Mem0] Notice during search: {e}")
 
-    prompt = f"""You are an expert Executive Career Navigator & Senior Talent Analytics Agent.
-{mem0_context}
-Analyze the following candidate resume text in exhaustive detail:
+    system_prompt = (
+        "You are an expert Executive Career Navigator & Senior Talent Analytics Agent operating with strict fact-grounding. "
+        "STRICT ANTI-HALLUCINATION PROTOCOL: Base all candidate profile analysis, skill extractions, and career role recommendations EXCLUSIVELY on facts, credentials, and achievements explicitly present in the provided resume text. "
+        "DO NOT fabricate or assume unearned degrees, unstated awards, or non-existent work experience."
+    )
+
+    prompt = f"""Analyze the following candidate resume text in exhaustive detail:
 
 --- BEGIN RESUME ---
 {resume_text}
@@ -102,18 +106,15 @@ Perform a deep, multi-dimensional evaluation of candidate background, technical 
 
 CRITICAL FORMATTING & LOGICAL SCORING INSTRUCTIONS:
 1. Provide EXACTLY 2 to 4 high-impact, complete bullet sentences per section ("leadership_and_community", "achievements_and_competitions", "work_and_internship_experience", "dynamic_recommendations").
-2. EVERY bullet point MUST start with a **Bold Organization / Position / Hackathon & Award Title**: followed by a full 1-2 sentence description.
-3. EMPHASIZE KEY HIGHLIGHTS IN BOLD: Always enclose Hackathon Position Titles (e.g. **Winner (IBM Quantum Challenge 2023)**, **Runner Up (CryptoShield 2K24)**), Leadership Positions (e.g. **Campus Lead**, **Co-Founder & Associate Director**), Project/Company Names (e.g. **Techno-Recruit**, **Techno Badge**, **Xthlete**), and Key Technologies (e.g. **ReactJS**, **NodeJS**, **Python**, **Flutter**) in double asterisks `**...**` so they render as high-visibility highlighted badges.
-   Example: "**Campus Lead (Google Developer Group - CIT)**: Founded the **GDG CIT** chapter, hosted **10+ technical events & hackathons**, and mentored 200+ student developers."
-   Example: "**Winner (IBM Quantum Challenge 2023)**: Awarded 1st place by **IBM Quantum** for exceptional algorithm implementation and quantum computing innovation."
-   Example: "**Full Stack Developer Intern (Xthlete)**: Enhanced full-stack web features using **React.js**, **Node.js**, and **MongoDB** for real-time analytics."
-4. NEVER split a single bullet item into multiple short fragmented sub-bullets. NEVER leave stray asterisks (like "ReactJS**" or "**title").
+2. EVERY bullet point MUST start with a **Bold Organization / Position / Hackathon & Award Title**: followed by a full 1-2 sentence description based strictly on the resume.
+3. EMPHASIZE KEY HIGHLIGHTS IN BOLD: Always enclose Hackathon Position Titles (e.g. **Winner (IBM Quantum Challenge 2023)**), Leadership Positions (e.g. **Campus Lead**), Project/Company Names (e.g. **Techno-Recruit**), and Key Technologies (e.g. **ReactJS**, **Python**) in double asterisks `**...**`.
+4. NEVER split a single bullet item into multiple short fragmented sub-bullets.
 5. LOGICAL MATCH SCORE HIERARCHY RULE: A candidate's Junior/Beginner match score MUST ALWAYS be greater than or equal to their Mid-level match score (beginner_score >= intermediate_score). If a candidate is 90% fit for a Mid-level role, they are inherently 95-100% fit for Junior/Beginner roles. NEVER assign a lower score to beginner than to intermediate!
-6. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer"). Avoid returning only generic titles like "Software Engineer" when specific roles apply!
+6. SPECIALIZED ROLE MATCHING: Recommend highly specific, specialized role titles matching candidate exact tech stack (e.g. "Flutter Developer", "DevOps & Cloud Engineer", "Product Designer & UI/UX Specialist", "React / Frontend Developer", "Node.js / Backend Engineer", "Full Stack Developer", "Data Engineer", "AI/ML Engineer", "QA Automation Engineer").
 
 Extract and compile detailed bullet lists with **bold markdown formatting** for:
 1. "candidate_name": Extract candidate's full name from resume header.
-2. "why_best_fit": A compelling 2-3 sentence argument highlighting **why candidate is the BEST FIT for hiring teams**.
+2. "why_best_fit": A compelling 2-3 sentence argument highlighting **why candidate is the BEST FIT for hiring teams** citing concrete resume evidence.
 3. "profile_and_project_links": List of objects extracted from URLs, GitHub, LinkedIn, portfolio, or project links [{{"title": "...", "url": "..."}}].
 4. "leadership_and_community": List 2-4 detailed bullet strings starting with **Bold Title**: Description.
 5. "achievements_and_competitions": List 2-4 detailed bullet strings starting with **Bold Award**: Description.
@@ -140,7 +141,7 @@ Format output strictly as JSON:
 
 Return ONLY valid JSON.
 """
-    json_str, usage = query_groq_helper(prompt, json_mode=True)
+    json_str, usage = query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
     try:
         data = json.loads(json_str)
         data["leadership_and_community"] = sanitize_bullet_list(data.get("leadership_and_community", []))
@@ -176,8 +177,13 @@ Return ONLY valid JSON.
 
 def run_resume_jd_matcher_agent(resume_text: str, job_title: str, job_description: str, experience_level: str) -> tuple:
     """Resume vs JD Matcher Agent: evaluates candidate fit for specific job description and generates 3 custom resume questions."""
-    prompt = f"""You are a Senior Talent Acquisition & Technical Screener Agent.
-Compare the following Candidate Resume against the Target Job Opening:
+    system_prompt = (
+        "You are a Senior Talent Acquisition & Technical Screener Agent operating with strict fact-grounding. "
+        "STRICT ANTI-HALLUCINATION PROTOCOL: Evaluate candidate fit and generate interview questions based EXCLUSIVELY on projects and technical skills explicitly present in the provided resume. "
+        "DO NOT assume unstated work history or fabricate candidate achievements."
+    )
+
+    prompt = f"""Compare the following Candidate Resume against the Target Job Opening:
 
 Job Title: {job_title}
 Seniority Level: {experience_level}
@@ -198,7 +204,7 @@ Perform a deep match analysis:
 Format the output strictly as a JSON object with keys:
 - "overall_fit_score": Integer (0-100)
 - "fit_level": String
-- "summary_reasoning": 2-3 sentence overview of fit
+- "summary_reasoning": 2-3 sentence overview of fit citing resume evidence
 - "matched_skills": List of strings
 - "missing_requirements": List of strings
 - "personalized_questions": A list of 3 objects, each containing:
@@ -209,4 +215,4 @@ Format the output strictly as a JSON object with keys:
 
 Return ONLY valid JSON. Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)

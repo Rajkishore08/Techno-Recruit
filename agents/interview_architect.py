@@ -8,8 +8,8 @@ from db import save_interview_guide, update_saved_guide_metrics
 
 def run_jd_parser_agent(job_title: str, job_description: str, experience_level: str) -> tuple:
     """JD Parser Agent: structured extraction of candidate profile and technical domains."""
-    prompt = f"""You are a specialized HR JD Parser Agent.
-Analyze the following Job Title and Job Description for a candidate at '{experience_level}' seniority level:
+    system_prompt = "You are a specialized HR JD Parser Agent that extracts required competencies strictly from job descriptions."
+    prompt = f"""Analyze the following Job Title and Job Description for a candidate at '{experience_level}' seniority level:
 Job Title: {job_title}
 Job Description:
 {job_description}
@@ -21,13 +21,13 @@ Extract:
 
 Format the output strictly as a JSON object with keys: "technical_competencies", "soft_skills", "candidate_profile". Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
 
 
 def run_syllabus_agent(job_analysis_json: str) -> tuple:
     """Syllabus Designer Agent: designs a topics framework/curriculum based on JD analysis."""
-    prompt = f"""You are a Screening Syllabus Agent.
-Based on the Job Description analysis below, outline an interview curriculum (syllabus) listing exactly what areas we should test.
+    system_prompt = "You are a Technical Screening Syllabus Agent that structures rigorous interview module curriculums."
+    prompt = f"""Based on the Job Description analysis below, outline an interview curriculum (syllabus) listing exactly what areas we should test.
 For each area, specify:
 1. Topic name
 2. Core concepts to focus on
@@ -38,15 +38,15 @@ Job Analysis Profile:
 
 Format the output strictly as a JSON list of topics under the key "syllabus". Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
 
 
 def run_question_writer_agent(syllabus_json: str, categories: List[str], count: int) -> tuple:
     """Question Generator Agent: writes initial drafts of questions mapping to syllabus modules."""
-    prompt = f"""You are a Question Generator Agent.
-Based on the Screening Syllabus below, generate exactly {count} interview questions.
+    system_prompt = "You are an Expert Technical Question Generator Agent crafting high-signal interview questions."
+    prompt = f"""Based on the Screening Syllabus below, generate exactly {count} interview questions.
 Distribute the questions across these categories: {", ".join(categories)}.
-Each question must target a topic in the syllabus.
+Each question must target a topic in the syllabus and test real-world problem solving.
 
 Syllabus Profile:
 {syllabus_json}
@@ -60,13 +60,13 @@ For each question, provide:
 
 Format the output strictly as a JSON list of draft questions under the key "drafts". Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.2, system_prompt=system_prompt)
 
 
 def run_interviewer_critic_agent(draft_questions_json: str, job_analysis_json: str) -> tuple:
     """Critic Agent: critiques questions on duplication, difficulty level alignment, and style constraints."""
-    prompt = f"""You are an Interview Critic Agent.
-Evaluate the following drafted interview questions against the Target Candidate Requirements Profile.
+    system_prompt = "You are an Interview Critic Agent enforcing strict quality controls and difficulty calibration."
+    prompt = f"""Evaluate the following drafted interview questions against the Target Candidate Requirements Profile.
 Determine if each question is:
 - Appropriate for the seniority level (e.g. not too easy for Senior, not too hard for Junior).
 - Clear, unique (no duplicate concepts), and professionally worded.
@@ -84,13 +84,13 @@ Output a feedback report. For each question, output:
 
 Format the output strictly as a JSON list of reviews under the key "critic_reviews". Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
 
 
 def run_question_refiner_agent(draft_questions_json: str, critic_feedback_json: str) -> tuple:
     """Refiner Agent: rewrites rejected draft questions incorporating critic recommendations."""
-    prompt = f"""You are a Question Refiner Agent.
-You must update the drafted questions that were REJECTED by the Interview Critic Agent.
+    system_prompt = "You are a Question Refiner Agent resolving critic feedback to elevate question quality."
+    prompt = f"""You must update the drafted questions that were REJECTED by the Interview Critic Agent.
 Keep all APPROVED questions exactly as they are.
 For any REJECTED question, rewrite the question text and target skill based on the Critic's feedback.
 
@@ -102,15 +102,15 @@ Critic's Feedback:
 
 Provide the output strictly in the same format: a JSON list of updated questions containing "id", "question", "category", "target_skill", and "difficulty" under the key "drafts". Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
 
 
 def run_scorecard_architect_agent(questions_json: str) -> tuple:
     """Scorecard Agent: generates model answers, rationales, and structured evaluation rubrics."""
-    prompt = f"""You are a Scorecard Architect Agent.
-For each of the interview questions below, add:
+    system_prompt = "You are a Scorecard Architect Agent creating precise model answers and 1-3-5 grading rubrics."
+    prompt = f"""For each of the interview questions below, add:
 1. "rationale": A brief description of what the question assesses.
-2. "model_answer": A detailed ideal candidate response.
+2. "model_answer": A detailed ideal candidate response demonstrating production-grade depth.
 3. "grading_rubric": An object with keys "1", "3", and "5" detailing what constitutes a Poor (1), Good (3), and Excellent (5) response.
 
 Questions list:
@@ -120,7 +120,7 @@ Format the output strictly as a JSON list of finalized questions under the key "
 "id", "question", "category", "target_skill", "difficulty", "rationale", "model_answer", "grading_rubric" (an object with keys "1", "3", "5").
 Do not wrap in markdown code blocks.
 """
-    return query_groq_helper(prompt, json_mode=True)
+    return query_groq_helper(prompt, json_mode=True, temperature=0.1, system_prompt=system_prompt)
 
 
 def run_interview_generator_agent(

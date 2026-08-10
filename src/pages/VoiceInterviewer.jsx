@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, Play, Square, Loader2, Sparkles, Trophy, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw, MessageSquare, ArrowRight, User, Settings, Radio } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Play, Square, Loader2, Sparkles, Trophy, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw, MessageSquare, ArrowRight, User, Settings, Radio, Clock } from 'lucide-react';
 import Header from '../components/common/Header';
 import { useAuth } from '../context/AuthContext';
 
@@ -40,8 +40,32 @@ export default function VoiceInterviewer() {
   const [finalScorecard, setFinalScorecard] = useState(null);
   const [error, setError] = useState(null);
 
+  // Silence Detection & Auto-Submit State
+  const [silenceCountdown, setSilenceCountdown] = useState(null);
+  const silenceTimerRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
+  const currentSpeechTextRef = useRef('');
+
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
+
+  // Keep ref synchronized with state for timer closure accuracy
+  useEffect(() => {
+    currentSpeechTextRef.current = currentSpeechText;
+  }, [currentSpeechText]);
+
+  // Clear silence timers helper
+  const clearSilenceTimers = () => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setSilenceCountdown(null);
+  };
 
   // Load available Web Speech API voices
   useEffect(() => {
@@ -62,7 +86,7 @@ export default function VoiceInterviewer() {
     }
   }, []);
 
-  // Initialize Speech Recognition on Mount
+  // Initialize Speech Recognition on Mount with Silence Detection
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
@@ -86,6 +110,33 @@ export default function VoiceInterviewer() {
         const combinedText = (finalTranscript + interimTranscript).trim();
         if (combinedText) {
           setCurrentSpeechText(combinedText);
+          currentSpeechTextRef.current = combinedText;
+
+          // Clear previous silence timers
+          clearSilenceTimers();
+
+          // Reset silence timer (2.5 seconds of silence auto-submits)
+          let remainingSeconds = 2.5;
+          setSilenceCountdown(2.5);
+
+          countdownIntervalRef.current = setInterval(() => {
+            remainingSeconds -= 0.5;
+            if (remainingSeconds > 0) {
+              setSilenceCountdown(parseFloat(remainingSeconds.toFixed(1)));
+            } else {
+              setSilenceCountdown(0);
+              clearInterval(countdownIntervalRef.current);
+            }
+          }, 500);
+
+          silenceTimerRef.current = setTimeout(() => {
+            clearSilenceTimers();
+            const textToSubmit = currentSpeechTextRef.current.trim();
+            if (textToSubmit && isListeningRef.current) {
+              console.log("⏱️ Auto-submitting spoken answer after 2.5s silence:", textToSubmit);
+              handleSubmitSpokenTurn(textToSubmit);
+            }
+          }, 2500);
         }
       };
 
@@ -97,7 +148,7 @@ export default function VoiceInterviewer() {
       };
 
       recognition.onend = () => {
-        // Auto-restart listening if session is still listening
+        // Auto-restart listening if session is still listening and not AI speaking
         if (isListeningRef.current) {
           try {
             recognition.start();
@@ -113,6 +164,7 @@ export default function VoiceInterviewer() {
     }
 
     return () => {
+      clearSilenceTimers();
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
@@ -164,6 +216,9 @@ export default function VoiceInterviewer() {
   };
 
   const speakText = (text, onEndCallback) => {
+    clearSilenceTimers();
+    stopListening(); // Mute mic while AI speaks to prevent audio feedback collision
+
     if (!('speechSynthesis' in window) || isMuted) {
       setVoiceState('listening');
       startListening();
@@ -223,7 +278,9 @@ export default function VoiceInterviewer() {
   };
 
   const startListening = () => {
+    clearSilenceTimers();
     setCurrentSpeechText('');
+    currentSpeechTextRef.current = '';
     setVoiceState('listening');
     isListeningRef.current = true;
     if (recognitionRef.current) {
@@ -236,6 +293,7 @@ export default function VoiceInterviewer() {
   };
 
   const stopListening = () => {
+    clearSilenceTimers();
     isListeningRef.current = false;
     if (recognitionRef.current) {
       try {
@@ -256,6 +314,7 @@ export default function VoiceInterviewer() {
     setTurnScores([]);
     setFinalScorecard(null);
     setCurrentSpeechText('');
+    currentSpeechTextRef.current = '';
 
     const initialQ = `Hello! Welcome to your AI technical interview for the ${jobTitle} position at ${experienceLevel} level. To begin, please introduce yourself and walk me through a major project you built.`;
 
@@ -265,9 +324,11 @@ export default function VoiceInterviewer() {
     speakText(initialQ);
   };
 
-  const handleSubmitSpokenTurn = async () => {
+  const handleSubmitSpokenTurn = async (overrideText = null) => {
+    clearSilenceTimers();
     stopListening();
-    const spoken = currentSpeechText.trim();
+    
+    const spoken = (overrideText !== null ? overrideText : currentSpeechText).trim();
     if (!spoken) {
       alert("Please speak into your microphone or type your answer before submitting.");
       return;
@@ -277,6 +338,7 @@ export default function VoiceInterviewer() {
     const updatedHistory = [...transcriptHistory, { role: 'candidate', content: spoken }];
     setTranscriptHistory(updatedHistory);
     setCurrentSpeechText('');
+    currentSpeechTextRef.current = '';
 
     try {
       const resp = await fetch("/api/voice-interview/evaluate-turn", {
@@ -316,6 +378,7 @@ export default function VoiceInterviewer() {
   };
 
   const handleFinishInterview = async (historyToUse = null) => {
+    clearSilenceTimers();
     stopListening();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
@@ -349,7 +412,7 @@ export default function VoiceInterviewer() {
     <div className="content-container">
       <Header 
         title="AI Real-Time Voice Interviewer & Voice Persona Selector" 
-        subtitle="Conversational Voice Simulation, Multi-Persona Speech Synthesis, Real-Time Speech Recognition & Technical Shortlisting Engine." 
+        subtitle="Conversational Voice Simulation, Multi-Persona Speech Synthesis, Silence Auto-Detection & Technical Shortlisting Engine." 
       />
 
       <div className="content-body">
@@ -362,7 +425,7 @@ export default function VoiceInterviewer() {
               </div>
 
               <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '9999px', background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid #10b981' }}>
-                🎙️ Speech-to-Text Active
+                🎙️ Silence Auto-Submit (2.5s) Enabled
               </span>
             </div>
 
@@ -370,7 +433,7 @@ export default function VoiceInterviewer() {
               Conduct Spoken AI Technical Interview
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '13.5px', lineHeight: 1.6, marginBottom: '24px' }}>
-              Select your preferred AI interviewer voice persona below. The AI speaks questions aloud, listens to your microphone response in real time, and scores technical accuracy.
+              Select your preferred AI interviewer voice persona below. The AI speaks questions aloud, listens to your microphone response in real time, auto-detects when you finish speaking, and evaluates technical depth.
             </p>
 
             {/* AI Voice Persona Selection */}
@@ -533,6 +596,19 @@ export default function VoiceInterviewer() {
                 {voiceState === 'listening' && "🎙️ Candidate Microphone Active... Speak clearly into your mic!"}
                 {voiceState === 'evaluating' && "⚡ Evaluating Spoken Technical Depth & Answer Accuracy..."}
               </div>
+
+              {/* Live Silence Auto-Submit Countdown Bar */}
+              {voiceState === 'listening' && silenceCountdown !== null && (
+                <div style={{ marginTop: '14px', background: 'rgba(15,23,42,0.9)', padding: '10px 16px', borderRadius: '10px', border: '1px solid rgba(16,185,129,0.3)', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <Clock size={16} style={{ color: '#10b981' }} />
+                  <span style={{ fontSize: '12.5px', color: '#fff', fontWeight: 700 }}>
+                    Silence detected. Auto-submitting in: <strong style={{ color: '#10b981', fontSize: '14px' }}>{silenceCountdown}s</strong>
+                  </span>
+                  <div style={{ width: '80px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: `${(silenceCountdown / 2.5) * 100}%`, height: '100%', background: '#10b981', transition: 'width 0.3s linear' }} />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Live Candidate Speech Input Box & Text Editor */}
@@ -544,7 +620,11 @@ export default function VoiceInterviewer() {
                   </label>
                   <button 
                     type="button" 
-                    onClick={() => setCurrentSpeechText('')} 
+                    onClick={() => {
+                      clearSilenceTimers();
+                      setCurrentSpeechText('');
+                      currentSpeechTextRef.current = '';
+                    }} 
                     style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer' }}
                   >
                     Clear Text
@@ -553,18 +633,21 @@ export default function VoiceInterviewer() {
 
                 <textarea 
                   value={currentSpeechText}
-                  onChange={e => setCurrentSpeechText(e.target.value)}
-                  placeholder="Listening to microphone... Speak your response clearly or edit text here..."
+                  onChange={e => {
+                    setCurrentSpeechText(e.target.value);
+                    currentSpeechTextRef.current = e.target.value;
+                  }}
+                  placeholder="Listening to microphone... Speak your response clearly into your mic (auto-submits after 2.5s pause)..."
                   style={{ width: '100%', height: '100px', background: 'rgba(15,23,42,0.85)', border: '1.5px solid var(--color-success)', borderRadius: '10px', padding: '12px 14px', color: '#fff', fontSize: '14px', fontFamily: 'inherit', lineHeight: 1.5 }}
                 />
 
-                <div style={{ marginTop: '12px', display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: '12px', display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={{ fontSize: '12px', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
                     <Mic size={14} className="spin" /> Listening continuously... Speak or click submit.
                   </div>
 
-                  <button className="btn-primary" onClick={handleSubmitSpokenTurn} style={{ fontSize: '13px', padding: '10px 22px', fontWeight: 800 }}>
-                    <ArrowRight size={16} /> Submit Answer & Continue
+                  <button className="btn-primary" onClick={() => handleSubmitSpokenTurn()} style={{ fontSize: '13px', padding: '10px 22px', fontWeight: 800 }}>
+                    <ArrowRight size={16} /> Done Speaking (Submit Now)
                   </button>
                 </div>
               </div>
