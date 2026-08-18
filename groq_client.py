@@ -18,14 +18,15 @@ load_dotenv()
 
 def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False, temperature: float = 0.1) -> tuple:
     """
-    Queries Google Gemini API (gemini-2.0-flash / gemini-1.5-flash) as secondary failover LLM.
+    Queries Google Gemini API (gemini-3.6-flash) as secondary failover LLM.
     Bypasses external SDK dependencies by sending direct REST requests to Google Generative Language API.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is not configured in environment.")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
     
     # Combine prompt messages for Gemini
     combined_text = "\n\n".join([f"{m.get('role', 'user').upper()}: {m.get('content', '')}" for m in messages])
