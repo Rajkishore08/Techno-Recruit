@@ -53,8 +53,9 @@ def query_gemini(messages: List[Dict[str, str]], json_mode: bool = False, temper
         method="POST"
     )
 
+    timeout_val = int(os.environ.get("LLM_TIMEOUT", "60"))
     try:
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=timeout_val) as response:
             res_body = response.read().decode("utf-8")
             res_json = json.loads(res_body)
             candidates = res_json.get("candidates", [])
@@ -107,7 +108,8 @@ def query_nvidia_internal(messages: List[Dict[str, str]], json_mode: bool = Fals
         method="POST"
     )
 
-    with urllib.request.urlopen(req, timeout=22) as response:
+    timeout_val = int(os.environ.get("LLM_TIMEOUT", "60"))
+    with urllib.request.urlopen(req, timeout=timeout_val) as response:
         res_body = response.read().decode("utf-8")
         res_json = json.loads(res_body)
         content = res_json["choices"][0]["message"].get("content", "")
@@ -150,7 +152,8 @@ def query_groq_internal(messages: List[Dict[str, str]], tools: List[Dict[str, An
         method="POST"
     )
 
-    with urllib.request.urlopen(req, timeout=18) as response:
+    timeout_val = int(os.environ.get("LLM_TIMEOUT", "60"))
+    with urllib.request.urlopen(req, timeout=timeout_val) as response:
         res_body = response.read().decode("utf-8")
         res_json = json.loads(res_body)
         content = res_json["choices"][0]["message"].get("content", "")
